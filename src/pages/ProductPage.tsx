@@ -65,18 +65,6 @@ const ProductPage: React.FC = () => {
 
   const productUrl = `${window.location.origin}/product/${id}`;
 
-  // Arabic labels for cakes
-  const categoryLabel = {
-    0: 'تورتات للكبار',
-    1: 'تورتات للأطفال',
-  };
-
-  const seasonLabel = {
-    0: 'متاح طوال العام',
-    1: 'موسم الصيف',
-    2: 'موسم الشتاء',
-  };
-
   // Effects
   useEffect(() => {
     document.body.style.overflowX = 'hidden';
@@ -514,15 +502,8 @@ const ProductPage: React.FC = () => {
 
               {/* Category + Code */}
               <div className="flex flex-wrap gap-3">
-                <span className="px-4 py-2 bg-purple-100 text-purple-700 text-sm rounded-full font-medium flex items-center gap-2">
-                  <Cake size={16} />
-                  {categoryLabel[product.category as keyof typeof categoryLabel]}
-                </span>
                 <span className="px-4 py-2 bg-pink-100 text-pink-700 text-sm rounded-full font-medium">
                   كود: {product.code}
-                </span>
-                <span className="px-4 py-2 bg-amber-100 text-amber-700 text-sm rounded-full font-medium">
-                  {seasonLabel[product.season as keyof typeof seasonLabel]}
                 </span>
               </div>
 
@@ -540,58 +521,6 @@ const ProductPage: React.FC = () => {
                   )}
                 </div>
               </div>
-
-              {/* Size Selector (for cakes: الحجم) */}
-              {product.sizes.length > 0 && (
-                <div>
-                  <h3 className="font-bold text-purple-900 text-lg mb-3 flex items-center gap-2">
-                    <span>🎂</span>
-                    <span>الحجم</span>
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {product.sizes.map((size, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setSelectedSize(size)}
-                        disabled={isPurchaseDisabled}
-                        className={`px-5 py-3 rounded-xl border-2 font-medium transition-all ${
-                          selectedSize === size
-                            ? 'bg-purple-600 text-white border-purple-600 shadow-lg shadow-purple-300'
-                            : 'bg-white text-gray-700 border-purple-200 hover:border-purple-400 hover:bg-purple-50'
-                        } ${isPurchaseDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Flavor/Color Selector (for cakes: النكهة) */}
-              {product.colors.length > 0 && (
-                <div>
-                  <h3 className="font-bold text-purple-900 text-lg mb-3 flex items-center gap-2">
-                    <span>🍰</span>
-                    <span>النكهة</span>
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {product.colors.map((color, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setSelectedColor(color)}
-                        disabled={isPurchaseDisabled}
-                        className={`px-5 py-3 rounded-xl border-2 font-medium transition-all ${
-                          selectedColor === color
-                            ? 'bg-pink-500 text-white border-pink-500 shadow-lg shadow-pink-300'
-                            : 'bg-white text-gray-700 border-pink-200 hover:border-pink-400 hover:bg-pink-50'
-                        } ${isPurchaseDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      >
-                        {color}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Quantity Selector */}
               <div className="flex justify-between items-center bg-gray-50 rounded-2xl p-4">
