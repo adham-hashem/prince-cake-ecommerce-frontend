@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Bell, X, Check } from 'lucide-react';
+import { Bell, X, Check, Sparkles, Calendar, AlertCircle } from 'lucide-react';
 
 // OrderNotification interface matching the backend response
 interface OrderNotification {
@@ -72,7 +72,6 @@ const OrderNotifications: React.FC = () => {
         const data: PaginatedNotificationsResponse = await response.json();
 
         if (!Array.isArray(data.items)) {
-          // console.error('Expected an array for data.items, received:', data.items);
           setNotifications([]);
           throw new Error('Invalid response format: Expected an array of notifications.');
         }
@@ -86,7 +85,6 @@ const OrderNotifications: React.FC = () => {
         setNotifications(mappedNotifications);
         setTotalPages(data.totalPages);
       } catch (err: any) {
-        // console.error('Error fetching notifications:', err);
         setError(err.message || 'An error occurred while fetching notifications.');
         setNotifications([]);
       } finally {
@@ -140,7 +138,6 @@ const OrderNotifications: React.FC = () => {
         setSelectedNotification({ ...selectedNotification, isRead: true });
       }
     } catch (err: any) {
-      // console.error('Error marking notification as read:', err);
       setError(err.message || 'An error occurred while marking notification as read. Please try again or contact support.');
     }
   };
@@ -152,67 +149,111 @@ const OrderNotifications: React.FC = () => {
     });
   };
 
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
-        <span className="mr-3 text-gray-600">جاري تحميل الإشعارات...</span>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <span className="mr-3 text-purple-600 font-medium">جاري تحميل الإشعارات...</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-10 text-red-500 bg-red-50 border border-red-200 rounded-lg">
-        {error}
+      <div className="text-center py-10 text-red-600 bg-red-50 border-2 border-red-200 rounded-2xl">
+        <div className="text-5xl mb-4">⚠️</div>
+        <p className="font-semibold">{error}</p>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 bg-gray-50 min-h-screen">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">إشعارات الطلبات</h2>
+    <div>
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-3 rounded-xl relative">
+            <Bell className="h-6 w-6 text-purple-600" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                {unreadCount}
+              </span>
+            )}
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-purple-900">إشعارات الطلبات</h2>
+            <p className="text-sm text-purple-600">
+              {unreadCount > 0 ? `${unreadCount} إشعار غير مقروء` : 'جميع الإشعارات مقروءة'}
+            </p>
+          </div>
+        </div>
+        <Sparkles className="h-8 w-8 text-amber-500 animate-pulse" />
+      </div>
 
       {selectedNotification ? (
-        <div className="mb-6 p-4 sm:p-6 bg-white rounded-xl shadow-md border border-gray-200">
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">تفاصيل الإشعار</h3>
-          <div className="space-y-3">
-            {/* <div className="flex flex-col sm:flex-row sm:justify-between">
-              <span className="text-gray-500 font-medium">رقم الطلب:</span>
-              <span className="text-gray-900">{selectedNotification.orderId}</span>
-            </div> */}
-            <div className="flex flex-col sm:flex-row sm:justify-between">
-              <span className="text-gray-500 font-medium">العنوان:</span>
-              <span className="text-gray-900">{selectedNotification.title}</span>
+        <div className="mb-6 p-6 bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-xl border-2 border-purple-100">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-purple-900 flex items-center gap-2">
+              <Bell className="h-5 w-5 text-purple-600" />
+              تفاصيل الإشعار
+            </h3>
+            <button
+              onClick={handleCloseDetails}
+              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div className="p-4 bg-white rounded-xl border border-purple-100">
+              <span className="text-sm text-gray-500 block mb-1">العنوان</span>
+              <p className="font-semibold text-purple-900 text-lg">{selectedNotification.title}</p>
             </div>
-            <div className="flex flex-col sm:flex-row sm:justify-between">
-              <span className="text-gray-500 font-medium">الرسالة:</span>
-              <span className="text-gray-900">{formatNotificationBody(selectedNotification.body)}</span>
+
+            <div className="p-4 bg-white rounded-xl border border-purple-100">
+              <span className="text-sm text-gray-500 block mb-1">الرسالة</span>
+              <p className="text-gray-900">{formatNotificationBody(selectedNotification.body)}</p>
             </div>
-            <div className="flex flex-col sm:flex-row sm:justify-between">
-              <span className="text-gray-500 font-medium">تاريخ الإنشاء:</span>
-              <span className="text-gray-900">{formatDate(selectedNotification.sentAt)}</span>
+
+            <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-purple-100">
+              <Calendar className="h-5 w-5 text-purple-600" />
+              <div className="flex-1">
+                <span className="text-sm text-gray-500 block">تاريخ الإنشاء</span>
+                <p className="font-semibold text-gray-900">{formatDate(selectedNotification.sentAt)}</p>
+              </div>
             </div>
-            <div className="flex flex-col sm:flex-row sm:justify-between">
-              <span className="text-gray-500 font-medium">الحالة:</span>
-              <span className="text-gray-900">{selectedNotification.isRead ? 'مقروء' : 'غير مقروء'}</span>
+
+            <div className="p-4 bg-white rounded-xl border border-purple-100">
+              <span className="text-sm text-gray-500 block mb-2">الحالة</span>
+              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ${
+                selectedNotification.isRead 
+                  ? 'bg-green-100 text-green-700' 
+                  : 'bg-amber-100 text-amber-700'
+              }`}>
+                {selectedNotification.isRead ? <Check className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
+                {selectedNotification.isRead ? 'مقروء' : 'غير مقروء'}
+              </span>
             </div>
-            {/* <div className="flex flex-col sm:flex-row sm:justify-between">
-              <span className="text-gray-500 font-medium">نجاح الإرسال:</span>
-              <span className="text-gray-900">{selectedNotification.success ? 'نعم' : 'لا'}</span>
-            </div> */}
+
             {selectedNotification.errorMessage && (
-              <div className="flex flex-col sm:flex-row sm:justify-between">
-                <span className="text-gray-500 font-medium">رسالة الخطأ:</span>
-                <span className="text-gray-900">{selectedNotification.errorMessage}</span>
+              <div className="flex items-start gap-3 p-4 bg-red-50 rounded-xl border-2 border-red-200">
+                <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <span className="text-sm text-red-600 font-semibold block mb-1">رسالة الخطأ</span>
+                  <p className="text-red-700">{selectedNotification.errorMessage}</p>
+                </div>
               </div>
             )}
           </div>
-          <div className="mt-4 flex space-x-4 space-x-reverse">
+
+          <div className="mt-6 flex space-x-4 space-x-reverse">
             {!selectedNotification.isRead && (
               <button
                 onClick={() => handleMarkAsRead(selectedNotification.id)}
-                className="bg-green-500 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-green-600 transition-colors flex items-center text-sm sm:text-base"
+                className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl hover:from-green-600 hover:to-green-700 transition-all flex items-center justify-center font-semibold shadow-md"
               >
                 <Check className="h-4 w-4 ml-2" />
                 تحديد كمقروء
@@ -220,7 +261,7 @@ const OrderNotifications: React.FC = () => {
             )}
             <button
               onClick={handleCloseDetails}
-              className="bg-gray-300 text-gray-700 px-4 sm:px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors flex items-center text-sm sm:text-base"
+              className={`${selectedNotification.isRead ? 'flex-1' : ''} bg-gradient-to-r from-gray-400 to-gray-500 text-white px-6 py-3 rounded-xl hover:from-gray-500 hover:to-gray-600 transition-all flex items-center justify-center font-semibold shadow-md`}
             >
               <X className="h-4 w-4 ml-2" />
               إغلاق
@@ -230,49 +271,57 @@ const OrderNotifications: React.FC = () => {
       ) : notifications.length > 0 ? (
         <>
           {/* Desktop Table View */}
-          <div className="hidden sm:block bg-white rounded-xl shadow-md border border-gray-200">
+          <div className="hidden sm:block bg-white rounded-2xl shadow-xl border-2 border-purple-100 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-gradient-to-r from-purple-50 to-pink-50">
                   <tr>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم الطلب</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">العنوان</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الرسالة</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">تاريخ الإنشاء</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
-                    {/* <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">نجاح الإرسال</th> */}
-                    {/* <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th> */}
+                    <th className="px-6 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">العنوان</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">الرسالة</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">التاريخ</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">الحالة</th>
+                    <th className="px-6 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">الإجراءات</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-purple-100">
                   {notifications.map((notification) => (
-                    <tr key={notification.id} className="hover:bg-gray-50 transition-colors">
-                      {/* <td className={`px-6 py-4 whitespace-nowrap text-sm ${notification.isRead ? 'text-gray-900' : 'font-bold text-gray-900'}`}>
-                        {notification.orderId}
-                      </td> */}
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${notification.isRead ? 'text-gray-500' : 'font-bold text-gray-900'}`}>
-                        {notification.title}
-                        {!notification.isRead && (
-                          <span className="inline-block w-2 h-2 mr-2 rounded-full bg-pink-600"></span>
-                        )}
+                    <tr key={notification.id} className="hover:bg-purple-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          {!notification.isRead && (
+                            <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                          )}
+                          <span className={`text-sm ${notification.isRead ? 'text-gray-600' : 'font-bold text-purple-900'}`}>
+                            {notification.title}
+                          </span>
+                        </div>
                       </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${notification.isRead ? 'text-gray-500' : 'font-bold text-gray-900'}`}>
-                        {formatNotificationBody(notification.body)}
+                      <td className={`px-6 py-4 text-sm ${notification.isRead ? 'text-gray-600' : 'font-semibold text-gray-900'}`}>
+                        {formatNotificationBody(notification.body).substring(0, 50)}...
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(notification.sentAt)}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {notification.isRead ? 'مقروء' : 'غير مقروء'}
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4 text-gray-400" />
+                          {formatDate(notification.sentAt)}
+                        </div>
                       </td>
-                      {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {notification.success ? 'نعم' : 'لا'}
-                      </td> */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${
+                          notification.isRead 
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-amber-100 text-amber-700'
+                        }`}>
+                          {notification.isRead ? <Check className="h-3 w-3" /> : <Bell className="h-3 w-3" />}
+                          {notification.isRead ? 'مقروء' : 'غير مقروء'}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button
                           onClick={() => handleViewNotification(notification)}
-                          className="flex items-center text-pink-600 hover:text-pink-800"
+                          className="flex items-center gap-1 text-purple-600 hover:text-pink-600 font-semibold transition-colors"
                         >
-                          <Bell className="h-4 w-4 ml-1" />
-                          عرض التفاصيل
+                          <Bell className="h-4 w-4" />
+                          عرض
                         </button>
                       </td>
                     </tr>
@@ -287,73 +336,84 @@ const OrderNotifications: React.FC = () => {
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className="bg-white rounded-xl shadow-md border border-gray-200 p-4 transition-all duration-200 hover:shadow-lg"
+                className="bg-white rounded-2xl shadow-lg border-2 border-purple-100 p-4 transition-all duration-200 hover:shadow-xl hover:border-purple-200"
               >
                 <div className="flex justify-between items-start mb-3">
-                  <div>
-                    {/* <p className={`font-semibold text-sm ${notification.isRead ? 'text-gray-900' : 'font-bold text-gray-900'}`}>
-                      {notification.orderId}
-                    </p> */}
-                    <p className={`text-xs ${notification.isRead ? 'text-gray-500' : 'font-bold text-gray-900'}`}>
-                      {notification.title}
-                      {!notification.isRead && (
-                        <span className="inline-block w-2 h-2 mr-2 rounded-full bg-pink-600"></span>
-                      )}
-                    </p>
-                    <p className={`text-xs ${notification.isRead ? 'text-gray-500' : 'font-bold text-gray-900'}`}>
-                      {formatNotificationBody(notification.body)}
-                    </p>
+                  <div className="flex items-start gap-2 flex-1">
+                    {!notification.isRead && (
+                      <span className="inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse mt-1.5 flex-shrink-0"></span>
+                    )}
+                    <div>
+                      <p className={`text-sm ${notification.isRead ? 'text-gray-600' : 'font-bold text-purple-900'}`}>
+                        {notification.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {formatNotificationBody(notification.body).substring(0, 60)}...
+                      </p>
+                    </div>
                   </div>
                   <button
                     onClick={() => handleViewNotification(notification)}
-                    className="flex items-center text-xs text-pink-600 bg-pink-50 px-2 py-1 rounded hover:bg-pink-100"
+                    className="flex items-center gap-1 text-xs text-purple-600 bg-purple-50 px-3 py-2 rounded-lg hover:bg-purple-100 font-semibold transition-all flex-shrink-0 ml-2"
                   >
-                    <Bell className="h-3 w-3 ml-1" />
+                    <Bell className="h-3 w-3" />
                     التفاصيل
                   </button>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-xs text-gray-500">تاريخ الإنشاء:</span>
-                    <span className="text-xs text-gray-900">{formatDate(notification.sentAt)}</span>
+                <div className="space-y-2 border-t border-purple-100 pt-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-gray-500 flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      التاريخ:
+                    </span>
+                    <span className="text-xs text-gray-900 font-medium">{formatDate(notification.sentAt)}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-500">الحالة:</span>
-                    <span className="text-xs text-gray-900">{notification.isRead ? 'مقروء' : 'غير مقروء'}</span>
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
+                      notification.isRead 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-amber-100 text-amber-700'
+                    }`}>
+                      {notification.isRead ? <Check className="h-3 w-3" /> : <Bell className="h-3 w-3" />}
+                      {notification.isRead ? 'مقروء' : 'غير مقروء'}
+                    </span>
                   </div>
-                  {/* <div className="flex justify-between">
-                    <span className="text-xs text-gray-500">نجاح الإرسال:</span>
-                    <span className="text-xs text-gray-900">{notification.success ? 'نعم' : 'لا'}</span>
-                  </div> */}
                 </div>
               </div>
             ))}
           </div>
 
           {/* Pagination Controls */}
-          <div className="mt-6 flex justify-between items-center">
-            <button
-              onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
-              disabled={pageNumber === 1}
-              className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg disabled:opacity-50"
-            >
-              السابق
-            </button>
-            <span className="text-gray-600">
-              الصفحة {pageNumber} من {totalPages}
-            </span>
-            <button
-              onClick={() => setPageNumber((prev) => Math.min(prev + 1, totalPages))}
-              disabled={pageNumber === totalPages}
-              className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg disabled:opacity-50"
-            >
-              التالي
-            </button>
-          </div>
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center items-center space-x-4 space-x-reverse">
+              <button
+                onClick={() => setPageNumber((prev) => Math.max(prev - 1, 1))}
+                disabled={pageNumber === 1}
+                className="px-5 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl hover:from-purple-700 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all shadow-md"
+              >
+                السابق
+              </button>
+              <div className="bg-white px-6 py-3 rounded-xl border-2 border-purple-200 shadow-md">
+                <span className="text-purple-900 font-bold">
+                  {pageNumber} / {totalPages}
+                </span>
+              </div>
+              <button
+                onClick={() => setPageNumber((prev) => Math.min(prev + 1, totalPages))}
+                disabled={pageNumber === totalPages}
+                className="px-5 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl hover:from-purple-700 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all shadow-md"
+              >
+                التالي
+              </button>
+            </div>
+          )}
         </>
       ) : (
-        <div className="text-center py-12 bg-white rounded-lg shadow-md">
-          <p className="text-gray-600">لا توجد إشعارات طلبات متاحة حالياً</p>
+        <div className="text-center py-16 bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-xl border-2 border-purple-100">
+          <div className="text-7xl mb-4">🔔</div>
+          <p className="text-xl font-bold text-purple-900 mb-2">لا توجد إشعارات</p>
+          <p className="text-gray-600">لم يتم العثور على أي إشعارات حالياً</p>
         </div>
       )}
     </div>

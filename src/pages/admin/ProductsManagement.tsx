@@ -800,15 +800,6 @@ const ProductsManagement: React.FC = () => {
                                 />
                                 <span className="text-sm font-medium text-gray-700">منتج فوري</span>
                               </label>
-                              {/* <label className="flex items-center space-x-reverse space-x-3">
-                                <input
-                                  type="checkbox"
-                                  checked={newProduct.isFeatured}
-                                  onChange={(e) => setNewProduct(prev => ({ ...prev, isFeatured: e.target.checked }))}
-                                  className="w-5 h-5 text-yellow-600 rounded"
-                                />
-                                <span className="text-sm font-medium text-gray-700">منتج مميز</span>
-                              </label> */}
                             </div>
 
                             {/* Description */}

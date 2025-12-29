@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Edit, Trash2, Plus, AlertCircle, RefreshCw } from 'lucide-react';
+import { Edit, Trash2, Plus, AlertCircle, RefreshCw, Tag, Sparkles, Calendar, DollarSign, TrendingUp, X, Check } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 // Interface for DiscountCode based on backend DTOs
@@ -57,13 +57,11 @@ const DiscountCodesManagement: React.FC = () => {
   // Check authentication and role on mount
   useEffect(() => {
     if (!isAuthenticated) {
-      // console.log('User not authenticated, redirecting to login');
       navigate('/login');
       return;
     }
 
     if (userRole !== 'admin') {
-      // console.log('User is not admin, redirecting to home');
       navigate('/');
       return;
     }
@@ -78,13 +76,11 @@ const DiscountCodesManagement: React.FC = () => {
 
     try {
       const token = localStorage.getItem('accessToken');
-      // console.log('Retrieved token:', token ? 'Token found' : 'No token found');
       if (!token) {
         navigate('/login');
         throw new Error('لا يوجد رمز مصادقة. يرجى تسجيل الدخول مرة أخرى.');
       }
 
-      // console.log('Fetching discount codes from:', `${apiUrl}/api/discount-codes?pageNumber=${page}&pageSize=${pageSize}`);
       const response = await fetch(
         `${apiUrl}/api/discount-codes?pageNumber=${page}&pageSize=${pageSize}`,
         {
@@ -95,9 +91,7 @@ const DiscountCodesManagement: React.FC = () => {
         }
       );
 
-      // console.log('Response status:', response.status);
       const responseText = await response.text();
-      // console.log('Raw response:', responseText);
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -112,13 +106,11 @@ const DiscountCodesManagement: React.FC = () => {
       }
 
       const data: PaginatedDiscountCodesResponse = JSON.parse(responseText);
-      // console.log('Parsed data:', data);
       setDiscountCodes(data.items);
       setTotalPages(data.totalPages);
       setTotalItems(data.totalItems);
       setCurrentPage(data.pageNumber);
     } catch (err) {
-      // console.error('Error fetching discount codes:', err);
       setError(err instanceof Error ? err.message : 'فشل في جلب أكواد الخصم');
     } finally {
       setIsLoading(false);
@@ -191,7 +183,6 @@ const DiscountCodesManagement: React.FC = () => {
         isActive: newDiscountCode.isActive,
       };
 
-      // console.log('Creating discount code:', request);
       const response = await fetch(`${apiUrl}/api/discount-codes`, {
         method: 'POST',
         headers: {
@@ -201,10 +192,8 @@ const DiscountCodesManagement: React.FC = () => {
         body: JSON.stringify(request),
       });
 
-      // console.log('Response status:', response.status);
       if (!response.ok) {
         const errorText = await response.text();
-        // console.log('Error response:', errorText);
         if (response.status === 401) {
           localStorage.removeItem('accessToken');
           navigate('/login');
@@ -233,7 +222,6 @@ const DiscountCodesManagement: React.FC = () => {
       });
       alert('تم إضافة كود الخصم بنجاح!');
     } catch (error) {
-      // console.error('Error adding discount code:', error);
       alert(error instanceof Error ? error.message : 'حدث خطأ أثناء إضافة كود الخصم');
     } finally {
       setIsLoading(false);
@@ -272,7 +260,6 @@ const DiscountCodesManagement: React.FC = () => {
         isActive: newDiscountCode.isActive,
       };
 
-      // console.log('Updating discount code:', { id: editingDiscountCode.id, ...request });
       const response = await fetch(`${apiUrl}/api/discount-codes/${editingDiscountCode.id}`, {
         method: 'PUT',
         headers: {
@@ -282,10 +269,8 @@ const DiscountCodesManagement: React.FC = () => {
         body: JSON.stringify(request),
       });
 
-      // console.log('Response status:', response.status);
       if (!response.ok) {
         const errorText = await response.text();
-        // console.log('Error response:', errorText);
         if (response.status === 401) {
           localStorage.removeItem('accessToken');
           navigate('/login');
@@ -317,7 +302,6 @@ const DiscountCodesManagement: React.FC = () => {
       });
       alert('تم تحديث كود الخصم بنجاح!');
     } catch (error) {
-      // console.error('Error updating discount code:', error);
       alert(error instanceof Error ? error.message : 'حدث خطأ أثناء تحديث كود الخصم');
     } finally {
       setIsLoading(false);
@@ -339,7 +323,6 @@ const DiscountCodesManagement: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // console.log('Deleting discount code:', id);
       const response = await fetch(`${apiUrl}/api/discount-codes/${id}`, {
         method: 'DELETE',
         headers: {
@@ -348,10 +331,8 @@ const DiscountCodesManagement: React.FC = () => {
         },
       });
 
-      // console.log('Response status:', response.status);
       if (!response.ok) {
         const errorText = await response.text();
-        // console.log('Error response:', errorText);
         if (response.status === 401) {
           localStorage.removeItem('accessToken');
           navigate('/login');
@@ -368,7 +349,6 @@ const DiscountCodesManagement: React.FC = () => {
       await fetchDiscountCodes(currentPage);
       alert('تم حذف كود الخصم بنجاح!');
     } catch (error) {
-      // console.error('Error deleting discount code:', error);
       alert(error instanceof Error ? error.message : 'حدث خطأ أثناء حذف كود الخصم');
     } finally {
       setIsLoading(false);
@@ -392,22 +372,29 @@ const DiscountCodesManagement: React.FC = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">إدارة أكواد الخصم</h2>
-        <div className="text-sm text-gray-600">
-          إجمالي أكواد الخصم: {totalItems}
+    <div>
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-3 rounded-xl">
+            <Tag className="h-6 w-6 text-purple-600" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-purple-900">إدارة أكواد الخصم</h2>
+            <p className="text-sm text-purple-600">إجمالي الأكواد: {totalItems}</p>
+          </div>
         </div>
+        <Sparkles className="h-8 w-8 text-amber-500 animate-pulse" />
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-center">
-          <AlertCircle className="h-5 w-5 text-red-600 ml-2" />
-          <span className="text-red-800">{error}</span>
+        <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-4 mb-6 flex items-center shadow-lg">
+          <AlertCircle className="h-5 w-5 text-red-600 ml-2 flex-shrink-0" />
+          <span className="text-red-800 font-medium flex-1">{error}</span>
           <button
             onClick={() => fetchDiscountCodes(currentPage)}
-            className="mr-auto bg-red-100 hover:bg-red-200 px-3 py-1 rounded text-sm text-red-800 flex items-center"
+            className="mr-auto bg-red-100 hover:bg-red-200 px-4 py-2 rounded-xl text-sm text-red-800 flex items-center font-semibold transition-all"
             disabled={isLoading}
           >
             <RefreshCw className="h-4 w-4 ml-1" />
@@ -417,38 +404,52 @@ const DiscountCodesManagement: React.FC = () => {
       )}
 
       {/* Add/Edit Discount Code Form */}
-      <div className="mb-8 p-6 bg-white rounded-2xl shadow-lg border border-gray-200">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">
-          {editingDiscountCode ? 'تعديل كود الخصم' : 'إضافة كود خصم جديد'}
-        </h3>
+      <div className="mb-8 p-6 bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-xl border-2 border-purple-100">
+        <div className="flex items-center gap-2 mb-6">
+          <div className="bg-purple-100 p-2 rounded-lg">
+            {editingDiscountCode ? <Edit className="h-5 w-5 text-purple-600" /> : <Plus className="h-5 w-5 text-purple-600" />}
+          </div>
+          <h3 className="text-xl font-bold text-purple-900">
+            {editingDiscountCode ? 'تعديل كود الخصم' : 'إضافة كود خصم جديد'}
+          </h3>
+        </div>
+
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">كود الخصم <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-purple-900 mb-2">
+              <Tag className="h-4 w-4 inline ml-1" />
+              كود الخصم <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
               value={newDiscountCode.code}
               onChange={(e) => setNewDiscountCode((prev) => ({ ...prev, code: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
+              className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-right transition-all"
               dir="rtl"
               disabled={isLoading}
               placeholder="مثال: SUMMER25"
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">نوع الخصم <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-purple-900 mb-2">
+              نوع الخصم <span className="text-red-500">*</span>
+            </label>
             <select
               value={newDiscountCode.type}
               onChange={(e) => setNewDiscountCode((prev) => ({ ...prev, type: e.target.value as 'Percentage' | 'Fixed' }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
+              className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-right transition-all"
               dir="rtl"
               disabled={isLoading}
             >
-              <option value="Percentage">مئوي</option>
-              <option value="Fixed">ثابت</option>
+              <option value="Percentage">مئوي (%)</option>
+              <option value="Fixed">ثابت (جنيه)</option>
             </select>
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-purple-900 mb-2">
+              <DollarSign className="h-4 w-4 inline ml-1" />
               {newDiscountCode.type === 'Percentage' ? 'نسبة الخصم (%) *' : 'القيمة الثابتة (جنيه) *'}
             </label>
             <input
@@ -460,85 +461,105 @@ const DiscountCodesManagement: React.FC = () => {
                   [newDiscountCode.type === 'Percentage' ? 'percentageValue' : 'fixedValue']: e.target.value,
                 }))
               }
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
+              className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-right transition-all"
               dir="rtl"
               disabled={isLoading}
               placeholder={newDiscountCode.type === 'Percentage' ? 'مثال: 25' : 'مثال: 50'}
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">الحد الأدنى للطلب (جنيه)</label>
+            <label className="block text-sm font-semibold text-purple-900 mb-2">
+              الحد الأدنى للطلب (جنيه)
+            </label>
             <input
               type="number"
               value={newDiscountCode.minOrderAmount}
               onChange={(e) => setNewDiscountCode((prev) => ({ ...prev, minOrderAmount: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
+              className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-right transition-all"
               dir="rtl"
               disabled={isLoading}
               placeholder="مثال: 100"
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">الحد الأقصى للخصم (جنيه)</label>
+            <label className="block text-sm font-semibold text-purple-900 mb-2">
+              الحد الأقصى للخصم (جنيه)
+            </label>
             <input
               type="number"
               value={newDiscountCode.maxDiscountAmount}
               onChange={(e) => setNewDiscountCode((prev) => ({ ...prev, maxDiscountAmount: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
+              className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-right transition-all"
               dir="rtl"
               disabled={isLoading}
               placeholder="مثال: 200"
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">حد الاستخدام</label>
+            <label className="block text-sm font-semibold text-purple-900 mb-2">
+              <TrendingUp className="h-4 w-4 inline ml-1" />
+              حد الاستخدام
+            </label>
             <input
               type="number"
               value={newDiscountCode.usageLimit}
               onChange={(e) => setNewDiscountCode((prev) => ({ ...prev, usageLimit: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
+              className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-right transition-all"
               dir="rtl"
               disabled={isLoading}
               placeholder="مثال: 100"
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">تاريخ البدء <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-purple-900 mb-2">
+              <Calendar className="h-4 w-4 inline ml-1" />
+              تاريخ البدء <span className="text-red-500">*</span>
+            </label>
             <input
               type="date"
               value={newDiscountCode.startDate}
               onChange={(e) => setNewDiscountCode((prev) => ({ ...prev, startDate: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+              className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
               disabled={isLoading}
             />
           </div>
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">تاريخ الانتهاء <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-purple-900 mb-2">
+              <Calendar className="h-4 w-4 inline ml-1" />
+              تاريخ الانتهاء <span className="text-red-500">*</span>
+            </label>
             <input
               type="date"
               value={newDiscountCode.endDate}
               onChange={(e) => setNewDiscountCode((prev) => ({ ...prev, endDate: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+              className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
               disabled={isLoading}
             />
           </div>
-          <div className="flex items-center">
-            <label className="flex items-center space-x-reverse space-x-2">
+
+          <div className="flex items-center md:col-span-2">
+            <label className="flex items-center space-x-reverse space-x-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={newDiscountCode.isActive}
                 onChange={(e) => setNewDiscountCode((prev) => ({ ...prev, isActive: e.target.checked }))}
-                className="text-pink-600 rounded focus:ring-pink-500"
+                className="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 border-2 border-purple-300"
                 disabled={isLoading}
               />
-              <span className="text-sm font-medium text-gray-700">مفعّل</span>
+              <span className="text-sm font-semibold text-purple-900">مفعّل ✓</span>
             </label>
           </div>
         </div>
+
         <div className="flex space-x-reverse space-x-4 mt-6">
           <button
             onClick={editingDiscountCode ? handleUpdateDiscountCode : handleAddDiscountCode}
-            className="bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-8 py-3 rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -547,7 +568,10 @@ const DiscountCodesManagement: React.FC = () => {
                 جاري المعالجة...
               </div>
             ) : editingDiscountCode ? (
-              'تحديث كود الخصم'
+              <div className="flex items-center">
+                <Check className="h-4 w-4 ml-2" />
+                تحديث كود الخصم
+              </div>
             ) : (
               <div className="flex items-center">
                 <Plus className="h-4 w-4 ml-2" />
@@ -572,9 +596,10 @@ const DiscountCodesManagement: React.FC = () => {
                   isActive: true,
                 });
               }}
-              className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-gray-300 text-gray-700 px-8 py-3 rounded-xl hover:bg-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
               disabled={isLoading}
             >
+              <X className="h-4 w-4 inline ml-2" />
               إلغاء
             </button>
           )}
@@ -584,15 +609,17 @@ const DiscountCodesManagement: React.FC = () => {
       {/* Discount Codes List */}
       {isLoading && discountCodes.length === 0 ? (
         <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
-          <span className="mr-3 text-gray-600">جاري تحميل أكواد الخصم...</span>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+          <span className="mr-3 text-purple-600 font-medium">جاري تحميل أكواد الخصم...</span>
         </div>
       ) : discountCodes.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
-          <p className="text-gray-600">لا توجد أكواد خصم متاحة</p>
+        <div className="text-center py-16 bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-xl border-2 border-purple-100">
+          <div className="text-7xl mb-4">🎫</div>
+          <p className="text-xl font-bold text-purple-900 mb-2">لا توجد أكواد خصم</p>
+          <p className="text-gray-600 mb-6">ابدأ بإضافة أول كود خصم لعملائك</p>
           <button
             onClick={() => fetchDiscountCodes(currentPage)}
-            className="mt-4 bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors flex items-center mx-auto"
+            className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all flex items-center mx-auto font-semibold shadow-lg"
             disabled={isLoading}
           >
             <RefreshCw className="h-4 w-4 ml-2" />
@@ -600,38 +627,58 @@ const DiscountCodesManagement: React.FC = () => {
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-          <h4 className="text-lg font-semibold text-gray-800 mb-4">أكواد الخصم المتاحة</h4>
+        <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-xl p-6 border-2 border-purple-100">
+          <div className="flex items-center gap-2 mb-6">
+            <Tag className="h-5 w-5 text-purple-600" />
+            <h4 className="text-lg font-bold text-purple-900">أكواد الخصم المتاحة</h4>
+          </div>
+
           <div className="space-y-4">
             {discountCodes.map((discountCode) => (
               <div
                 key={discountCode.id}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors"
+                className="flex flex-col md:flex-row md:items-center justify-between p-5 border-2 border-purple-100 rounded-2xl bg-white hover:bg-purple-50 transition-all shadow-md hover:shadow-lg"
               >
-                <div>
-                  <p className="font-semibold text-gray-800">{discountCode.code}</p>
-                  <p className="text-sm text-gray-600">
-                    النوع: {discountCode.type === 'Percentage' ? 'مئوي' : 'ثابت'} |{' '}
-                    {discountCode.type === 'Percentage'
-                      ? `نسبة الخصم: ${discountCode.percentageValue}%`
-                      : `القيمة: ${discountCode.fixedValue} جنيه`}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    الحد الأدنى للطلب: {discountCode.minOrderAmount ? `${discountCode.minOrderAmount} جنيه` : 'غير محدد'} |{' '}
-                    الحد الأقصى للخصم: {discountCode.maxDiscountAmount ? `${discountCode.maxDiscountAmount} جنيه` : 'غير محدد'}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    حد الاستخدام: {discountCode.usageLimit ? discountCode.usageLimit : 'غير محدود'} | الاستخدامات: {discountCode.usageCount}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    من: {formatDate(discountCode.startDate)} إلى: {formatDate(discountCode.endDate)}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    الحالة: <span className={discountCode.isActive ? 'text-green-600' : 'text-red-600'}>{discountCode.isActive ? 'مفعّل' : 'غير مفعّل'}</span>
-                  </p>
-                  <p className="text-sm text-gray-600">تاريخ الإنشاء: {formatDate(discountCode.createdAt)}</p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="bg-gradient-to-br from-purple-100 to-pink-100 px-4 py-2 rounded-xl">
+                      <p className="font-bold text-purple-900 text-lg">{discountCode.code}</p>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                      discountCode.isActive 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-red-100 text-red-700'
+                    }`}>
+                      {discountCode.isActive ? '✓ مفعّل' : '✗ غير مفعّل'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-700">
+                    <p className="flex items-center gap-1">
+                      <DollarSign className="h-4 w-4 text-purple-500" />
+                      <span className="font-medium">النوع:</span> {discountCode.type === 'Percentage' ? 'مئوي' : 'ثابت'} |{' '}
+                      {discountCode.type === 'Percentage'
+                        ? `${discountCode.percentageValue}%`
+                        : `${discountCode.fixedValue} جنيه`}
+                    </p>
+                    <p className="flex items-center gap-1">
+                      <TrendingUp className="h-4 w-4 text-purple-500" />
+                      <span className="font-medium">الاستخدامات:</span> {discountCode.usageCount} / {discountCode.usageLimit || '∞'}
+                    </p>
+                    <p className="flex items-center gap-1">
+                      <span className="font-medium">الحد الأدنى:</span> {discountCode.minOrderAmount ? `${discountCode.minOrderAmount} جنيه` : 'غير محدد'}
+                    </p>
+                    <p className="flex items-center gap-1">
+                      <span className="font-medium">الحد الأقصى:</span> {discountCode.maxDiscountAmount ? `${discountCode.maxDiscountAmount} جنيه` : 'غير محدد'}
+                    </p>
+                    <p className="flex items-center gap-1 md:col-span-2">
+                      <Calendar className="h-4 w-4 text-purple-500" />
+                      <span className="font-medium">الفترة:</span> {formatDate(discountCode.startDate)} → {formatDate(discountCode.endDate)}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-reverse space-x-2">
+
+                <div className="flex items-center space-x-reverse space-x-2 mt-4 md:mt-0 md:mr-4">
                   <button
                     onClick={() => {
                       setEditingDiscountCode(discountCode);
@@ -647,20 +694,21 @@ const DiscountCodesManagement: React.FC = () => {
                         endDate: discountCode.endDate.split('T')[0],
                         isActive: discountCode.isActive,
                       });
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="text-blue-600 hover:text-blue-700 p-2 disabled:opacity-50 hover:bg-blue-50 rounded transition-colors"
+                    className="text-blue-600 hover:text-blue-700 p-3 disabled:opacity-50 hover:bg-blue-50 rounded-xl transition-all"
                     title="تعديل كود الخصم"
                     disabled={isLoading}
                   >
-                    <Edit size={18} />
+                    <Edit size={20} />
                   </button>
                   <button
                     onClick={() => handleDeleteDiscountCode(discountCode.id)}
-                    className="text-red-600 hover:text-red-700 p-2 disabled:opacity-50 hover:bg-red-50 rounded transition-colors"
+                    className="text-red-600 hover:text-red-700 p-3 disabled:opacity-50 hover:bg-red-50 rounded-xl transition-all"
                     title="حذف كود الخصم"
                     disabled={isLoading}
                   >
-                    <Trash2 size={18} />
+                    <Trash2 size={20} />
                   </button>
                 </div>
               </div>
@@ -673,7 +721,7 @@ const DiscountCodesManagement: React.FC = () => {
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1 || isLoading}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-5 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl hover:from-purple-700 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all shadow-md"
               >
                 السابق
               </button>
@@ -694,10 +742,10 @@ const DiscountCodesManagement: React.FC = () => {
                       key={pageNum}
                       onClick={() => handlePageChange(pageNum)}
                       disabled={isLoading}
-                      className={`px-3 py-2 rounded-lg text-sm ${
+                      className={`px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
                         currentPage === pageNum
-                          ? 'bg-pink-600 text-white'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                          ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg'
+                          : 'bg-white text-purple-700 border-2 border-purple-200 hover:bg-purple-50'
                       } disabled:opacity-50`}
                     >
                       {pageNum}
@@ -708,13 +756,13 @@ const DiscountCodesManagement: React.FC = () => {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages || isLoading}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-5 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl hover:from-purple-700 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all shadow-md"
               >
                 التالي
               </button>
             </div>
           )}
-          <div className="text-center text-sm text-gray-500 mt-4">
+          <div className="text-center text-sm text-purple-600 font-medium mt-4">
             عرض {((currentPage - 1) * pageSize) + 1} إلى {Math.min(currentPage * pageSize, totalItems)} من {totalItems} كود خصم
           </div>
         </div>

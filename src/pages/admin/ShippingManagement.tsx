@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Edit, Trash2, Plus, AlertCircle, RefreshCw } from 'lucide-react';
+import { 
+  Edit, 
+  Trash2, 
+  Plus, 
+  AlertCircle, 
+  RefreshCw, 
+  Sparkles, 
+  Truck, 
+  MapPin, 
+  DollarSign, 
+  Clock, 
+  CheckCircle, 
+  XCircle 
+} from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 // Interface for ShippingFee based on backend DTOs
@@ -9,7 +22,7 @@ interface ShippingFee {
   governorate: string;
   fee: number;
   deliveryTime: string;
-  status: 0 | 1; // Updated to number
+  status: 0 | 1;
   createdAt: string;
 }
 
@@ -29,7 +42,7 @@ const ShippingManagement: React.FC = () => {
     governorate: '',
     fee: '',
     deliveryTime: '',
-    status: 0 as 0 | 1, // Default to Active
+    status: 0 as 0 | 1,
   });
   const [editingShippingFee, setEditingShippingFee] = useState<ShippingFee | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,16 +54,13 @@ const ShippingManagement: React.FC = () => {
 
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
-  // Check authentication and role on mount
   useEffect(() => {
     if (!isAuthenticated) {
-      // console.log('User not authenticated, redirecting to login');
       navigate('/login');
       return;
     }
 
     if (userRole !== 'admin') {
-      // console.log('User is not admin, redirecting to home');
       navigate('/');
       return;
     }
@@ -58,20 +68,17 @@ const ShippingManagement: React.FC = () => {
     fetchShippingFees(currentPage);
   }, [isAuthenticated, userRole, navigate, currentPage]);
 
-  // Fetch shipping fees from backend
   const fetchShippingFees = async (page: number = 1) => {
     setIsLoading(true);
     setError(null);
 
     try {
       const token = localStorage.getItem('accessToken');
-      // console.log('Retrieved token:', token ? 'Token found' : 'No token found');
       if (!token) {
         navigate('/login');
         throw new Error('لا يوجد رمز مصادقة. يرجى تسجيل الدخول مرة أخرى.');
       }
 
-      // console.log('Fetching shipping fees from:', `${apiUrl}/api/shipping-fees?pageNumber=${page}&pageSize=${pageSize}`);
       const response = await fetch(
         `${apiUrl}/api/shipping-fees?pageNumber=${page}&pageSize=${pageSize}`,
         {
@@ -82,9 +89,7 @@ const ShippingManagement: React.FC = () => {
         }
       );
 
-      // console.log('Response status:', response.status);
       const responseText = await response.text();
-      // console.log('Raw response:', responseText);
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -99,20 +104,17 @@ const ShippingManagement: React.FC = () => {
       }
 
       const data: PaginatedShippingFeesResponse = JSON.parse(responseText);
-      // console.log('Parsed data:', data);
       setShippingFees(data.items);
       setTotalPages(data.totalPages);
       setTotalItems(data.totalItems);
       setCurrentPage(data.pageNumber);
     } catch (err) {
-      // console.error('Error fetching shipping fees:', err);
       setError(err instanceof Error ? err.message : 'فشل في جلب رسوم الشحن');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Validate shipping fee inputs
   const validateShippingFee = () => {
     if (!newShippingFee.governorate) return 'اسم المحافظة مطلوب';
     if (!newShippingFee.fee) return 'رسوم التوصيل مطلوبة';
@@ -123,7 +125,6 @@ const ShippingManagement: React.FC = () => {
     return null;
   };
 
-  // Add shipping fee
   const handleAddShippingFee = async () => {
     if (isLoading) return;
 
@@ -146,10 +147,9 @@ const ShippingManagement: React.FC = () => {
         governorate: newShippingFee.governorate,
         fee: parseFloat(newShippingFee.fee),
         deliveryTime: newShippingFee.deliveryTime,
-        status: newShippingFee.status, // Send as number (0 or 1)
+        status: newShippingFee.status,
       };
 
-      // console.log('Creating shipping fee:', request);
       const response = await fetch(`${apiUrl}/api/shipping-fees`, {
         method: 'POST',
         headers: {
@@ -159,10 +159,8 @@ const ShippingManagement: React.FC = () => {
         body: JSON.stringify(request),
       });
 
-      // console.log('Response status:', response.status);
       if (!response.ok) {
         const errorText = await response.text();
-        // console.log('Error response:', errorText);
         if (response.status === 401) {
           localStorage.removeItem('accessToken');
           navigate('/login');
@@ -181,18 +179,16 @@ const ShippingManagement: React.FC = () => {
         governorate: '',
         fee: '',
         deliveryTime: '',
-        status: 0, // Reset to Active
+        status: 0,
       });
       alert('تم إضافة رسوم الشحن بنجاح!');
     } catch (error) {
-      // console.error('Error adding shipping fee:', error);
       alert(error instanceof Error ? error.message : 'حدث خطأ أثناء إضافة رسوم الشحن');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Update shipping fee
   const handleUpdateShippingFee = async () => {
     if (isLoading || !editingShippingFee) return;
 
@@ -215,10 +211,9 @@ const ShippingManagement: React.FC = () => {
         governorate: newShippingFee.governorate,
         fee: parseFloat(newShippingFee.fee),
         deliveryTime: newShippingFee.deliveryTime,
-        status: newShippingFee.status, // Send as number (0 or 1)
+        status: newShippingFee.status,
       };
 
-      // console.log('Updating shipping fee:', { id: editingShippingFee.id, ...request });
       const response = await fetch(`${apiUrl}/api/shipping-fees/${editingShippingFee.id}`, {
         method: 'PUT',
         headers: {
@@ -228,10 +223,8 @@ const ShippingManagement: React.FC = () => {
         body: JSON.stringify(request),
       });
 
-      // console.log('Response status:', response.status);
       if (!response.ok) {
         const errorText = await response.text();
-        // console.log('Error response:', errorText);
         if (response.status === 401) {
           localStorage.removeItem('accessToken');
           navigate('/login');
@@ -253,18 +246,16 @@ const ShippingManagement: React.FC = () => {
         governorate: '',
         fee: '',
         deliveryTime: '',
-        status: 0, // Reset to Active
+        status: 0,
       });
       alert('تم تحديث رسوم الشحن بنجاح!');
     } catch (error) {
-      // console.error('Error updating shipping fee:', error);
       alert(error instanceof Error ? error.message : 'حدث خطأ أثناء تحديث رسوم الشحن');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Delete shipping fee
   const handleDeleteShippingFee = async (id: string) => {
     if (!confirm('هل أنت متأكد من حذف رسوم الشحن لهذه المحافظة؟')) {
       return;
@@ -279,7 +270,6 @@ const ShippingManagement: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // console.log('Deleting shipping fee:', id);
       const response = await fetch(`${apiUrl}/api/shipping-fees/${id}`, {
         method: 'DELETE',
         headers: {
@@ -288,10 +278,8 @@ const ShippingManagement: React.FC = () => {
         },
       });
 
-      // console.log('Response status:', response.status);
       if (!response.ok) {
         const errorText = await response.text();
-        // console.log('Error response:', errorText);
         if (response.status === 401) {
           localStorage.removeItem('accessToken');
           navigate('/login');
@@ -308,14 +296,12 @@ const ShippingManagement: React.FC = () => {
       await fetchShippingFees(currentPage);
       alert('تم حذف رسوم الشحن بنجاح!');
     } catch (error) {
-      // console.error('Error deleting shipping fee:', error);
       alert(error instanceof Error ? error.message : 'حدث خطأ أثناء حذف رسوم الشحن');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Format date for display
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ar-EG', {
       year: 'numeric',
@@ -324,30 +310,45 @@ const ShippingManagement: React.FC = () => {
     });
   };
 
-  // Handle pagination
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages && page !== currentPage) {
       setCurrentPage(page);
     }
   };
 
+  if (isLoading && shippingFees.length === 0) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <span className="mr-3 text-purple-600 font-medium">جاري تحميل رسوم الشحن...</span>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">إدارة رسوم الشحن</h2>
-        <div className="text-sm text-gray-600">
-          إجمالي المحافظات: {totalItems}
+    <div>
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-3 rounded-xl">
+            <Truck className="h-6 w-6 text-purple-600" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-purple-900">إدارة رسوم الشحن</h2>
+            <p className="text-sm text-purple-600">إجمالي المحافظات: {totalItems}</p>
+          </div>
         </div>
+        <Sparkles className="h-8 w-8 text-amber-500 animate-pulse" />
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 flex items-center">
-          <AlertCircle className="h-5 w-5 text-red-600 ml-2" />
-          <span className="text-red-800">{error}</span>
+        <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-4 mb-6 flex items-center shadow-lg">
+          <AlertCircle className="h-5 w-5 text-red-600 ml-2 flex-shrink-0" />
+          <span className="text-red-800 font-medium flex-1">{error}</span>
           <button
             onClick={() => fetchShippingFees(currentPage)}
-            className="mr-auto bg-red-100 hover:bg-red-200 px-3 py-1 rounded text-sm text-red-800 flex items-center"
+            className="mr-auto bg-red-100 hover:bg-red-200 px-4 py-2 rounded-xl text-sm text-red-800 flex items-center font-semibold transition-all"
             disabled={isLoading}
           >
             <RefreshCw className="h-4 w-4 ml-1" />
@@ -356,60 +357,73 @@ const ShippingManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Add/Edit Shipping Fee Form */}
-      <div className="mb-8 p-6 bg-white rounded-2xl shadow-lg border border-gray-200">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">
-          {editingShippingFee ? 'تعديل رسوم الشحن' : 'إضافة رسوم شحن جديدة'}
+      {/* Add/Edit Form */}
+      <div className="mb-8 p-6 bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-xl border-2 border-purple-100">
+        <h3 className="text-xl font-bold text-purple-900 mb-6 flex items-center gap-2">
+          {editingShippingFee ? (
+            <>
+              <Edit className="h-5 w-5" />
+              تعديل رسوم الشحن
+            </>
+          ) : (
+            <>
+              <Plus className="h-5 w-5" />
+              إضافة رسوم شحن جديدة
+            </>
+          )}
         </h3>
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-purple-900 mb-2 flex items-center gap-1">
+              <MapPin className="h-4 w-4" />
               اسم المحافظة <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={newShippingFee.governorate}
               onChange={(e) => setNewShippingFee((prev) => ({ ...prev, governorate: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
+              className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right"
               dir="rtl"
               disabled={isLoading}
               placeholder="مثال: القاهرة"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-purple-900 mb-2 flex items-center gap-1">
+              <DollarSign className="h-4 w-4" />
               رسوم التوصيل (جنيه) <span className="text-red-500">*</span>
             </label>
             <input
               type="number"
               value={newShippingFee.fee}
               onChange={(e) => setNewShippingFee((prev) => ({ ...prev, fee: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
+              className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right"
               dir="rtl"
               disabled={isLoading}
               placeholder="مثال: 30"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-purple-900 mb-2 flex items-center gap-1">
+              <Clock className="h-4 w-4" />
               مدة التوصيل <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={newShippingFee.deliveryTime}
               onChange={(e) => setNewShippingFee((prev) => ({ ...prev, deliveryTime: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
+              className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right"
               dir="rtl"
               disabled={isLoading}
               placeholder="مثال: 1-2 أيام"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">الحالة</label>
+            <label className="block text-sm font-bold text-purple-900 mb-2">الحالة</label>
             <select
               value={newShippingFee.status}
               onChange={(e) => setNewShippingFee((prev) => ({ ...prev, status: parseInt(e.target.value) as 0 | 1 }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
+              className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right font-medium"
               dir="rtl"
               disabled={isLoading}
             >
@@ -418,24 +432,27 @@ const ShippingManagement: React.FC = () => {
             </select>
           </div>
         </div>
-        <div className="flex space-x-reverse space-x-4 mt-6">
+        <div className="flex gap-4 mt-6">
           <button
             onClick={editingShippingFee ? handleUpdateShippingFee : handleAddShippingFee}
-            className="bg-pink-600 text-white px-6 py-2 rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-md flex items-center gap-2"
             disabled={isLoading}
           >
             {isLoading ? (
-              <div className="flex items-center">
-                <RefreshCw className="animate-spin h-4 w-4 ml-2" />
+              <>
+                <RefreshCw className="animate-spin h-4 w-4" />
                 جاري المعالجة...
-              </div>
+              </>
             ) : editingShippingFee ? (
-              'تحديث رسوم الشحن'
+              <>
+                <Edit className="h-4 w-4" />
+                تحديث رسوم الشحن
+              </>
             ) : (
-              <div className="flex items-center">
-                <Plus className="h-4 w-4 ml-2" />
+              <>
+                <Plus className="h-4 w-4" />
                 إضافة رسوم الشحن
-              </div>
+              </>
             )}
           </button>
           {(editingShippingFee || newShippingFee.governorate || newShippingFee.fee || newShippingFee.deliveryTime) && (
@@ -446,10 +463,10 @@ const ShippingManagement: React.FC = () => {
                   governorate: '',
                   fee: '',
                   deliveryTime: '',
-                  status: 0, // Reset to Active
+                  status: 0,
                 });
               }}
-              className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-gradient-to-r from-gray-400 to-gray-500 text-white px-6 py-3 rounded-xl hover:from-gray-500 hover:to-gray-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-md"
               disabled={isLoading}
             >
               إلغاء
@@ -459,45 +476,67 @@ const ShippingManagement: React.FC = () => {
       </div>
 
       {/* Shipping Fees List */}
-      {isLoading && shippingFees.length === 0 ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
-          <span className="mr-3 text-gray-600">جاري تحميل رسوم الشحن...</span>
-        </div>
-      ) : shippingFees.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-200">
-          <p className="text-gray-600">لا توجد رسوم شحن متاحة</p>
+      {shippingFees.length === 0 ? (
+        <div className="text-center py-16 bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-xl border-2 border-purple-100">
+          <div className="text-7xl mb-4">🚚</div>
+          <h3 className="text-xl font-bold text-purple-900 mb-2">لا توجد رسوم شحن</h3>
+          <p className="text-gray-600 mb-6">ابدأ بإضافة رسوم شحن للمحافظات</p>
           <button
             onClick={() => fetchShippingFees(currentPage)}
-            className="mt-4 bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors flex items-center mx-auto"
+            className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all flex items-center mx-auto font-semibold shadow-lg gap-2"
             disabled={isLoading}
           >
-            <RefreshCw className="h-4 w-4 ml-2" />
+            <RefreshCw className="h-4 w-4" />
             إعادة التحميل
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
-          <h4 className="text-lg font-semibold text-gray-800 mb-4">رسوم الشحن المتاحة</h4>
-          <div className="space-y-4">
+        <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-purple-100">
+          <h4 className="text-lg font-bold text-purple-900 mb-4 flex items-center gap-2">
+            <Truck className="h-5 w-5" />
+            رسوم الشحن المتاحة ({shippingFees.length})
+          </h4>
+          <div className="space-y-3">
             {shippingFees.map((shippingFee) => (
               <div
                 key={shippingFee.id}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-between p-4 border-2 border-purple-100 rounded-xl bg-gradient-to-r from-white to-purple-50 hover:shadow-md transition-all"
               >
-                <div>
-                  <p className="font-semibold text-gray-800">{shippingFee.governorate}</p>
-                  <p className="text-sm text-gray-600">
-                    رسوم التوصيل: {shippingFee.fee.toFixed(2)} جنيه | مدة التوصيل: {shippingFee.deliveryTime}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    الحالة: <span className={shippingFee.status === 0 ? 'text-green-600' : 'text-red-600'}>
-                      {shippingFee.status === 0 ? 'مفعّل' : 'غير مفعّل'}
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MapPin className="h-5 w-5 text-purple-600" />
+                    <p className="font-bold text-purple-900 text-lg">{shippingFee.governorate}</p>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <span className="flex items-center gap-1">
+                      <DollarSign className="h-4 w-4 text-green-600" />
+                      <span className="font-semibold">{shippingFee.fee.toFixed(2)} جنيه</span>
                     </span>
-                  </p>
-                  <p className="text-sm text-gray-600">تاريخ الإنشاء: {formatDate(shippingFee.createdAt)}</p>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-4 w-4 text-blue-600" />
+                      {shippingFee.deliveryTime}
+                    </span>
+                    <span className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
+                      shippingFee.status === 0 
+                        ? 'bg-green-100 text-green-800 border border-green-200' 
+                        : 'bg-red-100 text-red-800 border border-red-200'
+                    }`}>
+                      {shippingFee.status === 0 ? (
+                        <>
+                          <CheckCircle className="h-3 w-3" />
+                          مفعّل
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="h-3 w-3" />
+                          غير مفعّل
+                        </>
+                      )}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">تاريخ الإنشاء: {formatDate(shippingFee.createdAt)}</p>
                 </div>
-                <div className="flex items-center space-x-reverse space-x-2">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => {
                       setEditingShippingFee(shippingFee);
@@ -505,10 +544,10 @@ const ShippingManagement: React.FC = () => {
                         governorate: shippingFee.governorate,
                         fee: shippingFee.fee.toString(),
                         deliveryTime: shippingFee.deliveryTime,
-                        status: shippingFee.status, // Use number (0 or 1)
+                        status: shippingFee.status,
                       });
                     }}
-                    className="text-blue-600 hover:text-blue-700 p-2 disabled:opacity-50 hover:bg-blue-50 rounded transition-colors"
+                    className="text-blue-600 hover:text-blue-700 p-2 disabled:opacity-50 hover:bg-blue-50 rounded-lg transition-all"
                     title="تعديل رسوم الشحن"
                     disabled={isLoading}
                   >
@@ -516,7 +555,7 @@ const ShippingManagement: React.FC = () => {
                   </button>
                   <button
                     onClick={() => handleDeleteShippingFee(shippingFee.id)}
-                    className="text-red-600 hover:text-red-700 p-2 disabled:opacity-50 hover:bg-red-50 rounded transition-colors"
+                    className="text-red-600 hover:text-red-700 p-2 disabled:opacity-50 hover:bg-red-50 rounded-lg transition-all"
                     title="حذف رسوم الشحن"
                     disabled={isLoading}
                   >
@@ -529,54 +568,56 @@ const ShippingManagement: React.FC = () => {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-center items-center mt-8 space-x-reverse space-x-2">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1 || isLoading}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                السابق
-              </button>
-              <div className="flex items-center space-x-reverse space-x-1">
-                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      disabled={isLoading}
-                      className={`px-3 py-2 rounded-lg text-sm ${
-                        currentPage === pageNum
-                          ? 'bg-pink-600 text-white'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      } disabled:opacity-50`}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
+            <div className="mt-8">
+              <div className="flex justify-center items-center space-x-4 space-x-reverse">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1 || isLoading}
+                  className="px-5 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl hover:from-purple-700 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all shadow-md"
+                >
+                  السابق
+                </button>
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        disabled={isLoading}
+                        className={`px-4 py-3 rounded-xl text-sm font-bold transition-all shadow-md ${
+                          currentPage === pageNum
+                            ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
+                            : 'bg-white border-2 border-purple-200 hover:border-purple-400 text-purple-900'
+                        } disabled:opacity-50`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages || isLoading}
+                  className="px-5 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl hover:from-purple-700 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all shadow-md"
+                >
+                  التالي
+                </button>
               </div>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages || isLoading}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                التالي
-              </button>
+              <div className="text-center text-sm text-gray-600 mt-4 font-medium">
+                عرض {((currentPage - 1) * pageSize) + 1} إلى {Math.min(currentPage * pageSize, totalItems)} من {totalItems} محافظة
+              </div>
             </div>
           )}
-          <div className="text-center text-sm text-gray-500 mt-4">
-            عرض {((currentPage - 1) * pageSize) + 1} إلى {Math.min(currentPage * pageSize, totalItems)} من {totalItems} محافظة
-          </div>
         </div>
       )}
     </div>
