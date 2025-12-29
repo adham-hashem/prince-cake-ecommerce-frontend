@@ -77,16 +77,45 @@ const HomePage: React.FC = () => {
         throw new Error('Invalid response format: items is not an array');
       }
 
+      // Map and normalize products with safe defaults
       const mappedProducts: Product[] = data.items.map((item) => ({
-        ...item,
+        id: item.id,
+        name: item.name || '',
+        code: item.code || '',
+        price: item.price || 0,
+        originalPrice: item.originalPrice || undefined,
+        description: item.description || '',
+        createdAt: item.createdAt || new Date().toISOString(),
+        
+        // Safe array handling - ensure they're always arrays
+        images: Array.isArray(item.images) ? item.images : [],
+        sizes: Array.isArray(item.sizes) ? item.sizes : [],
+        colors: Array.isArray(item.colors) ? item.colors : [],
+        
+        // Boolean fields with safe defaults
+        isHidden: item.isHidden !== undefined ? item.isHidden : false,
+        isAvailable: item.isAvailable !== undefined ? item.isAvailable : true,
+        isInstant: item.isInstant !== undefined ? item.isInstant : false,
+        isFeatured: item.isFeatured !== undefined ? item.isFeatured : false,
+        
+        // Computed fields
         inStock: item.isAvailable !== undefined ? item.isAvailable : true,
         isOffer: (item.originalPrice !== undefined && 
                   item.originalPrice > item.price) ? true : false,
-        originalPrice: item.originalPrice !== undefined ? item.originalPrice : undefined,
+        
+        // Additional fields
+        rating: item.rating !== undefined ? item.rating : 0,
+        salesCount: item.salesCount !== undefined ? item.salesCount : 0,
+        
+        // Optional enum fields
+        category: item.category || undefined,
+        type: item.type || undefined,
+        season: item.season || undefined,
       }));
 
       setProducts(mappedProducts);
     } catch (err) {
+      console.error('Error fetching products:', err);
       setError(
         err instanceof Error
           ? err.message
@@ -124,14 +153,16 @@ const HomePage: React.FC = () => {
   };
 
   const handleAddToCart = (product: Product) => {
-    if (!product.inStock) {
+    // Safety check
+    if (!product || !product.inStock) {
       return;
     }
 
-    if (
-      (product.sizes && product.sizes.length > 0) ||
-      (product.colors && product.colors.length > 0)
-    ) {
+    // Check if product has sizes or colors (with safety checks)
+    const hasSizes = Array.isArray(product.sizes) && product.sizes.length > 0;
+    const hasColors = Array.isArray(product.colors) && product.colors.length > 0;
+
+    if (hasSizes || hasColors) {
       handleViewProduct(product);
     } else {
       dispatch({
@@ -139,8 +170,8 @@ const HomePage: React.FC = () => {
         payload: {
           product,
           quantity: 1,
-          selectedSize: product.sizes ? product.sizes[0] : '',
-          selectedColor: product.colors ? product.colors[0] : '',
+          selectedSize: hasSizes ? product.sizes[0] : '',
+          selectedColor: hasColors ? product.colors[0] : '',
         },
       });
     }
@@ -238,20 +269,22 @@ const HomePage: React.FC = () => {
         ) : (
           <>
             {/* Products Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto mb-12">
-              {products.map((product) => (
-                <div
-                  key={product.id}
-                  className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2"
-                >
-                  <ProductCard
-                    product={product}
-                    onViewProduct={handleViewProduct}
-                    onAddToCart={handleAddToCart}
-                  />
-                </div>
-              ))}
-            </div>
+            {products.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto mb-12">
+                {products.map((product) => (
+                  <div
+                    key={product.id}
+                    className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2"
+                  >
+                    <ProductCard
+                      product={product}
+                      onViewProduct={handleViewProduct}
+                      onAddToCart={handleAddToCart}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* View All Button */}
             {products.length > 0 && (
@@ -266,7 +299,7 @@ const HomePage: React.FC = () => {
             )}
 
             {/* No Products Found */}
-            {products.length === 0 && !loading && (
+            {products.length === 0 && !loading && !error && (
               <div className="text-center py-20">
                 <div className="text-7xl mb-6">📦</div>
                 <p className="text-2xl text-purple-900 font-bold mb-3">
