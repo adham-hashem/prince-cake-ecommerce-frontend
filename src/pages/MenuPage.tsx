@@ -11,6 +11,7 @@ import { useApp } from '../contexts/AppContext';
 import ProductCard from '../components/ProductCard';
 import { Product } from '../types';
 
+
 interface ApiResponse {
   items: Product[];
   totalItems: number;
@@ -19,15 +20,18 @@ interface ApiResponse {
   totalPages: number;
 }
 
-interface WomenRestoreState {
+
+interface MenuRestoreState {
   scrollY: number;
   pageNumber: number;
 }
 
-const WomenPage: React.FC = () => {
+
+const MenuPage: React.FC = () => {
   const { dispatch } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
+
 
   const [products, setProducts] = useState<Product[]>([]);
   const [pageNumber, setPageNumber] = useState(1);
@@ -36,15 +40,17 @@ const WomenPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [restoreScroll, setRestoreScroll] = useState<number | null>(null);
 
+
   const fetchProducts = async (page: number) => {
     try {
       setLoading(true);
       setError(null);
 
+
       const token = localStorage.getItem('jwt_token') || 'jwt_token';
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
       const response = await fetch(
-        `${apiUrl}/api/products/women?pageNumber=${page}&pageSize=10`,
+        `${apiUrl}/api/products?pageNumber=${page}&pageSize=10`,
         {
           method: 'GET',
           headers: {
@@ -53,6 +59,7 @@ const WomenPage: React.FC = () => {
           },
         }
       );
+
 
       const contentType = response.headers.get('Content-Type');
       if (!response.ok) {
@@ -68,11 +75,14 @@ const WomenPage: React.FC = () => {
         );
       }
 
+
       const data: ApiResponse = await response.json();
+
 
       if (!data || !Array.isArray(data.items)) {
         throw new Error('Invalid response format: items is not an array');
       }
+
 
       const mappedProducts: Product[] = data.items.map((item) => ({
         ...item,
@@ -81,6 +91,7 @@ const WomenPage: React.FC = () => {
         originalPrice:
           item.originalPrice !== undefined ? item.originalPrice : undefined,
       }));
+
 
       setProducts(mappedProducts);
       setTotalPages(data.totalPages);
@@ -96,11 +107,13 @@ const WomenPage: React.FC = () => {
     }
   };
 
+
   // initial load / restore
   useEffect(() => {
-    const state = location.state?.fromWomenPage as
-      | WomenRestoreState
+    const state = location.state?.fromMenuPage as
+      | MenuRestoreState
       | undefined;
+
 
     if (state) {
       setPageNumber(state.pageNumber);
@@ -111,6 +124,7 @@ const WomenPage: React.FC = () => {
       fetchProducts(1);
     }
   }, []); // mount only
+
 
   // restore scroll after data load
   useEffect(() => {
@@ -123,11 +137,13 @@ const WomenPage: React.FC = () => {
     }
   }, [loading, products, restoreScroll]);
 
+
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages && page !== pageNumber) {
       fetchProducts(page);
     }
   };
+
 
   const handlePrevPage = () => {
     if (pageNumber > 1) {
@@ -135,17 +151,19 @@ const WomenPage: React.FC = () => {
     }
   };
 
+
   const handleNextPage = () => {
     if (pageNumber < totalPages) {
       fetchProducts(pageNumber + 1);
     }
   };
 
+
   const handleViewProduct = (product: Product) => {
     navigate(`/product/${product.id}`, {
       state: {
         product,
-        fromWomenPage: {
+        fromMenuPage: {
           scrollY: window.scrollY,
           pageNumber: pageNumber,
         },
@@ -153,8 +171,10 @@ const WomenPage: React.FC = () => {
     });
   };
 
+
   const handleAddToCart = (product: Product) => {
     if (!product.inStock) return;
+
 
     if (product.sizes.length > 0 || product.colors.length > 0) {
       handleViewProduct(product);
@@ -171,15 +191,18 @@ const WomenPage: React.FC = () => {
     }
   };
 
+
   const getPageNumbers = () => {
     const pages: (number | '...')[] = [];
     const maxPagesToShow = 5;
+
 
     if (totalPages <= maxPagesToShow) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
       let start = Math.max(1, pageNumber - 2);
       let end = Math.min(totalPages, pageNumber + 2);
+
 
       if (end - start < maxPagesToShow - 1) {
         if (start === 1) {
@@ -189,12 +212,15 @@ const WomenPage: React.FC = () => {
         }
       }
 
+
       if (start > 1) {
         pages.push(1);
         if (start > 2) pages.push('...');
       }
 
+
       for (let i = start; i <= end; i++) pages.push(i);
+
 
       if (end < totalPages) {
         if (end < totalPages - 1) pages.push('...');
@@ -202,13 +228,17 @@ const WomenPage: React.FC = () => {
       }
     }
 
+
     return pages;
   };
+
 
   const renderPagination = () => {
     if (totalPages <= 1) return null;
 
+
     const pageNumbers = getPageNumbers();
+
 
     return (
       <div className="flex justify-center items-center space-x-2 mt-8 space-x-reverse">
@@ -220,6 +250,7 @@ const WomenPage: React.FC = () => {
           <ChevronRight size={20} />
           <span className="mr-1">السابق</span>
         </button>
+
 
         <div className="flex space-x-1 space-x-reverse">
           {pageNumbers.map((page, index) =>
@@ -244,6 +275,7 @@ const WomenPage: React.FC = () => {
           )}
         </div>
 
+
         <button
           onClick={handleNextPage}
           disabled={pageNumber === totalPages || loading}
@@ -256,6 +288,7 @@ const WomenPage: React.FC = () => {
     );
   };
 
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-white py-8">
       <div className="container mx-auto px-4">
@@ -266,6 +299,7 @@ const WomenPage: React.FC = () => {
           <ArrowRight size={20} />
           <span>العودة للرئيسية</span>
         </Link>
+
 
         {/* Header like cake section */}
         <div className="text-center mb-8">
@@ -282,6 +316,7 @@ const WomenPage: React.FC = () => {
             المناسبات
           </p>
         </div>
+
 
         {loading && products.length === 0 ? (
           <div className="text-center py-12">
@@ -343,4 +378,5 @@ const WomenPage: React.FC = () => {
   );
 };
 
-export default WomenPage;
+
+export default MenuPage;

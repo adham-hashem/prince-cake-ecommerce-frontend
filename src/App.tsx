@@ -17,8 +17,8 @@ import ProductPage from './pages/ProductPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import LoginPage from './pages/LoginPage';
-import WomenPage from './pages/WomenPage';
-import ChildrenPage from './pages/ChildrenPage';
+import MenuPage from './pages/MenuPage';
+import InstantPage from './pages/InstantPage';
 import OffersPage from './pages/OffersPage';
 import NotFoundPage from './pages/NotFoundPage';
 import MyOrders from './pages/MyOrders';
@@ -75,8 +75,8 @@ function AppContent() {
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/menu" element={<WomenPage />} />
-            <Route path="/instant" element={<ChildrenPage />} />
+            <Route path="/menu" element={<MenuPage />} />
+            <Route path="/instant" element={<InstantPage />} />
             {/* <Route path="/offers" element={<OffersPage />} /> */}
             <Route path="/custom" element={<CustomOrders />} />
             <Route path="/product/:id" element={<ProductPage />} />

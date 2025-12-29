@@ -11,6 +11,7 @@ import { useApp } from '../contexts/AppContext';
 import ProductCard from '../components/ProductCard';
 import { Product } from '../types';
 
+
 interface ApiResponse {
   items: Product[];
   totalItems: number;
@@ -19,15 +20,18 @@ interface ApiResponse {
   totalPages: number;
 }
 
-interface ChildrenRestoreState {
+
+interface InstantRestoreState {
   scrollY: number;
   pageNumber: number;
 }
 
-const ChildrenPage: React.FC = () => {
+
+const InstantPage: React.FC = () => {
   const { dispatch } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
+
 
   const [products, setProducts] = useState<Product[]>([]);
   const [pageNumber, setPageNumber] = useState(1);
@@ -35,17 +39,20 @@ const ChildrenPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+
   const [restoreScroll, setRestoreScroll] = useState<number | null>(null);
+
 
   const fetchProducts = async (page: number) => {
     try {
       setLoading(true);
       setError(null);
 
+
       const token = localStorage.getItem('jwt_token');
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
       const response = await fetch(
-        `${apiUrl}/api/products/children?pageNumber=${page}&pageSize=10`,
+        `${apiUrl}/api/products/instant?pageNumber=${page}&pageSize=10`,
         {
           method: 'GET',
           headers: {
@@ -54,6 +61,7 @@ const ChildrenPage: React.FC = () => {
           },
         }
       );
+
 
       const contentType = response.headers.get('Content-Type');
       if (!response.ok) {
@@ -69,11 +77,14 @@ const ChildrenPage: React.FC = () => {
         );
       }
 
+
       const data: ApiResponse = await response.json();
+
 
       if (!data || !Array.isArray(data.items)) {
         throw new Error('Invalid response format: items is not an array');
       }
+
 
       const mappedProducts: Product[] = data.items.map((item) => ({
         ...item,
@@ -82,6 +93,7 @@ const ChildrenPage: React.FC = () => {
         originalPrice:
           item.originalPrice !== undefined ? item.originalPrice : undefined,
       }));
+
 
       setProducts(mappedProducts);
       setTotalPages(data.totalPages);
@@ -97,11 +109,13 @@ const ChildrenPage: React.FC = () => {
     }
   };
 
+
   // تحميل أولي + استرجاع حالة
   useEffect(() => {
-    const state = location.state?.fromChildrenPage as
-      | ChildrenRestoreState
+    const state = location.state?.fromInstantPage as
+      | InstantRestoreState
       | undefined;
+
 
     if (state) {
       setPageNumber(state.pageNumber);
@@ -112,6 +126,7 @@ const ChildrenPage: React.FC = () => {
       fetchProducts(1);
     }
   }, []);
+
 
   // استرجاع موضع السكرول بعد تحميل البيانات
   useEffect(() => {
@@ -124,11 +139,13 @@ const ChildrenPage: React.FC = () => {
     }
   }, [loading, products, restoreScroll]);
 
+
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages && page !== pageNumber) {
       fetchProducts(page);
     }
   };
+
 
   const handlePrevPage = () => {
     if (pageNumber > 1) {
@@ -136,23 +153,26 @@ const ChildrenPage: React.FC = () => {
     }
   };
 
+
   const handleNextPage = () => {
     if (pageNumber < totalPages) {
       fetchProducts(pageNumber + 1);
     }
   };
 
+
   const handleViewProduct = (product: Product) => {
     navigate(`/product/${product.id}`, {
       state: {
         product,
-        fromChildrenPage: {
+        fromInstantPage: {
           scrollY: window.scrollY,
           pageNumber: pageNumber,
         },
       },
     });
   };
+
 
   const handleAddToCart = (product: Product) => {
     if (!product.inStock) return;
@@ -171,15 +191,18 @@ const ChildrenPage: React.FC = () => {
     }
   };
 
+
   const getPageNumbers = () => {
     const pages: (number | '...')[] = [];
     const maxPagesToShow = 5;
+
 
     if (totalPages <= maxPagesToShow) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
       let start = Math.max(1, pageNumber - 2);
       let end = Math.min(totalPages, pageNumber + 2);
+
 
       if (end - start < maxPagesToShow - 1) {
         if (start === 1) {
@@ -189,12 +212,15 @@ const ChildrenPage: React.FC = () => {
         }
       }
 
+
       if (start > 1) {
         pages.push(1);
         if (start > 2) pages.push('...');
       }
 
+
       for (let i = start; i <= end; i++) pages.push(i);
+
 
       if (end < totalPages) {
         if (end < totalPages - 1) pages.push('...');
@@ -204,9 +230,11 @@ const ChildrenPage: React.FC = () => {
     return pages;
   };
 
+
   const renderPagination = () => {
     if (totalPages <= 1) return null;
     const pageNumbers = getPageNumbers();
+
 
     return (
       <div className="flex justify-center items-center space-x-2 mt-8 space-x-reverse">
@@ -218,6 +246,7 @@ const ChildrenPage: React.FC = () => {
           <ChevronRight size={20} />
           <span className="mr-1">السابق</span>
         </button>
+
 
         <div className="flex space-x-1 space-x-reverse">
           {pageNumbers.map((page, index) => (
@@ -241,6 +270,7 @@ const ChildrenPage: React.FC = () => {
           ))}
         </div>
 
+
         <button
           onClick={handleNextPage}
           disabled={pageNumber === totalPages || loading}
@@ -253,6 +283,7 @@ const ChildrenPage: React.FC = () => {
     );
   };
 
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-50 via-pink-50 to-white py-8">
       <div className="container mx-auto px-4">
@@ -263,6 +294,7 @@ const ChildrenPage: React.FC = () => {
           <ArrowRight size={20} />
           <span>العودة للرئيسية</span>
         </Link>
+
 
         {/* هيدر بطابع تورتات الأطفال */}
         <div className="text-center mb-8">
@@ -281,6 +313,7 @@ const ChildrenPage: React.FC = () => {
           </p>
         </div>
 
+
         {loading && products.length === 0 ? (
           <div className="text-center py-12">
             <Cake className="h-16 w-16 text-pink-500 mx-auto mb-4 animate-pulse" />
@@ -288,7 +321,7 @@ const ChildrenPage: React.FC = () => {
               جار تحميل التورتات...
             </h2>
             <p className="text-gray-600">
-              برجاء الانتظار حتى يتم تحميل جميع التورتات للأطفال.
+              برجاء الانتظار حتى يتم تحميل جميع التورتات الفورية.
             </p>
           </div>
         ) : error ? (
@@ -296,7 +329,7 @@ const ChildrenPage: React.FC = () => {
             <div className="text-6xl mb-4">⚠️</div>
             <h2 className="text-2xl font-bold text-red-600 mb-4">{error}</h2>
             <p className="text-gray-600 mb-6">
-              حدث خطأ أثناء جلب تورتات الأطفال. حاول مرة أخرى لاحقاً.
+              حدث خطأ أثناء جلب التورتات الفورية. حاول مرة أخرى لاحقاً.
             </p>
             <button
               onClick={() => navigate('/')}
@@ -309,10 +342,10 @@ const ChildrenPage: React.FC = () => {
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🧁</div>
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              لا توجد تورتات أطفال حالياً
+              لا توجد تورتات فورية حالياً
             </h2>
             <p className="text-gray-600 mb-6">
-              نعمل على إضافة تورتات أطفال جديدة ومميزة قريباً، تابعنا دائماً.
+              نعمل على إضافة تورتات فورية جديدة ومميزة قريباً، تابعنا دائماً.
             </p>
             <button
               onClick={() => navigate('/')}
@@ -341,4 +374,5 @@ const ChildrenPage: React.FC = () => {
   );
 };
 
-export default ChildrenPage;
+
+export default InstantPage;
