@@ -102,6 +102,7 @@ function AppContent() {
               <Route path="customers" element={<CustomersManagement />} />
               <Route path="discounts" element={<DiscountCodesManagement />} />
               <Route path="shipping" element={<ShippingManagement />} />
+              <Route path="custom-orders" element={<CustomOrders />} />
             </Route>
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
