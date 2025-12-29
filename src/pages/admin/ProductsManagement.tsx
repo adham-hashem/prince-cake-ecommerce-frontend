@@ -840,7 +840,7 @@ const ProductsManagement: React.FC = () => {
                                 />
                                 <span className="text-sm font-medium text-gray-700">منتج فوري</span>
                               </label>
-                              <label className="flex items-center space-x-reverse space-x-3">
+                              {/* <label className="flex items-center space-x-reverse space-x-3">
                                 <input
                                   type="checkbox"
                                   checked={newProduct.isFeatured}
@@ -849,7 +849,7 @@ const ProductsManagement: React.FC = () => {
                                 />
                                 <span className="text-sm font-medium text-gray-700">منتج مميز</span>
                               </label>
-                            </div>
+                            </div> */}
 
                             {/* Description */}
                             <div>
@@ -902,7 +902,7 @@ const ProductsManagement: React.FC = () => {
                             </div>
 
                             {/* Sizes */}
-                            <div>
+                            {/* <div>
                               <label className="block text-sm font-medium text-gray-700 mb-2">المقاسات (اختياري)</label>
                               <div className="space-y-2">
                                 {newProduct.sizes.map((size, index) => (
@@ -924,10 +924,10 @@ const ProductsManagement: React.FC = () => {
                                   + إضافة مقاس آخر
                                 </button>
                               </div>
-                            </div>
+                            </div> */}
 
                             {/* Colors */}
-                            <div>
+                            {/* <div>
                               <label className="block text-sm font-medium text-gray-700 mb-2">الألوان (اختياري)</label>
                               <div className="space-y-2">
                                 {newProduct.colors.map((color, index) => (
@@ -949,7 +949,7 @@ const ProductsManagement: React.FC = () => {
                                   + إضافة لون آخر
                                 </button>
                               </div>
-                            </div>
+                            </div> */}
 
                             {/* Submit Buttons */}
                             <div className="flex justify-end space-x-reverse space-x-3 pt-4">
