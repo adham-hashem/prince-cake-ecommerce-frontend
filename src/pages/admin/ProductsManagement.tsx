@@ -840,7 +840,7 @@ const ProductsManagement: React.FC = () => {
                                 />
                                 <span className="text-sm font-medium text-gray-700">منتج فوري</span>
                               </label>
-                              {/* <label className="flex items-center space-x-reverse space-x-3">
+                              <label className="flex items-center space-x-reverse space-x-3">
                                 <input
                                   type="checkbox"
                                   checked={newProduct.isFeatured}
@@ -849,7 +849,7 @@ const ProductsManagement: React.FC = () => {
                                 />
                                 <span className="text-sm font-medium text-gray-700">منتج مميز</span>
                               </label>
-                            </div> */}
+                            </div>
 
                             {/* Description */}
                             <div>
@@ -900,57 +900,6 @@ const ProductsManagement: React.FC = () => {
                                 </button>
                               </div>
                             </div>
-
-
-                            {/* Sizes */}
-                            {/* <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">المقاسات (اختياري)</label>
-                              <div className="space-y-2">
-                                {newProduct.sizes.map((size, index) => (
-                                  <input
-                                    key={index}
-                                    type="text"
-                                    value={size}
-                                    onChange={(e) => updateSizeField(index, e.target.value)}
-                                    placeholder="المقاس (اترك فارغاً إذا لم يكن مطلوباً)"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
-                                    dir="rtl"
-                                  />
-                                ))}
-                                <button
-                                  type="button"
-                                  onClick={addSizeField}
-                                  className="text-pink-600 hover:text-pink-700 text-sm font-medium"
-                                >
-                                  + إضافة مقاس آخر
-                                </button>
-                              </div>
-                            </div> */}
-
-                            {/* Colors */}
-                            {/* <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">الألوان (اختياري)</label>
-                              <div className="space-y-2">
-                                {newProduct.colors.map((color, index) => (
-                                  <input
-                                    key={index}
-                                    type="text"
-                                    value={color}
-                                    onChange={(e) => updateColorField(index, e.target.value)}
-                                    placeholder="اللون (اترك فارغاً إذا لم يكن مطلوباً)"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
-                                    dir="rtl"
-                                  />
-                                ))}
-                                <button
-                                  type="button"
-                                  onClick={addColorField}
-                                  className="text-pink-600 hover:text-pink-700 text-sm font-medium"
-                                >
-                                  + إضافة لون آخر
-                                </button>
-                              </div>
-                            </div> */}
 
                             {/* Submit Buttons */}
                             <div className="flex justify-end space-x-reverse space-x-3 pt-4">
