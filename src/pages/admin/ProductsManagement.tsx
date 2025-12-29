@@ -771,46 +771,6 @@ const ProductsManagement: React.FC = () => {
                               </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">القسم (اختياري)</label>
-                                <input
-                                  type="text"
-                                  value={newProduct.category}
-                                  onChange={(e) => setNewProduct(prev => ({ ...prev, category: e.target.value }))}
-                                  placeholder="اترك فارغاً إذا لم يكن مطلوباً"
-                                  className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
-                                  dir="rtl"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">الموسم (اختياري)</label>
-                                <input
-                                  type="text"
-                                  value={newProduct.season}
-                                  onChange={(e) => setNewProduct(prev => ({ ...prev, season: e.target.value }))}
-                                  placeholder="اترك فارغاً إذا لم يكن مطلوباً"
-                                  className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
-                                  dir="rtl"
-                                />
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">نوع المنتج</label>
-                                <select
-                                  value={newProduct.type}
-                                  onChange={(e) => setNewProduct(prev => ({ ...prev, type: Number(e.target.value) }))}
-                                  className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
-                                  dir="rtl"
-                                >
-                                  <option value={0}>عادي</option>
-                                  <option value={1}>مميز</option>
-                                </select>
-                              </div>
-                            </div>
-
                             {/* Toggles for isHidden, isAvailable, isInstant, isFeatured */}
                             <div className="flex flex-wrap gap-6 pt-2">
                               <label className="flex items-center space-x-reverse space-x-3">
