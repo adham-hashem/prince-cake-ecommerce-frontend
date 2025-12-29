@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Edit, Trash2, Upload, Menu, X, ChevronLeft, ChevronRight, EyeOff, Eye, Package, Zap } from 'lucide-react';
@@ -12,6 +11,7 @@ interface ProductImage {
   isMain: boolean;
 }
 
+// Updated Product interface - removed category, sizes, colors, season
 interface Product {
   id: string;
   code: string;
@@ -20,14 +20,13 @@ interface Product {
   originalPrice?: number;
   description: string;
   createdAt: string;
-  category: number;
-  sizes: string[];
-  colors: string[];
   images: ProductImage[];
-  inStock?: boolean;
   isHidden: boolean;
   isAvailable: boolean;
-  season: number; // 0 for All, 1 for Summer, 2 for Winter (based on backend enum)
+  isInstant?: boolean;
+  isFeatured?: boolean;
+  rating?: number;
+  salesCount?: number;
 }
 
 interface PaginatedResponse {
@@ -49,6 +48,7 @@ const ProductsManagement: React.FC = () => {
   const [showEditProduct, setShowEditProduct] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
 
+  // Updated newProduct state - changed to empty strings
   const [newProduct, setNewProduct] = useState({
     code: '',
     name: '',
@@ -57,11 +57,14 @@ const ProductsManagement: React.FC = () => {
     description: '',
     sizes: [''],
     colors: [''],
-    category: 0,
+    category: '',  // Changed to empty string
     images: [''],
     isHidden: false,
     isAvailable: true,
-    season: 0,
+    season: '',  // Changed to empty string
+    type: 0,
+    isInstant: false,
+    isFeatured: false,
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -75,19 +78,16 @@ const ProductsManagement: React.FC = () => {
   useEffect(() => {
     const getAuthToken = () => {
       const authToken = localStorage.getItem('accessToken');
-      // console.log('Retrieved token:', authToken ? 'Token found' : 'No token found');
       setToken(authToken);
       return authToken;
     };
 
     if (!isAuthenticated) {
-      // console.log('User not authenticated, redirecting to login');
       navigate('/login');
       return;
     }
 
     if (userRole !== 'admin') {
-      // console.log('User is not admin, redirecting to home');
       navigate('/');
       return;
     }
@@ -100,11 +100,6 @@ const ProductsManagement: React.FC = () => {
       refreshProductsList(currentPage);
     }
   }, [token, currentPage]);
-
-  useEffect(() => {
-    // console.log('Current products:', products.length, 'items');
-    // console.log('Products data:', products);
-  }, [products]);
 
   const handleLogout = () => {
     logout();
@@ -132,44 +127,36 @@ const ProductsManagement: React.FC = () => {
         },
       });
 
-      // console.log('Response status:', response.status);
       const responseText = await response.text();
-      // console.log('Raw response:', responseText);
 
       if (response.ok) {
         const data: PaginatedResponse = JSON.parse(responseText);
-        // console.log('Parsed data:', data);
         if (data && Array.isArray(data.items)) {
           const mappedProducts: Product[] = data.items.map(item => ({
             ...item,
-            // Ensure properties exist with fallback values
-            inStock: item.isAvailable,
             isHidden: item.isHidden ?? false,
             isAvailable: item.isAvailable ?? false,
-            season: item.season ?? 0,
+            isInstant: item.isInstant ?? false,
+            isFeatured: item.isFeatured ?? false,
+            rating: item.rating ?? 0,
+            salesCount: item.salesCount ?? 0,
             images: item.images.map(img => ({
               id: img.id,
-              // URL construction: Append apiUrl only if the path is relative (starts with / but not a domain)
               imagePath: img.imagePath && img.imagePath.startsWith('/') && !img.imagePath.startsWith('http')
                 ? `${apiUrl}${img.imagePath}`
                 : img.imagePath,
               isMain: img.isMain,
             })),
           }));
-          // console.log('Mapped products:', mappedProducts);
           setProducts(mappedProducts);
           setTotalPages(data.totalPages);
-          // console.log('Products state updated successfully');
         } else {
-          // console.error('Invalid response format:', data);
           alert('تنسيق البيانات غير صحيح');
         }
       } else {
-        // console.error('Error fetching products:', responseText);
         alert('فشل في جلب المنتجات');
       }
     } catch (error) {
-      // console.error('Error refreshing products:', error);
       alert('حدث خطأ أثناء جلب المنتجات');
     } finally {
       setIsLoading(false);
@@ -183,107 +170,115 @@ const ProductsManagement: React.FC = () => {
     );
   };
 
-const handleAddProduct = async () => {
-  if (isLoading) return;
+  const handleAddProduct = async () => {
+    if (isLoading) return;
+    if (!validateToken()) return;
 
-  if (!validateToken()) return;
-
-  if (!newProduct.code || !newProduct.name || !newProduct.price) {
-    alert('يرجى ملء جميع الحقول المطلوبة');
-    return;
-  }
-
-  if (checkProductCodeExists(newProduct.code)) {
-    alert('كود المنتج مُستخدم بالفعل. يرجى استخدام كود مختلف.');
-    return;
-  }
-
-  setIsLoading(true);
-  try {
-    const formData = new FormData();
-    formData.append('name', newProduct.name);
-    formData.append('code', newProduct.code);
-    formData.append('price', newProduct.price);
-    formData.append('description', newProduct.description || '');
-
-    // New properties included in creation
-    formData.append('isHidden', newProduct.isHidden.toString());
-    formData.append('isAvailable', newProduct.isAvailable.toString());
-    formData.append('season', newProduct.season.toString());
-
-    newProduct.sizes
-      .filter(size => size.trim() !== '')
-      .forEach(size => formData.append('sizes[]', size));
-    newProduct.colors
-      .filter(color => color.trim() !== '')
-      .forEach(color => formData.append('colors[]', color));
-    formData.append('category', newProduct.category.toString());
-    if (newProduct.originalPrice) formData.append('originalPrice', newProduct.originalPrice);
-    formData.append('mainImageIndex', '0');
-
-    const imageFiles = await Promise.all(
-      newProduct.images
-        .filter(img => img.trim() !== '')
-        .map(async (img, index) => {
-          if (img.startsWith('data:image')) {
-            const response = await fetch(img);
-            const blob = await response.blob();
-            return new File([blob], `image-${index}.jpg`, { type: blob.type });
-          }
-          return null;
-        })
-    );
-
-    imageFiles
-      .filter(file => file !== null)
-      .forEach(file => formData.append('imageFiles', file as File));
-
-    const response = await fetch(`${apiUrl}/api/products`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-
-      if (errorText.includes('already exists')) {
-        const codeMatch = errorText.match(/code '([^']+)'/);
-        const duplicateCode = codeMatch ? codeMatch[1] : newProduct.code;
-        throw new Error(`كود المنتج '${duplicateCode}' مُستخدم بالفعل. يرجى استخدام كود مختلف.`);
-      } else if (response.status === 500 && errorText.includes('duplicate key')) {
-        throw new Error('كود المنتج مُستخدم بالفعل. يرجى استخدام كود مختلف.');
-      } else if (response.status === 400) {
-        throw new Error(errorText || 'بيانات المنتج غير صحيحة');
-      } else if (response.status === 500) {
-        throw new Error(`خطأ في الخادم: ${errorText}`);
-      } else {
-        throw new Error(`فشل في إضافة المنتج: ${response.status} ${response.statusText}`);
-      }
+    if (!newProduct.code || !newProduct.name || !newProduct.price) {
+      alert('يرجى ملء جميع الحقول المطلوبة');
+      return;
     }
 
-    // ✅ FIX: Always refresh the full list from server to avoid crashes from incomplete/invalid response data
-    // No more manual state patching - this prevents the "Cannot read properties of undefined (reading 'map')" error
-    // caused by `result.images` being undefined/null in the backend response.
-    await refreshProductsList(1); // Go to page 1 to ensure the new product is visible
+    if (checkProductCodeExists(newProduct.code)) {
+      alert('كود المنتج مُستخدم بالفعل. يرجى استخدام كود مختلف.');
+      return;
+    }
 
-    setShowAddProduct(false);
-    resetProductForm();
-    alert('تم إضافة المنتج بنجاح!');
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('name', newProduct.name);
+      formData.append('code', newProduct.code);
+      formData.append('price', newProduct.price);
+      formData.append('description', newProduct.description || '');
+      formData.append('isHidden', newProduct.isHidden.toString());
+      formData.append('isAvailable', newProduct.isAvailable.toString());
+      formData.append('isInstant', newProduct.isInstant.toString());
+      formData.append('isFeatured', newProduct.isFeatured.toString());
+      formData.append('type', newProduct.type.toString());
 
-  } catch (error: any) {
-    console.error('Error adding product:', error);
-    alert(error.message || 'حدث خطأ أثناء إضافة المنتج');
-  } finally {
-    setIsLoading(false);
-  }
-};
+      // Send empty string if category is empty
+      formData.append('category', newProduct.category || '');
+      
+      // Send empty string if season is empty
+      formData.append('season', newProduct.season || '');
+
+      // Only append non-empty sizes or send empty string
+      const validSizes = newProduct.sizes.filter(size => size.trim() !== '');
+      if (validSizes.length > 0) {
+        validSizes.forEach(size => formData.append('sizes[]', size));
+      } else {
+        formData.append('sizes', '');
+      }
+
+      // Only append non-empty colors or send empty string
+      const validColors = newProduct.colors.filter(color => color.trim() !== '');
+      if (validColors.length > 0) {
+        validColors.forEach(color => formData.append('colors[]', color));
+      } else {
+        formData.append('colors', '');
+      }
+
+      if (newProduct.originalPrice) formData.append('originalPrice', newProduct.originalPrice);
+      formData.append('mainImageIndex', '0');
+
+      const imageFiles = await Promise.all(
+        newProduct.images
+          .filter(img => img.trim() !== '')
+          .map(async (img, index) => {
+            if (img.startsWith('data:image')) {
+              const response = await fetch(img);
+              const blob = await response.blob();
+              return new File([blob], `image-${index}.jpg`, { type: blob.type });
+            }
+            return null;
+          })
+      );
+
+      imageFiles
+        .filter(file => file !== null)
+        .forEach(file => formData.append('imageFiles', file as File));
+
+      const response = await fetch(`${apiUrl}/api/products`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        if (errorText.includes('already exists')) {
+          const codeMatch = errorText.match(/code '([^']+)'/);
+          const duplicateCode = codeMatch ? codeMatch[1] : newProduct.code;
+          throw new Error(`كود المنتج '${duplicateCode}' مُستخدم بالفعل. يرجى استخدام كود مختلف.`);
+        } else if (response.status === 500 && errorText.includes('duplicate key')) {
+          throw new Error('كود المنتج مُستخدم بالفعل. يرجى استخدام كود مختلف.');
+        } else if (response.status === 400) {
+          throw new Error(errorText || 'بيانات المنتج غير صحيحة');
+        } else if (response.status === 500) {
+          throw new Error(`خطأ في الخادم: ${errorText}`);
+        } else {
+          throw new Error(`فشل في إضافة المنتج: ${response.status} ${response.statusText}`);
+        }
+      }
+
+      await refreshProductsList(1);
+      setShowAddProduct(false);
+      resetProductForm();
+      alert('تم إضافة المنتج بنجاح!');
+
+    } catch (error: any) {
+      console.error('Error adding product:', error);
+      alert(error.message || 'حدث خطأ أثناء إضافة المنتج');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleUpdateProduct = async () => {
     if (isLoading || !editingProduct) return;
-
     if (!validateToken()) return;
 
     if (!newProduct.code || !newProduct.name || !newProduct.price) {
@@ -294,25 +289,27 @@ const handleAddProduct = async () => {
     setIsLoading(true);
     try {
       const formData = new FormData();
-
-      // Basic product info
       formData.append('name', newProduct.name.trim());
       formData.append('code', newProduct.code.trim());
       formData.append('price', newProduct.price.toString());
       formData.append('description', newProduct.description?.trim() || '');
-      formData.append('category', newProduct.category.toString());
-
-      // ✅ IMPORTANT: New Properties
       formData.append('isHidden', newProduct.isHidden.toString());
       formData.append('isAvailable', newProduct.isAvailable.toString());
-      formData.append('season', newProduct.season.toString());
+      formData.append('isInstant', newProduct.isInstant.toString());
+      formData.append('isFeatured', newProduct.isFeatured.toString());
+      formData.append('type', newProduct.type.toString());
 
-      // Add original price only if it exists and is not empty
+      // Send empty string if category is empty
+      formData.append('category', newProduct.category || '');
+      
+      // Send empty string if season is empty
+      formData.append('season', newProduct.season || '');
+
       if (newProduct.originalPrice && newProduct.originalPrice.trim() !== '') {
         formData.append('originalPrice', newProduct.originalPrice.toString());
       }
 
-      // Add sizes array - only non-empty values
+      // Add sizes array - only non-empty values or empty string
       const validSizes = newProduct.sizes.filter(size => size.trim() !== '');
       if (validSizes.length > 0) {
         validSizes.forEach((size, index) => {
@@ -322,7 +319,7 @@ const handleAddProduct = async () => {
         formData.append('sizes', '');
       }
 
-      // Add colors array - only non-empty values
+      // Add colors array - only non-empty values or empty string
       const validColors = newProduct.colors.filter(color => color.trim() !== '');
       if (validColors.length > 0) {
         validColors.forEach((color, index) => {
@@ -334,7 +331,6 @@ const handleAddProduct = async () => {
 
       // Handle images - only add new uploaded images (data: URLs)
       const newImages = [];
-
       for (let i = 0; i < newProduct.images.length; i++) {
         const img = newProduct.images[i];
         if (img && img.trim() !== '' && img.startsWith('data:image')) {
@@ -349,7 +345,6 @@ const handleAddProduct = async () => {
         }
       }
 
-      // Add new image files to form data
       if (newImages.length > 0) {
         formData.append('mainImageIndex', '0');
         newImages.forEach((file) => {
@@ -367,7 +362,6 @@ const handleAddProduct = async () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        
         if (errorText.includes('already exists') || errorText.includes('duplicate')) {
           const codeMatch = errorText.match(/code '([^']+)'/);
           const duplicateCode = codeMatch ? codeMatch[1] : newProduct.code;
@@ -383,11 +377,7 @@ const handleAddProduct = async () => {
         }
       }
 
-      // ✅ FIX: Instead of manually patching the state with potentially incomplete data,
-      // we simply reload the list from the server to ensure consistency.
       await refreshProductsList(currentPage);
-
-      // Close the edit form and reset
       setShowEditProduct(false);
       setEditingProduct(null);
       resetProductForm();
@@ -400,51 +390,8 @@ const handleAddProduct = async () => {
       setIsLoading(false);
     }
   };
-  
-  // 👇 NEW FUNCTION: Handle Seasonal Toggling
-  const handleSeasonalHide = async (seasonToToggle: number, action: 'hide' | 'unhide') => {
-    if (isLoading) return;
-    if (!validateToken()) return;
 
-    const actionText = action === 'hide' ? 'إخفاء' : 'إظهار';
-    const seasonName = getSeasonText(seasonToToggle);
-
-    if (!confirm(`هل أنت متأكد من ${actionText} جميع منتجات موسم: ${seasonName}؟\n\nستؤثر هذه العملية على ${
-      products.filter(p => p.season === seasonToToggle).length
-    } منتج في هذه الصفحة.`)) {
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // We will use a dedicated endpoint for this mass update
-      const response = await fetch(`${apiUrl}/api/products/seasonal-toggle/${seasonToToggle}?isHidden=${action === 'hide'}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        // Send body even if unused by backend, for consistency
-        body: JSON.stringify({ isHidden: action === 'hide' }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`فشل في ${actionText} منتجات موسم ${seasonName}: ${errorText}`);
-      }
-
-      alert(`تم ${actionText} جميع منتجات موسم ${seasonName} بنجاح!`);
-      // Refresh list to see changes
-      await refreshProductsList(currentPage);
-    } catch (error: any) {
-      // console.error('Error in seasonal hide/unhide:', error);
-      alert(error.message || 'حدث خطأ أثناء التحديث الموسمي');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-
+  // Updated resetProductForm with empty strings
   const resetProductForm = () => {
     setNewProduct({
       code: '',
@@ -454,14 +401,18 @@ const handleAddProduct = async () => {
       description: '',
       sizes: [''],
       colors: [''],
-      category: 0,
+      category: '',  // Changed to empty string
       images: [''],
       isHidden: false,
       isAvailable: true,
-      season: 0,
+      season: '',  // Changed to empty string
+      type: 0,
+      isInstant: false,
+      isFeatured: false,
     });
   };
 
+  // Updated handleEditProduct - reset to empty strings
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
     setNewProduct({
@@ -470,17 +421,19 @@ const handleAddProduct = async () => {
       price: product.price.toString(),
       originalPrice: product.originalPrice?.toString() || '',
       description: product.description,
-      // Filter out images that are just the API URL if we only want to show user-uploaded images/new files
       images: product.images.map(img => img.imagePath),
-      sizes: product.sizes,
-      colors: product.colors,
-      category: product.category,
+      sizes: [''],  // Reset to empty
+      colors: [''],  // Reset to empty
+      category: '',  // Reset to empty
       isHidden: product.isHidden,
       isAvailable: product.isAvailable,
-      season: product.season,
+      season: '',  // Reset to empty
+      type: 0,
+      isInstant: product.isInstant || false,
+      isFeatured: product.isFeatured || false,
     });
     setShowEditProduct(true);
-    setShowSidebar(false); // Close sidebar on mobile
+    setShowSidebar(false);
   };
 
   const handleDeleteProduct = async (productId: string) => {
@@ -502,8 +455,6 @@ const handleAddProduct = async () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        // console.error('Server response:', errorText);
-
         if (response.status === 500) {
           if (errorText.includes('REFERENCE constraint') ||
             errorText.includes('FK_CartItems_Products') ||
@@ -525,7 +476,6 @@ const handleAddProduct = async () => {
       await refreshProductsList(currentPage);
       alert('تم حذف المنتج بنجاح!');
     } catch (error: any) {
-      // console.error('Error deleting product:', error);
       if (error.message.includes('عربات التسوق') || error.message.includes('CartItems')) {
         alert(`❌ ${error.message}\n\n💡 نصيحة: يمكنك إخفاء المنتج بدلاً من حذفه عن طريق تعديله وإلغاء تفعيله.`);
       } else {
@@ -596,6 +546,50 @@ const handleAddProduct = async () => {
     }
   };
 
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const getPageNumbers = () => {
+    const pages: (number | '...')[] = [];
+    const maxPagesToShow = 5;
+
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      let start = Math.max(1, currentPage - 2);
+      let end = Math.min(totalPages, currentPage + 2);
+
+      if (end - start < maxPagesToShow - 1) {
+        if (start === 1) {
+          end = Math.min(totalPages, start + maxPagesToShow - 1);
+        } else {
+          start = Math.max(1, end - maxPagesToShow + 1);
+        }
+      }
+
+      if (start > 1) {
+        pages.push(1);
+        if (start > 2) pages.push('...');
+      }
+
+      for (let i = start; i <= end; i++) pages.push(i);
+
+      if (end < totalPages) {
+        if (end < totalPages - 1) pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
 
   if (!isAuthenticated) {
     return <div className="p-4 text-center">جاري التحقق من المصادقة...</div>;
@@ -604,19 +598,6 @@ const handleAddProduct = async () => {
   if (!token) {
     return <div className="p-4 text-center">جاري تحميل رمز المصادقة...</div>;
   }
-
-  // Helper function to convert season number to Arabic text
-  const getSeasonText = (season: number) => {
-    switch (season) {
-      case 1:
-        return 'صيفي';
-      case 2:
-        return 'شتوي';
-      case 0:
-      default:
-        return 'جميع المواسم';
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
@@ -639,7 +620,7 @@ const handleAddProduct = async () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 lg:hidden" onClick={() => setShowSidebar(false)}>
             <div
               className="fixed right-0 top-0 h-full w-80 bg-white shadow-xl"
-              onClick={e => e.stopPropagation()} // Prevent closing when clicking inside
+              onClick={e => e.stopPropagation()}
             >
               <div className="p-4">
                 <div className="flex items-center justify-between mb-6">
@@ -656,18 +637,6 @@ const handleAddProduct = async () => {
                   <div className="bg-pink-50 p-4 rounded-lg">
                     <p className="text-sm text-gray-600">إجمالي المنتجات</p>
                     <p className="text-2xl font-bold text-pink-600">{products.length}</p>
-                  </div>
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">منتجات حريمي</p>
-                    <p className="text-2xl font-bold text-blue-600">
-                      {products.filter(p => p.category === 0).length}
-                    </p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600">منتجات أطفال</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      {products.filter(p => p.category === 1).length}
-                    </p>
                   </div>
                 </div>
               </div>
@@ -687,25 +656,6 @@ const handleAddProduct = async () => {
                       <div className="hidden lg:flex items-center justify-between mb-6">
                         <h2 className="text-2xl font-bold text-gray-800">إدارة المنتجات</h2>
                         <div className="flex items-center space-x-reverse space-x-4">
-                            {/* START: NEW SEASONAL BUTTONS */}
-                            {/* <button
-                                onClick={() => handleSeasonalHide(1, 'hide')} // 1 for Summer
-                                disabled={isLoading}
-                                className="bg-red-500 text-white px-3 py-2 text-sm rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
-                                title="إخفاء جميع منتجات الصيف"
-                            >
-                                ❌ إخفاء الصيف (شتاء)
-                            </button>
-                            <button
-                                onClick={() => handleSeasonalHide(2, 'hide')} // 2 for Winter
-                                disabled={isLoading}
-                                className="bg-orange-500 text-white px-3 py-2 text-sm rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50"
-                                title="إخفاء جميع منتجات الشتاء"
-                            >
-                                ❌ إخفاء الشتاء (صيف)
-                            </button> */}
-                            {/* END: NEW SEASONAL BUTTONS */}
-
                           <div className="text-sm text-gray-600">
                             المنتجات: {products.length} | الرمز: {token ? '✅ متوفر' : '❌ غير متوفر'}
                           </div>
@@ -823,33 +773,45 @@ const handleAddProduct = async () => {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">القسم</label>
-                                <select
+                                <label className="block text-sm font-medium text-gray-700 mb-2">القسم (اختياري)</label>
+                                <input
+                                  type="text"
                                   value={newProduct.category}
-                                  onChange={(e) => setNewProduct(prev => ({ ...prev, category: Number(e.target.value) }))}
+                                  onChange={(e) => setNewProduct(prev => ({ ...prev, category: e.target.value }))}
+                                  placeholder="اترك فارغاً إذا لم يكن مطلوباً"
                                   className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
                                   dir="rtl"
-                                >
-                                  <option value={0}>قسم الحريمي</option>
-                                  <option value={1}>قسم الأطفال</option>
-                                </select>
+                                />
                               </div>
                               <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">الموسم</label>
-                                <select
+                                <label className="block text-sm font-medium text-gray-700 mb-2">الموسم (اختياري)</label>
+                                <input
+                                  type="text"
                                   value={newProduct.season}
-                                  onChange={(e) => setNewProduct(prev => ({ ...prev, season: Number(e.target.value) }))}
+                                  onChange={(e) => setNewProduct(prev => ({ ...prev, season: e.target.value }))}
+                                  placeholder="اترك فارغاً إذا لم يكن مطلوباً"
+                                  className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
+                                  dir="rtl"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">نوع المنتج</label>
+                                <select
+                                  value={newProduct.type}
+                                  onChange={(e) => setNewProduct(prev => ({ ...prev, type: Number(e.target.value) }))}
                                   className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
                                   dir="rtl"
                                 >
-                                  <option value={0}>جميع المواسم</option>
-                                  <option value={2}>شتوي</option> {/* Backend: Winter = 2 */}
-                                  <option value={1}>صيفي</option> {/* Backend: Summer = 1 */}
+                                  <option value={0}>عادي</option>
+                                  <option value={1}>مميز</option>
                                 </select>
                               </div>
                             </div>
 
-                            {/* UPDATED: Toggles for isHidden, isAvailable */}
+                            {/* Toggles for isHidden, isAvailable, isInstant, isFeatured */}
                             <div className="flex flex-wrap gap-6 pt-2">
                               <label className="flex items-center space-x-reverse space-x-3">
                                 <input
@@ -869,8 +831,25 @@ const handleAddProduct = async () => {
                                 />
                                 <span className="text-sm font-medium text-gray-700">متاح / متوفر</span>
                               </label>
+                              <label className="flex items-center space-x-reverse space-x-3">
+                                <input
+                                  type="checkbox"
+                                  checked={newProduct.isInstant}
+                                  onChange={(e) => setNewProduct(prev => ({ ...prev, isInstant: e.target.checked }))}
+                                  className="w-5 h-5 text-purple-600 rounded"
+                                />
+                                <span className="text-sm font-medium text-gray-700">منتج فوري</span>
+                              </label>
+                              <label className="flex items-center space-x-reverse space-x-3">
+                                <input
+                                  type="checkbox"
+                                  checked={newProduct.isFeatured}
+                                  onChange={(e) => setNewProduct(prev => ({ ...prev, isFeatured: e.target.checked }))}
+                                  className="w-5 h-5 text-yellow-600 rounded"
+                                />
+                                <span className="text-sm font-medium text-gray-700">منتج مميز</span>
+                              </label>
                             </div>
-
 
                             {/* Description */}
                             <div>
@@ -924,7 +903,7 @@ const handleAddProduct = async () => {
 
                             {/* Sizes */}
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">المقاسات</label>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">المقاسات (اختياري)</label>
                               <div className="space-y-2">
                                 {newProduct.sizes.map((size, index) => (
                                   <input
@@ -932,7 +911,7 @@ const handleAddProduct = async () => {
                                     type="text"
                                     value={size}
                                     onChange={(e) => updateSizeField(index, e.target.value)}
-                                    placeholder="المقاس"
+                                    placeholder="المقاس (اترك فارغاً إذا لم يكن مطلوباً)"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
                                     dir="rtl"
                                   />
@@ -949,7 +928,7 @@ const handleAddProduct = async () => {
 
                             {/* Colors */}
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-2">الألوان</label>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">الألوان (اختياري)</label>
                               <div className="space-y-2">
                                 {newProduct.colors.map((color, index) => (
                                   <input
@@ -957,7 +936,7 @@ const handleAddProduct = async () => {
                                     type="text"
                                     value={color}
                                     onChange={(e) => updateColorField(index, e.target.value)}
-                                    placeholder="اللون"
+                                    placeholder="اللون (اترك فارغاً إذا لم يكن مطلوباً)"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right"
                                     dir="rtl"
                                   />
@@ -972,25 +951,27 @@ const handleAddProduct = async () => {
                               </div>
                             </div>
 
-                            {/* Action Buttons */}
-                            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                            {/* Submit Buttons */}
+                            <div className="flex justify-end space-x-reverse space-x-3 pt-4">
                               <button
-                                onClick={showAddProduct ? handleAddProduct : handleUpdateProduct}
-                                disabled={isLoading || (newProduct.code && checkProductCodeExists(newProduct.code, editingProduct?.id))}
-                                className="flex-1 bg-pink-600 text-white px-6 py-3 rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                              >
-                                {isLoading ? 'جاري المعالجة...' : (showAddProduct ? 'إضافة المنتج' : 'تحديث المنتج')}
-                              </button>
-                              <button
+                                type="button"
                                 onClick={() => {
                                   setShowAddProduct(false);
                                   setShowEditProduct(false);
                                   setEditingProduct(null);
                                   resetProductForm();
                                 }}
-                                className="flex-1 sm:flex-none bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 transition-colors font-medium"
+                                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
                               >
                                 إلغاء
+                              </button>
+                              <button
+                                type="button"
+                                onClick={showAddProduct ? handleAddProduct : handleUpdateProduct}
+                                disabled={isLoading || (newProduct.code && checkProductCodeExists(newProduct.code, editingProduct?.id))}
+                                className="px-6 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                {isLoading ? 'جار المعالجة...' : (showAddProduct ? 'إضافة المنتج' : 'تحديث المنتج')}
                               </button>
                             </div>
                           </div>
@@ -998,239 +979,163 @@ const handleAddProduct = async () => {
                       )}
 
                       {/* Products List */}
-                      <div className="space-y-3 lg:space-y-4">
-                        {isLoading && (
-                          <div className="text-center py-8">
-                            <p className="text-gray-600">جاري تحميل المنتجات...</p>
-                          </div>
-                        )}
-
-                        {!isLoading && products.length === 0 ? (
-                          <div className="text-center py-8">
-                            <p className="text-gray-600">لا توجد منتجات متاحة</p>
-                            <button
-                              onClick={() => refreshProductsList(currentPage)}
-                              className="mt-4 bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors"
-                            >
-                              إعادة التحميل
-                            </button>
-                          </div>
-                        ) : (
-                          products.map(product => {
-                            // ❗ CHANGE: No fallback path specified. If images array is empty, mainImage will be undefined.
-                            const mainImage = product.images.find(img => img.isMain)?.imagePath || product.images[0]?.imagePath; 
-                            
-                            // Determine product status based on new fields
-                            const isHidden = product.isHidden;
-                            const isAvailable = product.isAvailable;
-                            const seasonText = getSeasonText(product.season);
-
-                            return (
-                              <div key={product.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                      {isLoading && products.length === 0 ? (
+                        <div className="text-center py-12">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600 mx-auto"></div>
+                          <p className="mt-4 text-gray-600">جار تحميل المنتجات...</p>
+                        </div>
+                      ) : products.length === 0 ? (
+                        <div className="text-center py-12">
+                          <Package size={48} className="mx-auto text-gray-400 mb-4" />
+                          <h3 className="text-xl font-semibold text-gray-700 mb-2">لا توجد منتجات</h3>
+                          <p className="text-gray-500">ابدأ بإضافة منتج جديد</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="grid grid-cols-1 gap-4">
+                            {products.map((product) => (
+                              <div key={product.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                                 <div className="flex flex-col sm:flex-row gap-4">
                                   {/* Product Image */}
-                                  <div className="flex-shrink-0 relative">
-                                    <img
-                                      // ❗ CHANGE: If mainImage is undefined, the src attribute will be empty, showing the broken image icon immediately.
-                                      src={mainImage}
-                                      alt={product.name}
-                                      className="w-full sm:w-20 lg:w-24 h-48 sm:h-20 lg:h-24 object-cover rounded-lg"
-                                      onError={(e) => {
-                                        // console.error('Failed to load image for product', product.name, ':', e.currentTarget.src);
-                                        // ❗ CHANGE: Do nothing here. The browser will show the broken image icon.
-                                      }}
-                                    />
-                                    {/* Status Overlay for Hidden/Unavailable */}
-                                    {isHidden && (
-                                      <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center rounded-lg">
-                                        <EyeOff size={24} className="text-white" />
+                                  <div className="w-full sm:w-24 h-24 flex-shrink-0">
+                                    {product.images && product.images.length > 0 ? (
+                                      <img
+                                        src={product.images.find(img => img.isMain)?.imagePath || product.images[0]?.imagePath}
+                                        alt={product.name}
+                                        className="w-full h-full object-cover rounded-lg"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
+                                        <Package size={32} className="text-gray-400" />
                                       </div>
                                     )}
                                   </div>
 
                                   {/* Product Info */}
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                                      <div className="flex-1">
-                                        <h3 className="font-semibold text-gray-800 text-lg leading-tight">{product.name}</h3>
-                                        <p className="text-sm text-gray-600 mt-1">كود: {product.code}</p>
-                                        <div className="flex flex-wrap items-center gap-2 mt-2">
-                                          <p className="text-pink-600 font-bold text-lg">{product.price} جنيه</p>
-                                          {product.originalPrice && (
-                                            <p className="text-sm text-gray-500 line-through">{product.originalPrice} جنيه</p>
-                                          )}
-                                        </div>
-                                        <div className="flex flex-wrap gap-2 mt-2">
-                                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                                            {product.category === 0 ? 'حريمي' : 'أطفال'}
+                                  <div className="flex-1">
+                                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                                      <div>
+                                        <h3 className="font-semibold text-lg text-gray-800">{product.name}</h3>
+                                        <p className="text-sm text-gray-600">الكود: {product.code}</p>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        {!product.isAvailable && (
+                                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            <EyeOff size={12} className="ml-1" />
+                                            غير متاح
                                           </span>
-
-                                          {/* Display Season */}
-                                          <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full flex items-center">
-                                            <Zap size={12} className='ml-1' /> {seasonText}
+                                        )}
+                                        {product.isHidden && (
+                                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            <Eye size={12} className="ml-1" />
+                                            مخفي
                                           </span>
-
-                                          {/* Display isHidden / isAvailable status */}
-                                          <span className={`text-xs px-2 py-1 rounded-full flex items-center ${
-                                            isAvailable ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                                            }`}>
-                                            <Package size={12} className='ml-1' /> {isAvailable ? 'متاح' : 'غير متاح'}
+                                        )}
+                                        {product.isInstant && (
+                                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                            <Zap size={12} className="ml-1" />
+                                            فوري
                                           </span>
-                                          <span className={`text-xs px-2 py-1 rounded-full flex items-center ${
-                                            isHidden ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
-                                            }`}>
-                                            {isHidden ? <EyeOff size={12} className='ml-1' /> : <Eye size={12} className='ml-1' />}
-                                            {isHidden ? 'مخفي' : 'مرئي'}
+                                        )}
+                                        {product.isFeatured && (
+                                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            ⭐ مميز
                                           </span>
-                                        </div>
-                                        {product.description && (
-                                          <p className="text-sm text-gray-600 mt-2 line-clamp-2">{product.description}</p>
                                         )}
                                       </div>
+                                    </div>
 
-                                      {/* Action Buttons */}
-                                      <div className="flex sm:flex-col gap-2 sm:mr-4">
-                                        <button
-                                          onClick={() => handleEditProduct(product)}
-                                          disabled={isLoading}
-                                          className="flex-1 sm:flex-none bg-blue-50 text-blue-600 hover:bg-blue-100 p-3 rounded-lg disabled:opacity-50 transition-colors flex items-center justify-center"
-                                          title="تعديل المنتج"
-                                        >
-                                          <Edit size={18} />
-                                          <span className="mr-2 sm:hidden">تعديل</span>
-                                        </button>
-                                        <button
-                                          onClick={() => handleDeleteProduct(product.id)}
-                                          disabled={isLoading}
-                                          className="flex-1 sm:flex-none bg-red-50 text-red-600 hover:bg-red-100 p-3 rounded-lg disabled:opacity-50 transition-colors flex items-center justify-center"
-                                          title="حذف المنتج"
-                                        >
-                                          <Trash2 size={18} />
-                                          <span className="mr-2 sm:hidden">حذف</span>
-                                        </button>
+                                    <div className="flex flex-wrap items-center gap-3 text-sm">
+                                      <div className="flex items-center gap-1">
+                                        <span className="font-semibold text-pink-600">{product.price} ج.م</span>
+                                        {product.originalPrice && product.originalPrice > product.price && (
+                                          <span className="line-through text-gray-400">{product.originalPrice} ج.م</span>
+                                        )}
                                       </div>
+                                      {product.rating !== undefined && product.rating > 0 && (
+                                        <span className="text-gray-600">⭐ {product.rating.toFixed(1)}</span>
+                                      )}
+                                      {product.salesCount !== undefined && (
+                                        <span className="text-gray-600">📦 {product.salesCount} مبيعات</span>
+                                      )}
+                                    </div>
+
+                                    {product.description && (
+                                      <p className="text-sm text-gray-600 mt-2 line-clamp-2">{product.description}</p>
+                                    )}
+
+                                    {/* Action Buttons */}
+                                    <div className="flex gap-2 mt-3">
+                                      <button
+                                        onClick={() => handleEditProduct(product)}
+                                        disabled={isLoading}
+                                        className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm disabled:opacity-50"
+                                      >
+                                        <Edit size={16} />
+                                        <span>تعديل</span>
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteProduct(product.id)}
+                                        disabled={isLoading}
+                                        className="flex items-center gap-1 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm disabled:opacity-50"
+                                      >
+                                        <Trash2 size={16} />
+                                        <span>حذف</span>
+                                      </button>
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                            );
-                          })
-                        )}
-                      </div>
+                            ))}
+                          </div>
 
-                      {/* Pagination */}
-                      {totalPages > 1 && (
-                        <div className="flex flex-col items-center mt-6 lg:mt-8 space-y-4">
-                          {/* Mobile Pagination */}
-                          <div className="flex items-center justify-between w-full sm:hidden">
-                            <button
-                              onClick={() => handlePageChange(currentPage - 1)}
-                              disabled={currentPage === 1 || isLoading}
-                              className="flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              <ChevronRight size={20} />
-                              <span className="mr-2">السابق</span>
-                            </button>
+                          {/* Pagination */}
+                          {totalPages > 1 && (
+                            <div className="flex justify-center items-center space-x-2 mt-8 space-x-reverse">
+                              <button
+                                onClick={handlePrevPage}
+                                disabled={currentPage === 1 || isLoading}
+                                className="flex items-center px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                              >
+                                <ChevronRight size={20} />
+                                <span className="mr-1">السابق</span>
+                              </button>
 
-                            <div className="text-sm text-gray-600">
-                              {currentPage} من {totalPages}
+                              <div className="flex space-x-1 space-x-reverse">
+                                {getPageNumbers().map((page, index) =>
+                                  page === '...' ? (
+                                    <span key={index} className="px-3 py-2 text-gray-500">...</span>
+                                  ) : (
+                                    <button
+                                      key={index}
+                                      onClick={() => handlePageChange(page as number)}
+                                      disabled={isLoading}
+                                      className={`px-3 py-2 rounded-lg transition-colors ${
+                                        currentPage === page
+                                          ? 'bg-pink-600 text-white'
+                                          : 'bg-white border border-gray-300 hover:bg-gray-50 text-gray-700'
+                                      } ${isLoading ? 'cursor-not-allowed opacity-50' : ''}`}
+                                    >
+                                      {page}
+                                    </button>
+                                  )
+                                )}
+                              </div>
+
+                              <button
+                                onClick={handleNextPage}
+                                disabled={currentPage === totalPages || isLoading}
+                                className="flex items-center px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                              >
+                                <span className="ml-1">التالي</span>
+                                <ChevronLeft size={20} />
+                              </button>
                             </div>
-
-                            <button
-                              onClick={() => handlePageChange(currentPage + 1)}
-                              disabled={currentPage === totalPages || isLoading}
-                              className="flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              <span className="ml-2">التالي</span>
-                              <ChevronLeft size={20} />
-                            </button>
-                          </div>
-
-                          {/* Desktop Pagination */}
-                          <div className="hidden sm:flex justify-center items-center space-x-reverse space-x-2">
-                            <button
-                              onClick={() => handlePageChange(currentPage - 1)}
-                              disabled={currentPage === 1 || isLoading}
-                              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              السابق
-                            </button>
-
-                            <div className="flex items-center space-x-reverse space-x-1">
-                              {/* Page buttons logic */}
-                              {Array.from({ length: totalPages > 5 ? 5 : totalPages }, (_, i) => {
-                                let pageNum;
-                                if (totalPages <= 5) {
-                                  pageNum = i + 1;
-                                } else if (currentPage <= 3) {
-                                  pageNum = i + 1;
-                                } else if (currentPage >= totalPages - 2) {
-                                  pageNum = totalPages - 4 + i;
-                                } else {
-                                  pageNum = currentPage - 2 + i;
-                                }
-
-                                // Boundary check for calculated pageNum
-                                if (pageNum < 1 || pageNum > totalPages) return null;
-
-                                return (
-                                  <button
-                                    key={pageNum}
-                                    onClick={() => handlePageChange(pageNum)}
-                                    disabled={isLoading}
-                                    className={`px-3 py-2 rounded-lg text-sm ${
-                                      currentPage === pageNum
-                                        ? 'bg-pink-600 text-white'
-                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                                      } disabled:opacity-50`}
-                                  >
-                                    {pageNum}
-                                  </button>
-                                );
-                              })}
-                            </div>
-
-                            <button
-                              onClick={() => handlePageChange(currentPage + 1)}
-                              disabled={currentPage === totalPages || isLoading}
-                              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              التالي
-                            </button>
-                          </div>
-
-                          <div className="text-center text-sm text-gray-500">
-                            إجمالي المنتجات: {products.length} | الصفحة {currentPage} من {totalPages}
-                          </div>
-                        </div>
+                          )}
+                        </>
                       )}
                     </div>
                   )}
-                </div>
-              </div>
-
-              {/* Desktop Sidebar */}
-              <div className="hidden lg:block lg:w-80">
-                <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">إحصائيات سريعة</h3>
-                  <div className="space-y-4">
-                    <div className="bg-pink-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600">إجمالي المنتجات</p>
-                      <p className="text-2xl font-bold text-pink-600">{products.length}</p>
-                    </div>
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600">منتجات حريمي</p>
-                      <p className="text-2xl font-bold text-blue-600">
-                        {products.filter(p => p.category === 0).length}
-                      </p>
-                    </div>
-                    <div className="bg-green-50 p-4 rounded-lg">
-                      <p className="text-sm text-gray-600">منتجات أطفال</p>
-                      <p className="text-2xl font-bold text-green-600">
-                        {products.filter(p => p.category === 1).length}
-                      </p>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -1242,4 +1147,3 @@ const handleAddProduct = async () => {
 };
 
 export default ProductsManagement;
-
