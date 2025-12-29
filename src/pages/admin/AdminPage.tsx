@@ -28,6 +28,7 @@ const AdminPage: React.FC = () => {
     { to: '/admin/discounts', icon: Tag, label: 'أكواد الخصم' },
     { to: '/admin/shipping', icon: Truck, label: 'رسوم الشحن' },
     { to: '/admin/custom-orders', icon: Truck, label: 'طلبات مخصصة' },
+    { to: '/admin/cake-configuration', icon: Truck, label: 'تكوين الكعكة' },
   ];
 
   return (
