@@ -15,7 +15,6 @@ interface ApiResponse {
 
 interface HomeRestoreState {
   scrollY: number;
-  activeCategory: 'women' | 'children';
 }
 
 const HomePage: React.FC = () => {
@@ -23,25 +22,22 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [womenProducts, setWomenProducts] = useState<Product[]>([]);
-  const [childrenProducts, setChildrenProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState<'women' | 'children'>('women');
   const [restoreScroll, setRestoreScroll] = useState<number | null>(null);
 
   useEffect(() => {
     const state = location.state?.fromHome as HomeRestoreState | undefined;
 
     if (state) {
-      setActiveCategory(state.activeCategory);
       setRestoreScroll(state.scrollY);
     } else {
       window.scrollTo(0, 0);
     }
   }, [location]);
 
-  const fetchProducts = async (category: 'women' | 'children', pageSize: number = 4) => {
+  const fetchProducts = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -49,7 +45,7 @@ const HomePage: React.FC = () => {
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
       const response = await fetch(
-        `${apiUrl}/api/products/${category}?pageNumber=1&pageSize=${pageSize}`,
+        `${apiUrl}/api/products?pageNumber=1&pageSize=10`,
         {
           method: 'GET',
           headers: {
@@ -83,48 +79,38 @@ const HomePage: React.FC = () => {
 
       const mappedProducts: Product[] = data.items.map((item) => ({
         ...item,
-        inStock: item.inStock !== undefined ? item.inStock : true,
-        isOffer: item.isOffer !== undefined ? item.isOffer : false,
-        originalPrice:
-          item.originalPrice !== undefined ? item.originalPrice : undefined,
+        inStock: item.isAvailable !== undefined ? item.isAvailable : true,
+        isOffer: (item.originalPrice !== undefined && 
+                  item.originalPrice > item.price) ? true : false,
+        originalPrice: item.originalPrice !== undefined ? item.originalPrice : undefined,
       }));
 
-      return mappedProducts;
+      setProducts(mappedProducts);
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
           : 'Error fetching products. Please try again later.'
       );
-      return [];
+      setProducts([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    const fetchAllProducts = async () => {
-      const womenData = await fetchProducts('women', 6);
-      const childrenData = await fetchProducts('children', 6);
-      setWomenProducts(womenData);
-      setChildrenProducts(childrenData);
-    };
-
-    fetchAllProducts();
+    fetchProducts();
   }, []);
 
-  const currentProducts =
-    activeCategory === 'women' ? womenProducts : childrenProducts;
-
   useEffect(() => {
-    if (restoreScroll !== null && !loading && currentProducts.length > 0) {
+    if (restoreScroll !== null && !loading && products.length > 0) {
       const timer = setTimeout(() => {
         window.scrollTo(0, restoreScroll);
         setRestoreScroll(null);
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [loading, restoreScroll, currentProducts]);
+  }, [loading, restoreScroll, products]);
 
   const handleViewProduct = (product: Product) => {
     navigate(`/product/${product.id}`, {
@@ -132,7 +118,6 @@ const HomePage: React.FC = () => {
         product,
         fromHome: {
           scrollY: window.scrollY,
-          activeCategory: activeCategory,
         },
       },
     });
@@ -202,7 +187,7 @@ const HomePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Main CTAs like original Home */}
+          {/* Main CTAs */}
           <div className="space-y-4 w-full max-w-md">
             <button
               onClick={() => navigate('/menu')}
@@ -223,7 +208,7 @@ const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Category Toggle (keeps your women/children logic, just UI) */}
+        {/* Products Section Header */}
         <div className="flex flex-col items-center mb-12">
           <h2 className="text-2xl md:text-3xl font-bold text-purple-900 mb-4">
             استكشف التورتات
@@ -231,7 +216,7 @@ const HomePage: React.FC = () => {
         </div>
 
         {/* Loading / error / products */}
-        {loading && currentProducts.length === 0 ? (
+        {loading && products.length === 0 ? (
           <div className="text-center py-20">
             <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-600 mb-4"></div>
             <p className="text-xl text-gray-600 font-semibold">جار التحميل...</p>
@@ -254,7 +239,7 @@ const HomePage: React.FC = () => {
           <>
             {/* Products Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto mb-12">
-              {currentProducts.map((product) => (
+              {products.map((product) => (
                 <div
                   key={product.id}
                   className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2"
@@ -269,14 +254,10 @@ const HomePage: React.FC = () => {
             </div>
 
             {/* View All Button */}
-            {currentProducts.length > 0 && (
+            {products.length > 0 && (
               <div className="text-center mb-20">
                 <button
-                  onClick={() =>
-                    navigate(
-                      activeCategory === 'women' ? '/menu' : '/children'
-                    )
-                  }
+                  onClick={() => navigate('/menu')}
                   className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-12 py-4 rounded-2xl hover:from-purple-700 hover:to-pink-600 transition-all duration-300 font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 text-lg"
                 >
                   عرض كل التورتات
@@ -285,7 +266,7 @@ const HomePage: React.FC = () => {
             )}
 
             {/* No Products Found */}
-            {currentProducts.length === 0 && !loading && (
+            {products.length === 0 && !loading && (
               <div className="text-center py-20">
                 <div className="text-7xl mb-6">📦</div>
                 <p className="text-2xl text-purple-900 font-bold mb-3">
