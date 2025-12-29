@@ -11,7 +11,6 @@ import { useApp } from '../contexts/AppContext';
 import ProductCard from '../components/ProductCard';
 import { Product } from '../types';
 
-
 interface ApiResponse {
   items: Product[];
   totalItems: number;
@@ -20,18 +19,15 @@ interface ApiResponse {
   totalPages: number;
 }
 
-
 interface MenuRestoreState {
   scrollY: number;
   pageNumber: number;
 }
 
-
 const MenuPage: React.FC = () => {
   const { dispatch } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
-
 
   const [products, setProducts] = useState<Product[]>([]);
   const [pageNumber, setPageNumber] = useState(1);
@@ -40,12 +36,10 @@ const MenuPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [restoreScroll, setRestoreScroll] = useState<number | null>(null);
 
-
   const fetchProducts = async (page: number) => {
     try {
       setLoading(true);
       setError(null);
-
 
       const token = localStorage.getItem('jwt_token') || 'jwt_token';
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -59,7 +53,6 @@ const MenuPage: React.FC = () => {
           },
         }
       );
-
 
       const contentType = response.headers.get('Content-Type');
       if (!response.ok) {
@@ -75,28 +68,53 @@ const MenuPage: React.FC = () => {
         );
       }
 
-
       const data: ApiResponse = await response.json();
-
 
       if (!data || !Array.isArray(data.items)) {
         throw new Error('Invalid response format: items is not an array');
       }
 
-
+      // Map products with safe defaults for all fields
       const mappedProducts: Product[] = data.items.map((item) => ({
-        ...item,
-        inStock: item.inStock !== undefined ? item.inStock : true,
-        isOffer: item.isOffer !== undefined ? item.isOffer : false,
-        originalPrice:
-          item.originalPrice !== undefined ? item.originalPrice : undefined,
+        id: item.id,
+        name: item.name || '',
+        code: item.code || '',
+        price: item.price || 0,
+        originalPrice: item.originalPrice || undefined,
+        description: item.description || '',
+        createdAt: item.createdAt || new Date().toISOString(),
+        
+        // Safe array handling - ensure they're always arrays
+        images: Array.isArray(item.images) ? item.images : [],
+        sizes: Array.isArray(item.sizes) ? item.sizes : [],
+        colors: Array.isArray(item.colors) ? item.colors : [],
+        
+        // Boolean fields with safe defaults
+        isHidden: item.isHidden !== undefined ? item.isHidden : false,
+        isAvailable: item.isAvailable !== undefined ? item.isAvailable : true,
+        isInstant: item.isInstant !== undefined ? item.isInstant : false,
+        isFeatured: item.isFeatured !== undefined ? item.isFeatured : false,
+        
+        // Computed fields
+        inStock: item.isAvailable !== undefined ? item.isAvailable : true,
+        isOffer: (item.originalPrice !== undefined && 
+                  item.originalPrice > item.price) ? true : false,
+        
+        // Additional fields
+        rating: item.rating !== undefined ? item.rating : 0,
+        salesCount: item.salesCount !== undefined ? item.salesCount : 0,
+        
+        // Optional enum fields
+        category: item.category || undefined,
+        type: item.type || undefined,
+        season: item.season || undefined,
       }));
-
 
       setProducts(mappedProducts);
       setTotalPages(data.totalPages);
       setPageNumber(data.pageNumber);
     } catch (err) {
+      console.error('Error fetching products:', err);
       setError(
         err instanceof Error
           ? err.message
@@ -107,13 +125,11 @@ const MenuPage: React.FC = () => {
     }
   };
 
-
   // initial load / restore
   useEffect(() => {
     const state = location.state?.fromMenuPage as
       | MenuRestoreState
       | undefined;
-
 
     if (state) {
       setPageNumber(state.pageNumber);
@@ -124,7 +140,6 @@ const MenuPage: React.FC = () => {
       fetchProducts(1);
     }
   }, []); // mount only
-
 
   // restore scroll after data load
   useEffect(() => {
@@ -137,27 +152,26 @@ const MenuPage: React.FC = () => {
     }
   }, [loading, products, restoreScroll]);
 
-
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages && page !== pageNumber) {
+      window.scrollTo(0, 0);
       fetchProducts(page);
     }
   };
 
-
   const handlePrevPage = () => {
     if (pageNumber > 1) {
+      window.scrollTo(0, 0);
       fetchProducts(pageNumber - 1);
     }
   };
 
-
   const handleNextPage = () => {
     if (pageNumber < totalPages) {
+      window.scrollTo(0, 0);
       fetchProducts(pageNumber + 1);
     }
   };
-
 
   const handleViewProduct = (product: Product) => {
     navigate(`/product/${product.id}`, {
@@ -171,12 +185,17 @@ const MenuPage: React.FC = () => {
     });
   };
 
-
   const handleAddToCart = (product: Product) => {
-    if (!product.inStock) return;
+    // Safety check
+    if (!product || !product.inStock) {
+      return;
+    }
 
+    // Check if product has sizes or colors with safety checks
+    const hasSizes = Array.isArray(product.sizes) && product.sizes.length > 0;
+    const hasColors = Array.isArray(product.colors) && product.colors.length > 0;
 
-    if (product.sizes.length > 0 || product.colors.length > 0) {
+    if (hasSizes || hasColors) {
       handleViewProduct(product);
     } else {
       dispatch({
@@ -184,25 +203,22 @@ const MenuPage: React.FC = () => {
         payload: {
           product,
           quantity: 1,
-          selectedSize: product.sizes[0] || '',
-          selectedColor: product.colors[0] || '',
+          selectedSize: hasSizes ? product.sizes[0] : '',
+          selectedColor: hasColors ? product.colors[0] : '',
         },
       });
     }
   };
 
-
   const getPageNumbers = () => {
     const pages: (number | '...')[] = [];
     const maxPagesToShow = 5;
-
 
     if (totalPages <= maxPagesToShow) {
       for (let i = 1; i <= totalPages; i++) pages.push(i);
     } else {
       let start = Math.max(1, pageNumber - 2);
       let end = Math.min(totalPages, pageNumber + 2);
-
 
       if (end - start < maxPagesToShow - 1) {
         if (start === 1) {
@@ -212,15 +228,12 @@ const MenuPage: React.FC = () => {
         }
       }
 
-
       if (start > 1) {
         pages.push(1);
         if (start > 2) pages.push('...');
       }
 
-
       for (let i = start; i <= end; i++) pages.push(i);
-
 
       if (end < totalPages) {
         if (end < totalPages - 1) pages.push('...');
@@ -228,17 +241,13 @@ const MenuPage: React.FC = () => {
       }
     }
 
-
     return pages;
   };
-
 
   const renderPagination = () => {
     if (totalPages <= 1) return null;
 
-
     const pageNumbers = getPageNumbers();
-
 
     return (
       <div className="flex justify-center items-center space-x-2 mt-8 space-x-reverse">
@@ -250,7 +259,6 @@ const MenuPage: React.FC = () => {
           <ChevronRight size={20} />
           <span className="mr-1">السابق</span>
         </button>
-
 
         <div className="flex space-x-1 space-x-reverse">
           {pageNumbers.map((page, index) =>
@@ -275,7 +283,6 @@ const MenuPage: React.FC = () => {
           )}
         </div>
 
-
         <button
           onClick={handleNextPage}
           disabled={pageNumber === totalPages || loading}
@@ -288,7 +295,6 @@ const MenuPage: React.FC = () => {
     );
   };
 
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-white py-8">
       <div className="container mx-auto px-4">
@@ -300,7 +306,6 @@ const MenuPage: React.FC = () => {
           <span>العودة للرئيسية</span>
         </Link>
 
-
         {/* Header like cake section */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
@@ -309,14 +314,13 @@ const MenuPage: React.FC = () => {
             <Sparkles className="h-8 w-8 text-pink-500" />
           </div>
           <h1 className="text-3xl font-bold text-purple-900 mb-3">
-            تورتات
+            تورتات برنس كيك
           </h1>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            مجموعة مميزة من تورتات برنس كيك ، بنكهات وتصاميم تناسب كل
+            مجموعة مميزة من تورتات برنس كيك، بنكهات وتصاميم تناسب كل
             المناسبات
           </p>
         </div>
-
 
         {loading && products.length === 0 ? (
           <div className="text-center py-12">
@@ -377,6 +381,5 @@ const MenuPage: React.FC = () => {
     </div>
   );
 };
-
 
 export default MenuPage;
