@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect, useState } from 'react';
-import { Package, Eye } from 'lucide-react';
+import { Package, Eye, Calendar, CreditCard, Loader2, ShoppingBag, AlertCircle } from 'lucide-react';
 
 const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -60,7 +60,6 @@ const MyOrders: React.FC = () => {
           throw new Error('لم يتم العثور على رمز الوصول. الرجاء تسجيل الدخول مرة أخرى.');
         }
 
-        // console.log('Fetching orders from:', `${apiUrl}/api/orders/my-orders`);
         const response = await fetch(`${apiUrl}/api/orders/my-orders`, {
           method: 'GET',
           headers: {
@@ -80,16 +79,12 @@ const MyOrders: React.FC = () => {
         }
 
         const data: PaginatedOrdersResponse = await response.json();
-        // console.log('API response:', data);
 
-        // Ensure data.items is an array
         if (!Array.isArray(data.items)) {
-          // console.error('Expected an array for data.items, received:', data.items);
           setOrders([]);
           throw new Error('تنسيق الاستجابة غير صالح: متوقع مصفوفة من الطلبات في data.items.');
         }
 
-        // Map numeric status and paymentMethod to string values
         const mappedOrders = data.items.map((order: any) => ({
           ...order,
           status: mapStatus(order.status),
@@ -98,7 +93,6 @@ const MyOrders: React.FC = () => {
 
         setOrders(mappedOrders);
       } catch (err: any) {
-        // console.error('Error fetching orders:', err);
         setError(err.message || 'حدث خطأ أثناء جلب الطلبات.');
         setOrders([]);
       } finally {
@@ -106,7 +100,6 @@ const MyOrders: React.FC = () => {
       }
     };
 
-    // Map status and payment method for consistency
     const mapStatus = (status: number | string): 'UnderReview' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled' => {
       switch (Number(status)) {
         case 0: return 'UnderReview';
@@ -159,12 +152,12 @@ const MyOrders: React.FC = () => {
   // Helper function to get status color
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'underreview': return 'bg-orange-100 text-orange-800';
-      case 'confirmed': return 'bg-blue-100 text-blue-800';
-      case 'shipped': return 'bg-purple-100 text-purple-800';
-      case 'delivered': return 'bg-green-100 text-green-800';
-      case 'cancelled': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'underreview': return 'bg-amber-100 text-amber-800 border-amber-200';
+      case 'confirmed': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'shipped': return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'delivered': return 'bg-green-100 text-green-800 border-green-200';
+      case 'cancelled': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
@@ -181,109 +174,190 @@ const MyOrders: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-600"></div>
-        <span className="mr-3 text-gray-600">جاري تحميل الطلبات...</span>
+      <div className="min-h-screen bg-purple-50 flex items-center justify-center px-4" dir="rtl">
+        <div className="text-center py-12">
+          <div className="relative inline-block mb-6">
+            <div className="absolute inset-0 bg-purple-400 rounded-full blur-xl opacity-30 animate-pulse"></div>
+            <div className="relative bg-purple-600 rounded-full p-4">
+              <Package className="h-12 w-12 text-white animate-bounce" />
+            </div>
+          </div>
+          <p className="text-purple-900 font-bold text-lg">جاري تحميل الطلبات...</p>
+          <p className="text-gray-500 text-sm mt-2">انتظر لحظة 📦</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-10 text-red-500 bg-red-50 border border-red-200 rounded-lg">
-        {error}
+      <div className="min-h-screen bg-purple-50 py-6 sm:py-8" dir="rtl">
+        <div className="container mx-auto px-3 sm:px-4 max-w-md">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 text-center border-2 border-red-200">
+            <AlertCircle className="h-12 w-12 sm:h-16 sm:w-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-lg sm:text-xl font-bold text-red-600 mb-3">حدث خطأ</h2>
+            <p className="text-sm sm:text-base text-gray-600 mb-6">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="w-full bg-purple-600 text-white px-6 py-3 rounded-xl hover:bg-purple-700 transition-all font-semibold shadow-lg text-sm sm:text-base"
+            >
+              إعادة المحاولة
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 bg-gray-50 min-h-screen">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">طلباتي</h1>
-      {orders.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg shadow-md">
-          <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">لا توجد طلبات بعد.</p>
+    <div className="min-h-screen bg-purple-50 py-4 sm:py-6 md:py-8" dir="rtl">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 max-w-7xl">
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-purple-900 flex items-center gap-2 sm:gap-3">
+            <ShoppingBag className="h-6 w-6 sm:h-7 sm:w-7 text-purple-600" />
+            <span>طلباتي</span>
+          </h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1 sm:mt-2">
+            تتبع جميع طلباتك من مكان واحد
+          </p>
         </div>
-      ) : (
-        <>
-          {/* Desktop Table View */}
-          <div className="hidden sm:block bg-white rounded-xl shadow-md border border-gray-200 transition-all duration-200">
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم الطلب</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">التاريخ</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجمالي</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {orders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{order.orderNumber}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(order.date)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">{order.total.toFixed(2)} جنيه</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                          {getStatusText(order.status)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <Link
-                          to={`/order/${order.id}`}
-                          className="flex items-center text-pink-600 hover:text-pink-800"
-                          title="عرض التفاصيل"
-                        >
-                          <Eye className="h-4 w-4 ml-1" />
-                          عرض التفاصيل
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
 
-          {/* Mobile Card View */}
-          <div className="block sm:hidden space-y-4">
-            {orders.map((order) => (
-              <div key={order.id} className="bg-white rounded-xl shadow-md border border-gray-200 p-4 transition-all duration-200 hover:shadow-lg">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <p className="font-semibold text-gray-900">#{order.orderNumber}</p>
-                    <p className="text-sm text-gray-500">{formatDate(order.date)}</p>
-                  </div>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                    {getStatusText(order.status)}
-                  </span>
-                </div>
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">المبلغ:</span>
-                    <span className="text-sm font-semibold text-gray-900">{order.total.toFixed(2)} جنيه</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">طريقة الدفع:</span>
-                    <span className="text-sm text-gray-900">{getPaymentMethodText(order.paymentMethod)}</span>
-                  </div>
-                </div>
-                <div className="flex justify-end">
-                  <Link
-                    to={`/order/${order.id}`}
-                    className="flex items-center text-xs text-pink-600 bg-pink-50 px-2 py-1 rounded hover:bg-pink-100"
-                  >
-                    <Eye className="h-3 w-3 ml-1" />
-                    التفاصيل
-                  </Link>
-                </div>
-              </div>
-            ))}
+        {orders.length === 0 ? (
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-8 sm:p-12 text-center border-2 border-purple-100">
+            <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-purple-100 rounded-full mb-4">
+              <Package className="h-8 w-8 sm:h-10 sm:w-10 text-purple-600" />
+            </div>
+            <h2 className="text-lg sm:text-xl font-bold text-purple-900 mb-2">لا توجد طلبات بعد</h2>
+            <p className="text-sm sm:text-base text-gray-600 mb-6">لم تقم بإنشاء أي طلبات حتى الآن</p>
+            <Link
+              to="/"
+              className="inline-block bg-purple-600 text-white px-6 py-3 rounded-xl hover:bg-purple-700 transition-all font-semibold shadow-lg text-sm sm:text-base"
+            >
+              تصفح المنتجات
+            </Link>
           </div>
-        </>
-      )}
+        ) : (
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden lg:block bg-white rounded-2xl shadow-xl border-2 border-purple-100 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead className="bg-purple-100">
+                    <tr>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">
+                        رقم الطلب
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">
+                        <Calendar className="inline h-4 w-4 ml-1" />
+                        التاريخ
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">
+                        الإجمالي
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">
+                        <CreditCard className="inline h-4 w-4 ml-1" />
+                        طريقة الدفع
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">
+                        الحالة
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">
+                        الإجراءات
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y-2 divide-purple-50">
+                    {orders.map((order) => (
+                      <tr key={order.id} className="hover:bg-purple-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-purple-900">
+                          #{order.orderNumber}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {formatDate(order.date)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-purple-700 font-black">
+                          {order.total.toFixed(2)} جنيه
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {getPaymentMethodText(order.paymentMethod)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold border-2 ${getStatusColor(order.status)}`}>
+                            {getStatusText(order.status)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <Link
+                            to={`/order/${order.id}`}
+                            className="flex items-center gap-1 text-purple-600 hover:text-purple-800 font-semibold transition-colors"
+                            title="عرض التفاصيل"
+                          >
+                            <Eye className="h-4 w-4" />
+                            <span>عرض التفاصيل</span>
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile/Tablet Card View */}
+            <div className="block lg:hidden space-y-3 sm:space-y-4">
+              {orders.map((order) => (
+                <div
+                  key={order.id}
+                  className="bg-white rounded-xl sm:rounded-2xl shadow-lg border-2 border-purple-100 p-4 sm:p-5 transition-all duration-200 hover:shadow-xl"
+                >
+                  <div className="flex justify-between items-start mb-3 sm:mb-4">
+                    <div>
+                      <p className="font-black text-purple-900 text-base sm:text-lg">
+                        #{order.orderNumber}
+                      </p>
+                      <p className="text-xs sm:text-sm text-gray-500 flex items-center gap-1 mt-1">
+                        <Calendar className="h-3 w-3" />
+                        {formatDate(order.date)}
+                      </p>
+                    </div>
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold border-2 ${getStatusColor(order.status)}`}>
+                      {getStatusText(order.status)}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 mb-4 pb-4 border-b-2 border-purple-100">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs sm:text-sm text-gray-600">المبلغ:</span>
+                      <span className="text-sm sm:text-base font-black text-purple-700">
+                        {order.total.toFixed(2)} جنيه
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs sm:text-sm text-gray-600 flex items-center gap-1">
+                        <CreditCard className="h-3 w-3" />
+                        طريقة الدفع:
+                      </span>
+                      <span className="text-xs sm:text-sm text-gray-800 font-medium">
+                        {getPaymentMethodText(order.paymentMethod)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Link
+                      to={`/order/${order.id}`}
+                      className="flex items-center gap-1 text-xs sm:text-sm text-white bg-purple-600 px-3 sm:px-4 py-2 rounded-lg hover:bg-purple-700 transition-all font-semibold shadow-md"
+                    >
+                      <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span>عرض التفاصيل</span>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Tag, Loader2, Copy, AlertCircle } from 'lucide-react';
+import { ArrowRight, Tag, Loader2, Copy, AlertCircle, Sparkles, Gift, Percent } from 'lucide-react';
 
 // Define interfaces
 interface OfferItem {
@@ -59,6 +59,7 @@ const OffersPage: React.FC = () => {
   const [loadingDiscountCodes, setLoadingDiscountCodes] = useState(true);
   const [errorDiscountCodes, setErrorDiscountCodes] = useState<string | null>(null);
   const [authError, setAuthError] = useState<boolean>(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   // Scroll to top when the component mounts
   useEffect(() => {
@@ -71,7 +72,6 @@ const OffersPage: React.FC = () => {
     if (!token) return false;
     
     try {
-      // Parse JWT token to check expiration
       const payload = JSON.parse(atob(token.split('.')[1]));
       const currentTime = Date.now() / 1000;
       return payload.exp > currentTime;
@@ -84,8 +84,6 @@ const OffersPage: React.FC = () => {
   const handleAuthError = () => {
     setAuthError(true);
     localStorage.removeItem('jwt_token');
-    // Optionally redirect to login page
-    // navigate('/login');
   };
 
   // Public API request (no authentication required)
@@ -116,7 +114,6 @@ const OffersPage: React.FC = () => {
       'Content-Type': 'application/json',
     };
 
-    // Add Authorization header only if token exists
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
@@ -145,7 +142,6 @@ const OffersPage: React.FC = () => {
     try {
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
       
-      // Try public access first
       const response = await makePublicRequest(
         `${apiUrl}/api/offers?pageNumber=${pageNumber}&pageSize=${PAGE_SIZE}`
       );
@@ -156,11 +152,9 @@ const OffersPage: React.FC = () => {
       setTotalCount(data.totalItems || 0);
       setCurrentPage(data.pageNumber || pageNumber);
     } catch (err) {
-      // If public access fails, try with authentication as fallback
       try {
         const token = localStorage.getItem('jwt_token');
         if (token) {
-          // console.log('Public access failed, trying authenticated request...');
           const authResponse = await makeAuthenticatedRequest(
             `${apiUrl}/api/offers?pageNumber=${pageNumber}&pageSize=${PAGE_SIZE}`,
             false
@@ -175,7 +169,6 @@ const OffersPage: React.FC = () => {
         }
       } catch (authErr) {
         setErrorOffers(err instanceof Error ? err.message : 'Failed to fetch offers');
-        // console.error('Error fetching offers:', err);
       }
     } finally {
       setLoadingOffers(false);
@@ -187,7 +180,6 @@ const OffersPage: React.FC = () => {
     setLoadingDiscountCodes(true);
     setErrorDiscountCodes(null);
     
-    // Skip fetching discount codes if no valid token
     if (!isTokenValid()) {
       setLoadingDiscountCodes(false);
       setErrorDiscountCodes('يرجى تسجيل الدخول لعرض أكواد الخصم');
@@ -198,14 +190,13 @@ const OffersPage: React.FC = () => {
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
       const response = await makeAuthenticatedRequest(
         `${apiUrl}/api/discount-codes?pageNumber=1&pageSize=${PAGE_SIZE}`,
-        true // Require authentication for discount codes
+        true
       );
 
       const data: ApiResponse<DiscountCode> = await response.json();
       setDiscountCodes(data.items || []);
     } catch (err) {
       setErrorDiscountCodes(err instanceof Error ? err.message : 'Failed to fetch discount codes');
-      // console.error('Error fetching discount codes:', err);
     } finally {
       setLoadingDiscountCodes(false);
     }
@@ -231,7 +222,8 @@ const OffersPage: React.FC = () => {
   // Copy discount code to clipboard
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
-    alert(`تم نسخ الكود: ${code}`);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 2000);
   };
 
   const handleLogin = () => {
@@ -256,14 +248,14 @@ const OffersPage: React.FC = () => {
     }
 
     return (
-      <div className="flex justify-center items-center space-x-reverse space-x-2 mt-8">
+      <div className="flex flex-wrap justify-center items-center gap-2 mt-6 sm:mt-8">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className={`px-3 py-2 rounded-lg ${
+          className={`px-3 py-2 rounded-lg text-sm sm:text-base font-medium transition-colors ${
             currentPage === 1
               ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+              : 'bg-white text-purple-700 hover:bg-purple-50 border-2 border-purple-200'
           }`}
         >
           السابق
@@ -273,7 +265,7 @@ const OffersPage: React.FC = () => {
           <>
             <button
               onClick={() => handlePageChange(1)}
-              className="px-3 py-2 rounded-lg bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+              className="px-3 py-2 rounded-lg bg-white text-purple-700 hover:bg-purple-50 border-2 border-purple-200 text-sm sm:text-base font-medium"
             >
               1
             </button>
@@ -285,10 +277,10 @@ const OffersPage: React.FC = () => {
           <button
             key={page}
             onClick={() => handlePageChange(page)}
-            className={`px-3 py-2 rounded-lg ${
+            className={`px-3 py-2 rounded-lg text-sm sm:text-base font-bold transition-colors ${
               page === currentPage
-                ? 'bg-red-600 text-white'
-                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                ? 'bg-purple-600 text-white'
+                : 'bg-white text-purple-700 hover:bg-purple-50 border-2 border-purple-200'
             }`}
           >
             {page}
@@ -300,7 +292,7 @@ const OffersPage: React.FC = () => {
             {endPage < totalPages - 1 && <span className="text-gray-500">...</span>}
             <button
               onClick={() => handlePageChange(totalPages)}
-              className="px-3 py-2 rounded-lg bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
+              className="px-3 py-2 rounded-lg bg-white text-purple-700 hover:bg-purple-50 border-2 border-purple-200 text-sm sm:text-base font-medium"
             >
               {totalPages}
             </button>
@@ -310,10 +302,10 @@ const OffersPage: React.FC = () => {
         <button
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className={`px-3 py-2 rounded-lg ${
+          className={`px-3 py-2 rounded-lg text-sm sm:text-base font-medium transition-colors ${
             currentPage === totalPages
               ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+              : 'bg-white text-purple-700 hover:bg-purple-50 border-2 border-purple-200'
           }`}
         >
           التالي
@@ -323,26 +315,26 @@ const OffersPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-purple-50 py-4 sm:py-6 md:py-8" dir="rtl">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6">
         <Link
           to="/"
-          className="flex items-center space-x-reverse space-x-2 text-gray-600 hover:text-pink-600 mb-6 transition-colors"
+          className="flex items-center gap-2 text-purple-700 hover:text-purple-900 mb-4 sm:mb-6 transition-colors font-medium text-sm sm:text-base"
         >
           <ArrowRight size={20} />
           <span>العودة للرئيسية</span>
         </Link>
 
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-reverse space-x-3 mb-4">
-            <Tag className="text-red-500" size={32} />
-            <h1 className="text-3xl font-bold text-gray-800">العروض الخاصة</h1>
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+            <Gift className="text-red-500 w-7 h-7 sm:w-8 sm:h-8" />
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-purple-900">العروض الخاصة</h1>
           </div>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto px-4">
             اكتشفي أفضل العروض والخصومات على مجموعة مختارة من منتجاتنا المميزة
           </p>
           {totalCount > 0 && (
-            <p className="text-sm text-gray-500 mt-2">
+            <p className="text-xs sm:text-sm text-gray-500 mt-2">
               عدد العروض: {totalCount} عرض
             </p>
           )}
@@ -350,40 +342,43 @@ const OffersPage: React.FC = () => {
 
         {/* Authentication Error Alert */}
         {authError && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center">
-              <AlertCircle className="text-red-500 ml-3" size={20} />
-              <div>
-                <h3 className="text-red-800 font-medium">انتهت صلاحية جلسة التصفح</h3>
-                <p className="text-red-600 text-sm mt-1">
+          <div className="bg-red-50 border-2 border-red-200 rounded-xl sm:rounded-2xl p-4 sm:p-5 mb-4 sm:mb-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="text-red-500 flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6" />
+              <div className="flex-1">
+                <h3 className="text-red-800 font-bold text-sm sm:text-base">انتهت صلاحية جلسة التصفح</h3>
+                <p className="text-red-600 text-xs sm:text-sm mt-1">
                   يرجى تسجيل الدخول مرة أخرى للوصول إلى جميع الميزات
                 </p>
+                <button
+                  onClick={handleLogin}
+                  className="mt-3 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-xs sm:text-sm font-semibold"
+                >
+                  تسجيل الدخول
+                </button>
               </div>
             </div>
-            <button
-              onClick={handleLogin}
-              className="mt-3 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm"
-            >
-              تسجيل الدخول
-            </button>
           </div>
         )}
 
         {/* Discount Codes Section */}
-        <div className="bg-gradient-to-l from-red-50 to-pink-50 rounded-2xl p-6 mb-8 border border-red-200">
-          <h2 className="text-xl font-bold text-red-800 mb-4 text-center">أكواد الخصم المتاحة</h2>
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 mb-6 sm:mb-8 border-2 border-red-200 shadow-lg">
+          <h2 className="text-lg sm:text-xl font-bold text-red-700 mb-3 sm:mb-4 text-center flex items-center justify-center gap-2">
+            <Percent className="w-5 h-5 sm:w-6 sm:h-6" />
+            <span>أكواد الخصم المتاحة</span>
+          </h2>
           {loadingDiscountCodes ? (
-            <div className="flex justify-center items-center py-4">
-              <Loader2 className="animate-spin text-red-600" size={24} />
-              <span className="mr-2 text-gray-600">جاري تحميل أكواد الخصم...</span>
+            <div className="flex justify-center items-center py-6 sm:py-8">
+              <Loader2 className="animate-spin text-red-600 w-6 h-6 sm:w-8 sm:h-8" />
+              <span className="mr-2 sm:mr-3 text-gray-600 text-sm sm:text-base">جاري تحميل أكواد الخصم...</span>
             </div>
           ) : errorDiscountCodes ? (
-            <div className="text-center py-4">
-              <p className="text-red-600 mb-2">{errorDiscountCodes}</p>
+            <div className="text-center py-6 sm:py-8">
+              <p className="text-red-600 mb-3 sm:mb-4 text-sm sm:text-base">{errorDiscountCodes}</p>
               {!authError && (
                 <button
                   onClick={() => fetchDiscountCodes()}
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base font-semibold"
                 >
                   إعادة المحاولة
                 </button>
@@ -391,29 +386,29 @@ const OffersPage: React.FC = () => {
               {authError && (
                 <button
                   onClick={handleLogin}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors text-sm sm:text-base font-semibold"
                 >
                   تسجيل الدخول
                 </button>
               )}
             </div>
           ) : discountCodes.length === 0 ? (
-            <p className="text-center text-gray-600">لا توجد أكواد خصم متاحة حالياً</p>
+            <p className="text-center text-gray-600 py-4 text-sm sm:text-base">لا توجد أكواد خصم متاحة حالياً</p>
           ) : (
-            <div className="grid md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {discountCodes.map((code) => (
                 <div
                   key={code.id}
-                  className="bg-white p-4 rounded-lg border border-red-200 text-center relative group"
+                  className="bg-red-50 p-3 sm:p-4 rounded-xl border-2 border-red-200 text-center relative group hover:shadow-lg transition-all"
                 >
-                  <div className="text-lg font-bold text-red-600 mb-2">{code.code}</div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-base sm:text-lg font-black text-red-600 mb-2">{code.code}</div>
+                  <div className="text-xs sm:text-sm text-gray-700">
                     {code.percentageValue
-                      ? `خصم ${code.percentageValue}% (الحد الأقصى: ${code.maxDiscountAmount || 'غير محدد'} ج.م)`
-                      : `خصم ثابت ${code.fixedValue} ج.م`}
+                      ? `خصم ${code.percentageValue}%${code.maxDiscountAmount ? ` (حد أقصى: ${code.maxDiscountAmount} ج)` : ''}`
+                      : `خصم ثابت ${code.fixedValue} ج`}
                     {code.minOrderAmount > 0 && (
-                      <div className="text-xs text-gray-500 mt-1">
-                        الحد الأدنى للطلب: {code.minOrderAmount} ج.م
+                      <div className="text-xs text-gray-600 mt-1">
+                        الحد الأدنى: {code.minOrderAmount} ج
                       </div>
                     )}
                     <div className="text-xs text-gray-500 mt-1">
@@ -422,10 +417,14 @@ const OffersPage: React.FC = () => {
                   </div>
                   <button
                     onClick={() => handleCopyCode(code.code)}
-                    className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-100 p-2 rounded-full hover:bg-gray-200"
+                    className={`absolute top-2 left-2 transition-all p-1.5 sm:p-2 rounded-full ${
+                      copiedCode === code.code
+                        ? 'bg-green-500 text-white'
+                        : 'bg-white hover:bg-red-100 text-red-600 opacity-0 group-hover:opacity-100'
+                    }`}
                     title="نسخ الكود"
                   >
-                    <Copy size={16} className="text-gray-600" />
+                    <Copy size={14} className="sm:w-4 sm:h-4" />
                   </button>
                 </div>
               ))}
@@ -435,20 +434,20 @@ const OffersPage: React.FC = () => {
 
         {/* Offers Section */}
         {loadingOffers && (
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="animate-spin text-red-600" size={48} />
-            <span className="mr-3 text-gray-600">جاري تحميل العروض...</span>
+          <div className="flex justify-center items-center py-12 sm:py-16">
+            <Loader2 className="animate-spin text-purple-600 w-10 h-10 sm:w-12 sm:h-12" />
+            <span className="mr-3 text-gray-600 text-sm sm:text-base">جاري تحميل العروض...</span>
           </div>
         )}
 
         {errorOffers && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">⚠️</div>
-            <h2 className="text-2xl font-bold text-red-600 mb-4">حدث خطأ في تحميل العروض</h2>
-            <p className="text-gray-600 mb-6">{errorOffers}</p>
+          <div className="text-center py-12 sm:py-16 bg-white rounded-2xl sm:rounded-3xl shadow-xl p-6 sm:p-8 border-2 border-purple-100">
+            <div className="text-5xl sm:text-6xl mb-4">⚠️</div>
+            <h2 className="text-xl sm:text-2xl font-bold text-red-600 mb-3 sm:mb-4">حدث خطأ في تحميل العروض</h2>
+            <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">{errorOffers}</p>
             <button
               onClick={() => fetchOffers(currentPage)}
-              className="bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold"
+              className="bg-purple-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl hover:bg-purple-700 transition-colors font-bold text-sm sm:text-base shadow-lg"
             >
               إعادة المحاولة
             </button>
@@ -456,13 +455,13 @@ const OffersPage: React.FC = () => {
         )}
 
         {!loadingOffers && !errorOffers && offerItems.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">🏷️</div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">لا توجد عروض حالياً</h2>
-            <p className="text-gray-600 mb-6">تابعونا للحصول على أحدث العروض والخصومات</p>
+          <div className="text-center py-12 sm:py-16 bg-white rounded-2xl sm:rounded-3xl shadow-xl p-6 sm:p-8 border-2 border-purple-100">
+            <div className="text-5xl sm:text-6xl mb-4">🏷️</div>
+            <h2 className="text-xl sm:text-2xl font-bold text-purple-900 mb-3 sm:mb-4">لا توجد عروض حالياً</h2>
+            <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6">تابعونا للحصول على أحدث العروض والخصومات</p>
             <button
               onClick={() => navigate('/')}
-              className="bg-red-600 text-white px-8 py-3 rounded-lg hover:bg-red-700 transition-colors font-semibold"
+              className="bg-purple-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl hover:bg-purple-700 transition-colors font-bold text-sm sm:text-base shadow-lg"
             >
               العودة للرئيسية
             </button>
@@ -471,13 +470,13 @@ const OffersPage: React.FC = () => {
 
         {!loadingOffers && !errorOffers && offerItems.length > 0 && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
               {offerItems.map(offer => (
                 <div
                   key={offer.id}
-                  className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+                  className="bg-white rounded-xl sm:rounded-2xl shadow-lg overflow-hidden flex flex-col hover:shadow-2xl transition-all duration-300 border-2 border-purple-100 hover:-translate-y-1"
                 >
-                  <div className="relative overflow-hidden h-48">
+                  <div className="relative overflow-hidden h-40 sm:h-48">
                     <img
                       src={offer.imagePath}
                       alt={offer.title}
@@ -487,45 +486,46 @@ const OffersPage: React.FC = () => {
                         target.src = '/placeholder-image.jpg';
                       }}
                     />
-                    <div className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                    <div className="absolute top-2 sm:top-3 right-2 sm:right-3 bg-red-500 text-white px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-black">
                       -{offer.discountPercentage}%
                     </div>
                     {offer.isFeatured && (
-                      <div className="absolute top-3 left-3 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                        مميز
+                      <div className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-amber-500 text-white px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold flex items-center gap-1">
+                        <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                        <span>مميز</span>
                       </div>
                     )}
                   </div>
 
-                  <div className="p-4 flex flex-col flex-grow">
-                    <h3 className="text-lg font-bold text-gray-800 mb-2 line-clamp-2">
+                  <div className="p-3 sm:p-4 flex flex-col flex-grow">
+                    <h3 className="text-sm sm:text-base md:text-lg font-bold text-purple-900 mb-1 sm:mb-2 line-clamp-2">
                       {offer.title}
                     </h3>
-                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                    <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2">
                       {offer.description}
                     </p>
 
                     <div className="mt-auto">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center space-x-reverse space-x-2">
-                          <span className="text-xl font-bold text-red-600">
-                            {offer.salePrice.toFixed(2)} ج.م
+                      <div className="flex items-center justify-between mb-2 sm:mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg sm:text-xl font-black text-red-600">
+                            {offer.salePrice.toFixed(2)} ج
                           </span>
                           {offer.originalPrice > offer.salePrice && (
-                            <span className="text-sm text-gray-400 line-through">
-                              {offer.originalPrice.toFixed(2)} ج.م
+                            <span className="text-xs sm:text-sm text-gray-400 line-through">
+                              {offer.originalPrice.toFixed(2)} ج
                             </span>
                           )}
                         </div>
                       </div>
 
-                      <div className="text-xs text-gray-500 mb-3">
+                      <div className="text-[10px] sm:text-xs text-gray-500 mb-2 sm:mb-3 space-y-0.5">
                         <div>يبدأ: {new Date(offer.startDate).toLocaleDateString('ar-EG')}</div>
                         <div>ينتهي: {new Date(offer.endDate).toLocaleDateString('ar-EG')}</div>
                       </div>
 
                       <button
-                        className="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-2 px-4 rounded-lg hover:from-red-600 hover:to-pink-600 transition-all duration-300 font-semibold"
+                        className="w-full bg-purple-600 text-white py-2 sm:py-2.5 px-4 rounded-lg sm:rounded-xl hover:bg-purple-700 transition-all font-bold text-xs sm:text-sm shadow-md hover:shadow-lg"
                         onClick={() => handleExploreOffer(offer.id)}
                       >
                         استكشف العرض

@@ -9,6 +9,8 @@ import {
   Truck,
   Loader2,
   Sparkles,
+  ShoppingBag,
+  Package,
 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { CartItem } from '../types';
@@ -567,36 +569,43 @@ const CheckoutPage: React.FC = () => {
     fetchShippingFees();
   }, [fetchCart, fetchShippingFees]);
 
-  // --- Loading Screen (Prince Cake Style) ---
+  // --- Loading Screen ---
   if (loadingCart) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-pink-50 flex items-center justify-center">
-        <div className="text-center">
-          <Sparkles className="h-12 w-12 text-purple-600 animate-spin mx-auto mb-4" />
-          <p className="text-purple-900 font-medium">جاري تحميل السلة...</p>
+      <div className="min-h-screen bg-purple-50 flex items-center justify-center px-4" dir="rtl">
+        <div className="text-center py-12">
+          <div className="relative inline-block mb-6">
+            <div className="absolute inset-0 bg-purple-400 rounded-full blur-xl opacity-30 animate-pulse"></div>
+            <div className="relative bg-purple-600 rounded-full p-4">
+              <ShoppingBag className="h-12 w-12 text-white animate-bounce" />
+            </div>
+          </div>
+          <p className="text-purple-900 font-bold text-lg">جاري تحميل السلة...</p>
+          <p className="text-gray-500 text-sm mt-2">انتظر لحظة 🛍️</p>
         </div>
       </div>
     );
   }
 
-  // --- Cart Error Screen (Prince Cake Style) ---
+  // --- Cart Error Screen ---
   if (cartError) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-pink-50 py-8">
-        <div className="container mx-auto px-4">
-          <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
-            <h2 className="text-xl font-bold text-red-600 mb-4">خطأ</h2>
-            <p className="text-gray-600 mb-6">{cartError}</p>
-            <div className="flex flex-col sm:flex-row justify-center gap-4">
+      <div className="min-h-screen bg-purple-50 py-6 sm:py-8" dir="rtl">
+        <div className="container mx-auto px-3 sm:px-4 max-w-md">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 text-center border-2 border-purple-100">
+            <div className="text-5xl sm:text-6xl mb-4">⚠️</div>
+            <h2 className="text-lg sm:text-xl font-bold text-red-600 mb-3">خطأ</h2>
+            <p className="text-sm sm:text-base text-gray-600 mb-6">{cartError}</p>
+            <div className="flex flex-col gap-3">
               <button
                 onClick={() => fetchCart()}
-                className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-medium"
+                className="w-full bg-purple-600 text-white px-6 py-3 rounded-xl hover:bg-purple-700 transition-all font-semibold shadow-lg text-sm sm:text-base"
               >
                 إعادة المحاولة
               </button>
               <button
                 onClick={() => navigate('/cart')}
-                className="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-300 transition-colors font-medium"
+                className="w-full bg-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-300 transition-colors font-medium text-sm sm:text-base"
               >
                 العودة إلى السلة
               </button>
@@ -607,21 +616,23 @@ const CheckoutPage: React.FC = () => {
     );
   }
 
-  // --- Empty Cart Screen (Prince Cake Style) ---
+  // --- Empty Cart Screen ---
   if (state.cart.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-pink-50 py-8">
-        <div className="container mx-auto px-4">
-          <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
+      <div className="min-h-screen bg-purple-50 py-6 sm:py-8" dir="rtl">
+        <div className="container mx-auto px-3 sm:px-4 max-w-md">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 text-center border-2 border-purple-100">
+            <div className="text-5xl sm:text-6xl mb-4">🛒</div>
+            <h2 className="text-lg sm:text-xl font-bold text-purple-900 mb-3">
               السلة فارغة
             </h2>
-            <p className="text-gray-600 mb-6">لا يمكن إتمام الطلب بسلة فارغة</p>
+            <p className="text-sm sm:text-base text-gray-600 mb-6">لا يمكن إتمام الطلب بسلة فارغة</p>
             <button
               onClick={() => navigate('/')}
-              className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-medium"
+              className="w-full bg-purple-600 text-white px-6 py-3 rounded-xl hover:bg-purple-700 transition-all font-semibold shadow-lg flex items-center justify-center gap-2 text-sm sm:text-base"
             >
-              العودة للتسوق
+              <Sparkles size={20} />
+              <span>العودة للتسوق</span>
             </button>
           </div>
         </div>
@@ -629,306 +640,311 @@ const CheckoutPage: React.FC = () => {
     );
   }
 
-  // --- Main Checkout Form (Prince Cake Style) ---
+  // --- Main Checkout Form ---
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-pink-50">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-purple-50" dir="rtl">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 md:py-8 max-w-6xl">
         <Link
           to="/cart"
-          className="flex items-center space-x-reverse space-x-2 text-gray-600 hover:text-pink-600 mb-6 transition-colors"
+          className="flex items-center gap-2 text-purple-700 hover:text-purple-900 mb-4 sm:mb-6 transition-colors font-medium text-sm sm:text-base"
         >
           <ArrowRight size={20} />
           <span>العودة للسلة</span>
         </Link>
 
-        <h1 className="text-3xl font-bold text-purple-900 mb-6 text-right">
-          إتمام الطلب
+        <h1 className="text-2xl sm:text-3xl font-bold text-purple-900 mb-4 sm:mb-6 flex items-center gap-2">
+          <Package className="h-6 w-6 sm:h-7 sm:w-7 text-purple-600" />
+          <span>إتمام الطلب</span>
         </h1>
 
         {notificationError && (
-          <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-xl text-center">
-            <p className="text-yellow-600 text-sm">{notificationError}</p>
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-yellow-50 border-2 border-yellow-300 rounded-xl sm:rounded-2xl text-center">
+            <p className="text-yellow-700 text-xs sm:text-sm font-medium">{notificationError}</p>
           </div>
         )}
 
-        {/* Order Summary */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-bold text-purple-900 mb-4 text-right">
-            ملخص الطلب
-          </h2>
-          <div className="space-y-3 mb-4">
-            {state.cart.map((item) => (
-              <div
-                key={`${item.product.id}-${item.size}-${item.color}`}
-                className="flex justify-between text-right border-b border-purple-100 pb-2"
-              >
-                <span className="text-amber-600 font-medium">
-                  {(item.product.price * item.quantity).toFixed(2)} جنيه
-                </span>
-                <div className="text-right">
-                  <span className="text-gray-700 font-medium">
-                    {item.product.name} × {item.quantity}
-                  </span>
-                  {(item.size || item.color) && (
-                    <p className="text-xs text-gray-500">
-                      {item.size && `المقاس: ${item.size}`}
-                      {item.size && item.color && ' • '}
-                      {item.color && `اللون: ${item.color}`}
-                    </p>
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Order Summary */}
+          <div className="lg:col-span-1 lg:order-2">
+            <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border-2 border-purple-100 sticky top-4">
+              <h2 className="text-lg sm:text-xl font-bold text-purple-900 mb-4 flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-500" />
+                <span>ملخص الطلب</span>
+              </h2>
+              
+              <div className="space-y-2 sm:space-y-3 mb-4">
+                {state.cart.map((item) => (
+                  <div
+                    key={`${item.product.id}-${item.size}-${item.color}`}
+                    className="flex justify-between items-start gap-2 pb-2 border-b border-purple-100"
+                  >
+                    <span className="text-purple-700 font-bold text-sm sm:text-base">
+                      {(item.product.price * item.quantity).toFixed(2)} ج
+                    </span>
+                    <div className="text-right flex-1">
+                      <span className="text-gray-800 font-medium text-xs sm:text-sm block">
+                        {item.product.name} × {item.quantity}
+                      </span>
+                      {(item.size || item.color) && (
+                        <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
+                          {item.size && `${item.size}`}
+                          {item.size && item.color && ' • '}
+                          {item.color && `${item.color}`}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-2 sm:space-y-2.5 border-t-2 border-purple-200 pt-3 sm:pt-4">
+                <div className="flex justify-between text-xs sm:text-sm">
+                  <span className="text-gray-600">المجموع الفرعي</span>
+                  <span className="font-semibold text-purple-900">{subtotal.toFixed(2)} جنيه</span>
+                </div>
+                {discount && (
+                  <div className="flex justify-between text-xs sm:text-sm bg-green-50 p-2 rounded-lg">
+                    <span className="text-green-700 font-medium">الخصم ({discount.code})</span>
+                    <span className="font-bold text-green-700">
+                      -{discountAmount.toFixed(2)} جنيه
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between text-xs sm:text-sm">
+                  <span className="text-gray-600">رسوم التوصيل</span>
+                  {loadingShippingFees ? (
+                    <Loader2 className="animate-spin text-purple-400" size={16} />
+                  ) : (
+                    <span className="font-semibold text-purple-900">
+                      {shippingFee.toFixed(2)} جنيه
+                    </span>
                   )}
                 </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="space-y-2 border-t-2 border-purple-100 pt-4">
-            <div className="flex justify-between">
-              <span className="text-gray-600">المجموع الفرعي</span>
-              <span className="font-semibold">{subtotal.toFixed(2)} جنيه</span>
-            </div>
-            {discount && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">الخصم ({discount.code})</span>
-                <span className="font-semibold text-green-600">
-                  -{discountAmount.toFixed(2)} جنيه
-                </span>
-              </div>
-            )}
-            <div className="flex justify-between">
-              <span className="text-gray-600">رسوم التوصيل</span>
-              {loadingShippingFees ? (
-                <Loader2 className="animate-spin text-gray-400" size={16} />
-              ) : (
-                <span className="font-semibold">
-                  {shippingFee.toFixed(2)} جنيه
-                </span>
-              )}
-            </div>
-            {selectedGovernorate && (
-              <p className="text-xs text-gray-500 text-left">
-                التوصيل خلال: {selectedGovernorate.deliveryTime}
-              </p>
-            )}
-            <div className="flex justify-between items-center pt-2 border-t border-purple-100">
-              <span className="text-2xl font-bold text-amber-600">
-                {total.toFixed(2)} جنيه
-              </span>
-              <span className="text-xl font-bold text-purple-900">
-                الإجمالي
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Checkout Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-2xl shadow-lg p-6"
-        >
-          {errorShippingFees && (
-            <div className="mb-6 p-4 bg-red-50 border-2 border-red-200 rounded-xl text-center">
-              <p className="text-red-600 text-sm">{errorShippingFees}</p>
-              <button
-                type="button"
-                onClick={fetchShippingFees}
-                className="mt-3 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm"
-              >
-                إعادة المحاولة
-              </button>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            {/* Full Name */}
-            <div>
-              <label className="block text-right text-purple-900 font-medium mb-2">
-                الاسم بالكامل *
-              </label>
-              <input
-                type="text"
-                value={formData.fullName}
-                onChange={(e) => handleInputChange('fullName', e.target.value)}
-                className={`w-full px-4 py-3 border-2 rounded-xl text-right focus:outline-none transition-colors ${
-                  errors.fullName
-                    ? 'border-red-500 focus:border-red-500'
-                    : 'border-purple-200 focus:border-purple-500'
-                }`}
-                disabled={isSubmitting}
-              />
-              {errors.fullName && (
-                <p className="text-red-500 text-sm mt-1 text-right">
-                  {errors.fullName}
-                </p>
-              )}
-            </div>
-
-            {/* Phone */}
-            <div>
-              <label className="block text-right text-purple-900 font-medium mb-2">
-                رقم الهاتف *
-              </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                placeholder="01xxxxxxxxx"
-                className={`w-full px-4 py-3 border-2 rounded-xl text-right focus:outline-none transition-colors ${
-                  errors.phone
-                    ? 'border-red-500 focus:border-red-500'
-                    : 'border-purple-200 focus:border-purple-500'
-                }`}
-                disabled={isSubmitting}
-              />
-              {errors.phone && (
-                <p className="text-red-500 text-sm mt-1 text-right">
-                  {errors.phone}
-                </p>
-              )}
-            </div>
-
-            {/* Address */}
-            <div>
-              <label className="block text-right text-purple-900 font-medium mb-2">
-                العنوان التفصيلي *
-              </label>
-              <textarea
-                value={formData.address}
-                onChange={(e) => handleInputChange('address', e.target.value)}
-                rows={3}
-                className={`w-full px-4 py-3 border-2 rounded-xl text-right focus:outline-none resize-none transition-colors ${
-                  errors.address
-                    ? 'border-red-500 focus:border-red-500'
-                    : 'border-purple-200 focus:border-purple-500'
-                }`}
-                disabled={isSubmitting}
-              />
-              {errors.address && (
-                <p className="text-red-500 text-sm mt-1 text-right">
-                  {errors.address}
-                </p>
-              )}
-            </div>
-
-            {/* Governorate */}
-            <div>
-              <label className="block text-right text-purple-900 font-medium mb-2">
-                المحافظة *
-              </label>
-              {loadingShippingFees ? (
-                <div className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl bg-gray-100 flex items-center justify-end">
-                  <span className="text-sm text-gray-500 ml-2">
-                    جاري جلب المحافظات...
+                {selectedGovernorate && (
+                  <p className="text-[10px] sm:text-xs text-gray-500">
+                    🚚 التوصيل خلال: {selectedGovernorate.deliveryTime}
+                  </p>
+                )}
+                <div className="flex justify-between items-center pt-2 sm:pt-3 border-t-2 border-purple-200">
+                  <span className="text-xl sm:text-2xl font-black text-purple-700">
+                    {total.toFixed(2)} جنيه
                   </span>
-                  <Loader2
-                    className="animate-spin text-purple-500"
-                    size={16}
-                  />
+                  <span className="text-base sm:text-lg font-bold text-purple-900">
+                    الإجمالي
+                  </span>
                 </div>
-              ) : (
-                <select
-                  value={formData.governorate}
-                  onChange={(e) =>
-                    handleInputChange('governorate', e.target.value)
-                  }
-                  className={`w-full px-4 py-3 border-2 rounded-xl text-right focus:outline-none transition-colors ${
-                    errors.governorate
-                      ? 'border-red-500 focus:border-red-500'
-                      : 'border-purple-200 focus:border-purple-500'
-                  }`}
-                  dir="rtl"
-                  disabled={isSubmitting}
-                >
-                  <option value="">اختر المحافظة...</option>
-                  {shippingFees.map((gov) => (
-                    <option key={gov.id} value={gov.governorate}>
-                      {gov.governorate} - {gov.fee} جنيه
-                    </option>
-                  ))}
-                </select>
-              )}
-              {errors.governorate && (
-                <p className="text-red-500 text-sm mt-1 text-right">
-                  {errors.governorate}
-                </p>
-              )}
+              </div>
             </div>
+          </div>
 
-            {/* Discount Code */}
-            <div>
-              <label className="block text-right text-purple-900 font-medium mb-2">
-                كود الخصم
-              </label>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <input
-                  type="text"
-                  value={formData.discountCode}
-                  onChange={(e) =>
-                    handleInputChange('discountCode', e.target.value)
-                  }
-                  placeholder="أدخل كود الخصم"
-                  className={`flex-1 px-4 py-3 border-2 rounded-xl text-right focus:outline-none transition-colors ${
-                    errorDiscount
-                      ? 'border-red-500 focus:border-red-500'
-                      : 'border-purple-200 focus:border-purple-500'
-                  }`}
-                  disabled={loadingDiscount || isSubmitting}
-                />
+          {/* Checkout Form */}
+          <form
+            onSubmit={handleSubmit}
+            className="lg:col-span-2 lg:order-1 bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border-2 border-purple-100"
+          >
+            {errorShippingFees && (
+              <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border-2 border-red-200 rounded-xl sm:rounded-2xl text-center">
+                <p className="text-red-600 text-xs sm:text-sm mb-2 sm:mb-3">{errorShippingFees}</p>
                 <button
                   type="button"
-                  onClick={handleApplyDiscount}
-                  disabled={loadingDiscount || isSubmitting}
-                  className={`px-6 py-3 rounded-xl font-medium transition-all ${
-                    loadingDiscount || isSubmitting
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600'
-                  }`}
+                  onClick={fetchShippingFees}
+                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-xs sm:text-sm font-medium"
                 >
-                  {loadingDiscount ? (
-                    <Loader2 className="animate-spin inline-block" size={18} />
-                  ) : (
-                    'تطبيق'
-                  )}
+                  إعادة المحاولة
                 </button>
               </div>
-              {errorDiscount && (
-                <p className="text-red-500 text-sm mt-1 text-right">
-                  {errorDiscount}
-                </p>
-              )}
-              {discount && (
-                <p className="text-green-600 text-sm mt-1 text-right">
-                  ✓ تم تطبيق كود {discount.code}: خصم{' '}
-                  {discount.amount.toFixed(2)} جنيه
-                </p>
-              )}
-            </div>
+            )}
 
-            {/* Notes */}
-            <div>
-              <label className="block text-right text-purple-900 font-medium mb-2">
-                ملاحظات إضافية
-              </label>
-              <textarea
-                value={formData.notes}
-                onChange={(e) => handleInputChange('notes', e.target.value)}
-                rows={3}
-                className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl text-right focus:border-purple-500 focus:outline-none resize-none"
-                placeholder="أي ملاحظات خاصة بالطلب (مثل: كتابة على التورتة، حساسية معينة...)"
-                disabled={isSubmitting}
-              />
-            </div>
+            <div className="space-y-3 sm:space-y-4">
+              {/* Full Name */}
+              <div>
+                <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
+                  الاسم بالكامل *
+                </label>
+                <input
+                  type="text"
+                  value={formData.fullName}
+                  onChange={(e) => handleInputChange('fullName', e.target.value)}
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${
+                    errors.fullName
+                      ? 'border-red-500 focus:border-red-600'
+                      : 'border-purple-200 focus:border-purple-500'
+                  }`}
+                  disabled={isSubmitting}
+                />
+                {errors.fullName && (
+                  <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
+                    {errors.fullName}
+                  </p>
+                )}
+              </div>
 
-            {/* Payment Method */}
-            <div>
-              <label className="block text-right text-purple-900 font-medium mb-3">
-                <CreditCard className="inline h-5 w-5 ml-2" />
-                طريقة الدفع *
-              </label>
-              <div className="space-y-2">
-                <label className="flex items-center justify-end gap-3 p-4 border-2 border-purple-200 rounded-xl cursor-pointer hover:bg-purple-50 transition-colors">
-                  <span className="text-gray-700 font-medium">
-                    <Truck className="inline h-5 w-5 ml-2" />
-                    الدفع عند الاستلام
+              {/* Phone */}
+              <div>
+                <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
+                  رقم الهاتف *
+                </label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  placeholder="01xxxxxxxxx"
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${
+                    errors.phone
+                      ? 'border-red-500 focus:border-red-600'
+                      : 'border-purple-200 focus:border-purple-500'
+                  }`}
+                  disabled={isSubmitting}
+                />
+                {errors.phone && (
+                  <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
+                    {errors.phone}
+                  </p>
+                )}
+              </div>
+
+              {/* Address */}
+              <div>
+                <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
+                  العنوان التفصيلي *
+                </label>
+                <textarea
+                  value={formData.address}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  rows={3}
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none resize-none transition-colors text-sm sm:text-base ${
+                    errors.address
+                      ? 'border-red-500 focus:border-red-600'
+                      : 'border-purple-200 focus:border-purple-500'
+                  }`}
+                  disabled={isSubmitting}
+                />
+                {errors.address && (
+                  <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
+                    {errors.address}
+                  </p>
+                )}
+              </div>
+
+              {/* Governorate */}
+              <div>
+                <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
+                  المحافظة *
+                </label>
+                {loadingShippingFees ? (
+                  <div className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl bg-gray-50 flex items-center justify-end">
+                    <span className="text-xs sm:text-sm text-gray-500 ml-2">
+                      جاري جلب المحافظات...
+                    </span>
+                    <Loader2
+                      className="animate-spin text-purple-500"
+                      size={16}
+                    />
+                  </div>
+                ) : (
+                  <select
+                    value={formData.governorate}
+                    onChange={(e) =>
+                      handleInputChange('governorate', e.target.value)
+                    }
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${
+                      errors.governorate
+                        ? 'border-red-500 focus:border-red-600'
+                        : 'border-purple-200 focus:border-purple-500'
+                    }`}
+                    dir="rtl"
+                    disabled={isSubmitting}
+                  >
+                    <option value="">اختر المحافظة...</option>
+                    {shippingFees.map((gov) => (
+                      <option key={gov.id} value={gov.governorate}>
+                        {gov.governorate} - {gov.fee} جنيه
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {errors.governorate && (
+                  <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
+                    {errors.governorate}
+                  </p>
+                )}
+              </div>
+
+              {/* Discount Code */}
+              <div>
+                <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
+                  كود الخصم
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={formData.discountCode}
+                    onChange={(e) =>
+                      handleInputChange('discountCode', e.target.value)
+                    }
+                    placeholder="أدخل الكود"
+                    className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${
+                      errorDiscount
+                        ? 'border-red-500 focus:border-red-600'
+                        : 'border-purple-200 focus:border-purple-500'
+                    }`}
+                    disabled={loadingDiscount || isSubmitting}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyDiscount}
+                    disabled={loadingDiscount || isSubmitting}
+                    className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium transition-all text-sm sm:text-base ${
+                      loadingDiscount || isSubmitting
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-amber-500 text-white hover:bg-amber-600'
+                    }`}
+                  >
+                    {loadingDiscount ? (
+                      <Loader2 className="animate-spin" size={18} />
+                    ) : (
+                      'تطبيق'
+                    )}
+                  </button>
+                </div>
+                {errorDiscount && (
+                  <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
+                    {errorDiscount}
+                  </p>
+                )}
+                {discount && (
+                  <p className="text-green-600 text-xs sm:text-sm mt-1 text-right font-medium">
+                    ✓ تم تطبيق كود {discount.code}: خصم{' '}
+                    {discount.amount.toFixed(2)} جنيه
+                  </p>
+                )}
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
+                  ملاحظات إضافية
+                </label>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => handleInputChange('notes', e.target.value)}
+                  rows={3}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl text-right focus:border-purple-500 focus:outline-none resize-none text-sm sm:text-base"
+                  placeholder="مثال: كتابة على التورتة، تغليف مميز..."
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              {/* Payment Method */}
+              <div>
+                <label className="block text-right text-purple-900 font-bold mb-3 text-sm sm:text-base flex items-center justify-end gap-2">
+                  <span>طريقة الدفع *</span>
+                  <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
+                </label>
+                <label className="flex items-center justify-end gap-3 p-3 sm:p-4 border-2 border-purple-200 rounded-lg sm:rounded-xl cursor-pointer hover:bg-purple-50 transition-colors">
+                  <span className="text-gray-700 font-medium text-sm sm:text-base flex items-center gap-2">
+                    <span>الدفع عند الاستلام</span>
+                    <Truck className="h-4 w-4 sm:h-5 sm:w-5" />
                   </span>
                   <input
                     type="radio"
@@ -938,51 +954,51 @@ const CheckoutPage: React.FC = () => {
                     onChange={(e) =>
                       handleInputChange('paymentMethod', e.target.value)
                     }
-                    className="w-5 h-5 text-purple-600"
+                    className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600"
                     disabled={isSubmitting}
                   />
                 </label>
               </div>
-            </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={
-                isSubmitting ||
-                loadingShippingFees ||
-                state.cart.length === 0 ||
-                !selectedGovernorate
-              }
-              className={`w-full py-4 rounded-xl text-lg font-bold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 ${
-                isSubmitting ||
-                loadingShippingFees ||
-                state.cart.length === 0 ||
-                !selectedGovernorate
-                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600'
-              }`}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="animate-spin" size={20} />
-                  <span>جاري تأكيد الطلب...</span>
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="h-6 w-6" />
-                  <span>تأكيد الطلب</span>
-                </>
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={
+                  isSubmitting ||
+                  loadingShippingFees ||
+                  state.cart.length === 0 ||
+                  !selectedGovernorate
+                }
+                className={`w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl text-base sm:text-lg font-bold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 ${
+                  isSubmitting ||
+                  loadingShippingFees ||
+                  state.cart.length === 0 ||
+                  !selectedGovernorate
+                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                    : 'bg-purple-600 text-white hover:bg-purple-700'
+                }`}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    <span>جاري تأكيد الطلب...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6" />
+                    <span>تأكيد الطلب</span>
+                  </>
+                )}
+              </button>
+
+              {!selectedGovernorate && formData.governorate && (
+                <p className="text-red-600 text-xs sm:text-sm mt-2 text-center font-medium">
+                  يرجى اختيار محافظة متوفرة لتحديد رسوم التوصيل.
+                </p>
               )}
-            </button>
-
-            {!selectedGovernorate && formData.governorate && (
-              <p className="text-red-500 text-sm mt-2 text-center">
-                يرجى اختيار محافظة متوفرة لتحديد رسوم التوصيل.
-              </p>
-            )}
-          </div>
-        </form>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

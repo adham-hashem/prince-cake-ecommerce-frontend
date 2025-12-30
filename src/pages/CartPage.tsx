@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Trash2, Plus, Minus, Loader2 } from 'lucide-react';
+import { ArrowRight, Trash2, Plus, Minus, Loader2, ShoppingCart, Sparkles } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { CartItem } from '../types';
 
@@ -90,11 +90,8 @@ const CartPage: React.FC = () => {
         color: item.color,
         images: item.images.map(img => {
           let fullPath = img.imagePath;
-          // Check if the path is relative (starts with / or doesn't have http/https)
           if (!fullPath.startsWith('http://') && !fullPath.startsWith('https://')) {
-            // Ensure path starts with /
             fullPath = fullPath.startsWith('/') ? fullPath : `/${fullPath}`;
-            // Prepend API URL
             fullPath = `${apiUrl}${fullPath}`;
           }
           return {
@@ -113,12 +110,10 @@ const CartPage: React.FC = () => {
     }
   }, [dispatch, token, apiUrl]);
 
-  // Scroll to top when the component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Fetch cart on mount
   useEffect(() => {
     if (token) {
       fetchCart();
@@ -137,7 +132,6 @@ const CartPage: React.FC = () => {
       return;
     }
 
-    // Optimistic update
     const previousItems = [...cartItems];
     const updatedItems = cartItems.map(item =>
       item.id === itemId ? { ...item, quantity: newQuantity } : item
@@ -311,22 +305,31 @@ const CartPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="animate-spin text-pink-600" size={40} />
-        <span className="mr-3 text-gray-600 text-sm sm:text-base">جاري تحميل السلة...</span>
+      <div className="min-h-screen bg-purple-50 flex items-center justify-center px-4" dir="rtl">
+        <div className="text-center py-12">
+          <div className="relative inline-block mb-6">
+            <div className="absolute inset-0 bg-purple-400 rounded-full blur-xl opacity-30 animate-pulse"></div>
+            <div className="relative bg-purple-600 rounded-full p-4">
+              <ShoppingCart className="h-12 w-12 text-white animate-bounce" />
+            </div>
+          </div>
+          <p className="text-purple-900 font-bold text-lg">جاري تحميل السلة...</p>
+          <p className="text-gray-500 text-sm mt-2">انتظر لحظة 🛒</p>
+        </div>
       </div>
     );
   }
 
-  if (error) {
+  if (error && cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
-          <h2 className="text-xl sm:text-2xl font-bold text-red-600 mb-2">حدث خطأ</h2>
-          <p className="text-sm sm:text-base text-gray-600">{error}</p>
+      <div className="min-h-screen bg-purple-50 flex items-center justify-center px-4" dir="rtl">
+        <div className="text-center bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl max-w-md w-full border-2 border-purple-100">
+          <div className="text-5xl sm:text-6xl mb-4">⚠️</div>
+          <h2 className="text-xl sm:text-2xl font-bold text-red-600 mb-3">حدث خطأ</h2>
+          <p className="text-sm sm:text-base text-gray-600 mb-6">{error}</p>
           <button
             onClick={fetchCart}
-            className="mt-4 bg-red-600 text-white px-4 py-2 sm:px-6 sm:py-3 rounded-lg hover:bg-red-700 font-semibold text-sm sm:text-base"
+            className="w-full bg-purple-600 text-white px-6 py-3 rounded-xl hover:bg-purple-700 font-semibold shadow-lg transition-all text-sm sm:text-base"
           >
             إعادة المحاولة
           </button>
@@ -337,15 +340,17 @@ const CartPage: React.FC = () => {
 
   if (cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
-          <div className="text-4xl sm:text-6xl mb-4">🛒</div>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">السلة فارغة</h2>
+      <div className="min-h-screen bg-purple-50 flex items-center justify-center px-4" dir="rtl">
+        <div className="text-center bg-white p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl max-w-md w-full border-2 border-purple-100">
+          <div className="text-5xl sm:text-6xl mb-4">🛒</div>
+          <h2 className="text-xl sm:text-2xl font-bold text-purple-900 mb-3">السلة فارغة</h2>
+          <p className="text-gray-600 mb-6 text-sm sm:text-base">لم تقم بإضافة أي منتجات بعد</p>
           <button
             onClick={() => navigate('/')}
-            className="bg-pink-600 text-white px-6 py-2 sm:px-8 sm:py-3 rounded-lg hover:bg-pink-700 font-semibold text-sm sm:text-base"
+            className="w-full bg-purple-600 text-white px-6 py-3 rounded-xl hover:bg-purple-700 font-semibold shadow-lg transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
           >
-            تصفح المنتجات
+            <Sparkles size={20} />
+            <span>تصفح المنتجات</span>
           </button>
         </div>
       </div>
@@ -353,149 +358,192 @@ const CartPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
-      <div className="container mx-auto px-4 sm:px-6">
+    <div className="min-h-screen bg-purple-50 py-4 sm:py-6 md:py-8" dir="rtl">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 max-w-7xl">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center text-purple-700 hover:text-purple-900 font-medium mb-4 sm:mb-6 transition-colors text-sm sm:text-base"
+        >
+          <ArrowRight size={20} className="ml-2" />
+          <span>العودة للتسوق</span>
+        </button>
+
+        {/* Error Alert */}
         {error && (
-          <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6">
+          <div className="bg-red-50 border-2 border-red-200 text-red-700 p-3 sm:p-4 rounded-xl sm:rounded-2xl mb-4 sm:mb-6 shadow-md">
             <div className="flex items-center justify-between">
-              <span>{error}</span>
+              <span className="text-sm sm:text-base">{error}</span>
               <button
                 onClick={() => setError(null)}
-                className="text-red-700 hover:text-red-900"
+                className="text-red-700 hover:text-red-900 font-bold text-xl"
               >
                 ✕
               </button>
             </div>
           </div>
         )}
-        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 sm:gap-8">
-          <div className="lg:col-span-2 bg-white rounded-2xl shadow-lg p-4 sm:p-6">
-            <div className="flex justify-between items-center mb-4 sm:mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-                سلة التسوق ({cartItems.length})
+
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+          {/* Cart Items */}
+          <div className="lg:col-span-2 bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border-2 border-purple-100">
+            <div className="flex justify-between items-center mb-4 sm:mb-6 pb-3 sm:pb-4 border-b-2 border-purple-100">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-purple-900 flex items-center gap-2">
+                <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
+                <span>سلة التسوق ({cartItems.length})</span>
               </h2>
               <button
                 onClick={handleClearCart}
                 disabled={isClearingCart}
-                className="flex items-center text-red-500 hover:text-red-700 font-semibold text-sm sm:text-base disabled:opacity-50"
+                className="flex items-center text-red-600 hover:text-red-700 font-semibold text-xs sm:text-sm md:text-base disabled:opacity-50 transition-colors"
               >
                 {isClearingCart ? (
-                  <Loader2 className="animate-spin mr-2" size={18} />
+                  <Loader2 className="animate-spin ml-1 sm:ml-2" size={16} />
                 ) : (
-                  <Trash2 className="mr-2" size={18} />
+                  <Trash2 className="ml-1 sm:ml-2" size={16} />
                 )}
-                إفراغ السلة
+                <span className="hidden sm:inline">إفراغ السلة</span>
+                <span className="sm:hidden">إفراغ</span>
               </button>
             </div>
+
             <div className="space-y-3 sm:space-y-4">
               {cartItems.map((item) => {
                 const mainImage = item.images?.find(img => img.isMain) || item.images?.[0];
                 return (
                   <div
                     key={item.id}
-                    className="flex items-center space-x-reverse space-x-2 sm:space-x-4 p-3 sm:p-4 border-b"
+                    className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border-2 border-purple-100 rounded-xl sm:rounded-2xl hover:shadow-md transition-all bg-purple-50/30"
                   >
                     <img
                       src={mainImage?.imagePath || 'https://via.placeholder.com/150'}
                       alt={item.product.name}
                       loading="lazy"
-                      className="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-lg"
+                      className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain rounded-lg sm:rounded-xl bg-white border-2 border-purple-200"
                     />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-800 text-sm sm:text-base">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-purple-900 text-sm sm:text-base md:text-lg truncate">
                         {item.product.name}
                       </h3>
-                      <p className="text-xs sm:text-sm text-gray-600">
-                        {`المقاس: ${item.size || 'غير محدد'} • اللون: ${item.color || 'غير محدد'}`}
+                      <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                        المقاس: <span className="font-medium text-purple-700">{item.size || 'غير محدد'}</span>
                       </p>
-                      <p className="text-pink-600 font-bold text-sm sm:text-base">
+                      <p className="text-xs sm:text-sm text-gray-600">
+                        اللون: <span className="font-medium text-purple-700">{item.color || 'غير محدد'}</span>
+                      </p>
+                      <p className="text-purple-700 font-black text-base sm:text-lg md:text-xl mt-1">
                         {item.product.price.toFixed(2)} جنيه
                       </p>
                     </div>
-                    <div className="flex items-center space-x-reverse space-x-1 sm:space-x-2">
+
+                    {/* Quantity Controls */}
+                    <div className="flex flex-col sm:flex-row items-center gap-2">
+                      <div className="flex items-center gap-1 sm:gap-2 bg-white border-2 border-purple-200 rounded-lg sm:rounded-xl p-1">
+                        <button
+                          onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                          className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center hover:bg-purple-100 text-purple-700 transition-colors"
+                          aria-label="تقليل الكمية"
+                          disabled={isClearingCart}
+                        >
+                          <Minus size={14} className="sm:hidden" />
+                          <Minus size={16} className="hidden sm:block" />
+                        </button>
+                        <span className="w-6 sm:w-8 text-center font-bold text-purple-900 text-sm sm:text-base">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                          className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center hover:bg-purple-100 text-purple-700 transition-colors"
+                          aria-label="زيادة الكمية"
+                          disabled={isClearingCart}
+                        >
+                          <Plus size={14} className="sm:hidden" />
+                          <Plus size={16} className="hidden sm:block" />
+                        </button>
+                      </div>
                       <button
-                        onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center hover:bg-gray-100"
-                        aria-label="تقليل الكمية"
+                        onClick={() => handleRemoveItem(item.id)}
+                        className="text-red-600 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                        aria-label="إزالة العنصر"
                         disabled={isClearingCart}
                       >
-                        <Minus size={16} />
-                      </button>
-                      <span className="w-8 sm:w-10 text-center font-semibold text-sm sm:text-base">
-                        {item.quantity}
-                      </span>
-                      <button
-                        onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center hover:bg-gray-100"
-                        aria-label="زيادة الكمية"
-                        disabled={isClearingCart}
-                      >
-                        <Plus size={16} />
+                        <Trash2 size={16} className="sm:hidden" />
+                        <Trash2 size={18} className="hidden sm:block" />
                       </button>
                     </div>
-                    <button
-                      onClick={() => handleRemoveItem(item.id)}
-                      className="text-red-500 hover:text-red-700 p-2"
-                      aria-label="إزالة العنصر"
-                      disabled={isClearingCart}
-                    >
-                      <Trash2 size={18} />
-                    </button>
                   </div>
                 );
               })}
             </div>
           </div>
+
+          {/* Order Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 sticky top-4 sm:top-8">
-              <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6">
-                ملخص الطلب
+            <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 sticky top-4 sm:top-8 border-2 border-purple-100">
+              <h3 className="text-lg sm:text-xl font-bold text-purple-900 mb-4 sm:mb-6 flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-500" />
+                <span>ملخص الطلب</span>
               </h3>
-              <div className="flex space-x-reverse space-x-2 mb-4 sm:mb-6">
-                <input
-                  type="text"
-                  value={discountCode}
-                  onChange={(e) => setDiscountCode(e.target.value)}
-                  placeholder="أدخل كود الخصم"
-                  className="flex-1 px-3 py-2 sm:py-3 border rounded-lg text-sm sm:text-base text-right"
-                  dir="rtl"
-                  disabled={isClearingCart}
-                />
-                <button
-                  onClick={handleApplyDiscountCode}
-                  disabled={isApplyingDiscount || isClearingCart}
-                  className="bg-gray-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded-lg hover:bg-gray-700 w-20 sm:w-24 flex justify-center text-sm sm:text-base disabled:opacity-50"
-                >
-                  {isApplyingDiscount ? (
-                    <Loader2 className="animate-spin" size={18} />
-                  ) : (
-                    'تطبيق'
-                  )}
-                </button>
+
+              {/* Discount Code */}
+              <div className="mb-4 sm:mb-6">
+                <label className="block text-sm font-medium text-purple-900 mb-2">كود الخصم</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={discountCode}
+                    onChange={(e) => setDiscountCode(e.target.value)}
+                    placeholder="أدخل الكود"
+                    className="flex-1 px-3 py-2 sm:py-2.5 border-2 border-purple-200 rounded-lg sm:rounded-xl text-sm sm:text-base text-right focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    dir="rtl"
+                    disabled={isClearingCart}
+                  />
+                  <button
+                    onClick={handleApplyDiscountCode}
+                    disabled={isApplyingDiscount || isClearingCart}
+                    className="bg-purple-600 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl hover:bg-purple-700 font-medium flex items-center justify-center transition-all text-sm sm:text-base disabled:opacity-50 min-w-[70px] sm:min-w-[80px]"
+                  >
+                    {isApplyingDiscount ? (
+                      <Loader2 className="animate-spin" size={18} />
+                    ) : (
+                      'تطبيق'
+                    )}
+                  </button>
+                </div>
               </div>
-              <div className="space-y-3 mb-4 sm:mb-6">
+
+              {/* Price Summary */}
+              <div className="space-y-3 mb-4 sm:mb-6 pb-4 border-b-2 border-purple-100">
                 <div className="flex justify-between text-sm sm:text-base">
                   <span className="text-gray-600">المجموع الفرعي</span>
-                  <span className="font-semibold">{subtotal.toFixed(2)} جنيه</span>
+                  <span className="font-semibold text-purple-900">{subtotal.toFixed(2)} جنيه</span>
                 </div>
                 {appliedDiscount > 0 && (
-                  <div className="flex justify-between text-green-600 text-sm sm:text-base">
-                    <span>الخصم ({appliedDiscount}%)</span>
-                    <span>-{discountAmount.toFixed(2)} جنيه</span>
+                  <div className="flex justify-between text-green-600 text-sm sm:text-base bg-green-50 p-2 rounded-lg">
+                    <span className="font-medium">الخصم ({appliedDiscount}%)</span>
+                    <span className="font-bold">-{discountAmount.toFixed(2)} جنيه</span>
                   </div>
                 )}
-                <div className="border-t pt-3 flex justify-between text-base sm:text-lg font-bold">
-                  <span>المجموع</span>
-                  <span className="text-pink-600">{total.toFixed(2)} جنيه</span>
+                <div className="flex justify-between text-base sm:text-lg font-black pt-2">
+                  <span className="text-purple-900">المجموع الكلي</span>
+                  <span className="text-purple-700 text-xl sm:text-2xl">{total.toFixed(2)} جنيه</span>
                 </div>
               </div>
+
+              {/* Checkout Button */}
               <button
                 onClick={() => navigate('/checkout')}
-                className="w-full bg-pink-600 text-white py-2 sm:py-3 rounded-lg hover:bg-pink-700 font-semibold text-sm sm:text-base disabled:opacity-50"
+                className="w-full bg-purple-600 text-white py-3 sm:py-3.5 rounded-xl sm:rounded-2xl hover:bg-purple-700 font-bold text-base sm:text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 disabled={isClearingCart}
               >
-                إتمام الطلب
+                <ShoppingCart size={20} />
+                <span>إتمام الطلب</span>
               </button>
+
+              {/* Security Note */}
+              <p className="text-xs sm:text-sm text-gray-500 text-center mt-3 sm:mt-4">
+                🔒 الدفع آمن ومضمون
+              </p>
             </div>
           </div>
         </div>

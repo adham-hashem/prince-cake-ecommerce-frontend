@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Loader } from 'lucide-react';
+import { Loader, UserCircle, MapPin, Phone, Home, Sparkles } from 'lucide-react';
 
 const CompleteProfile = () => {
   const { user, updateUserProfile } = useAuth();
@@ -33,7 +33,6 @@ const CompleteProfile = () => {
           navigate('/');
         }
       } catch (err) {
-        // console.error('Error checking profile status:', err);
         setError('حدث خطأ أثناء التحقق من حالة الملف الشخصي');
       }
     };
@@ -80,7 +79,7 @@ const CompleteProfile = () => {
       });
 
       setSuccess('تم إكمال الملف الشخصي بنجاح');
-      setTimeout(() => navigate('/'), 2000); // Redirect after showing success message
+      setTimeout(() => navigate('/'), 2000);
     } catch (err) {
       setError(err.message || 'حدث خطأ أثناء إكمال الملف الشخصي. حاول مرة أخرى لاحقاً.');
     } finally {
@@ -89,28 +88,47 @@ const CompleteProfile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-16" dir="rtl">
-      <div className="container mx-auto px-6">
-        <h1 className="text-4xl font-bold text-gray-900 text-center mb-12 tracking-tight">
-          إكمال الملف الشخصي
-        </h1>
+    <div className="min-h-screen bg-purple-50 py-6 sm:py-12 md:py-16 px-3 sm:px-4" dir="rtl">
+      <div className="container mx-auto max-w-2xl">
+        {/* Header */}
+        <div className="text-center mb-6 sm:mb-8 md:mb-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-purple-100 rounded-full mb-4">
+            <UserCircle className="w-8 h-8 sm:w-10 sm:h-10 text-purple-600" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-purple-900 mb-2 flex items-center justify-center gap-2">
+            <Sparkles className="w-6 h-6 sm:w-7 sm:h-7 text-amber-500" />
+            <span>إكمال الملف الشخصي</span>
+          </h1>
+          <p className="text-sm sm:text-base text-gray-600">
+            يرجى إكمال بياناتك للمتابعة
+          </p>
+        </div>
 
-        <div className="max-w-md mx-auto bg-white rounded-3xl shadow-xl p-8 border border-pink-100">
+        {/* Form Card */}
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 md:p-8 border-2 border-purple-100">
+          {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 rounded-xl border border-red-100">
-              <p className="text-red-600 text-center font-medium">{error}</p>
-            </div>
-          )}
-          {success && (
-            <div className="mb-6 p-4 bg-green-50 rounded-xl border border-green-100">
-              <p className="text-green-600 text-center font-medium">{success}</p>
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 rounded-xl sm:rounded-2xl border-2 border-red-200">
+              <p className="text-red-600 text-center font-medium text-sm sm:text-base">{error}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Success Message */}
+          {success && (
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-green-50 rounded-xl sm:rounded-2xl border-2 border-green-200">
+              <p className="text-green-600 text-center font-medium text-sm sm:text-base">{success}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 md:space-y-6">
+            {/* Full Name */}
             <div>
-              <label htmlFor="fullName" className="block text-right text-gray-700 font-semibold mb-2">
-                الاسم الكامل
+              <label 
+                htmlFor="fullName" 
+                className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base flex items-center justify-end gap-2"
+              >
+                <span>الاسم الكامل</span>
+                <UserCircle className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
               </label>
               <input
                 type="text"
@@ -119,14 +137,20 @@ const CompleteProfile = () => {
                 value={formData.fullName}
                 onChange={handleChange}
                 required
-                className="w-full p-3 rounded-full bg-gray-100 text-right border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all duration-300"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-purple-50 text-right border-2 border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-sm sm:text-base"
                 placeholder="أدخل الاسم الكامل"
                 disabled={loading}
               />
             </div>
+
+            {/* Address */}
             <div>
-              <label htmlFor="address" className="block text-right text-gray-700 font-semibold mb-2">
-                العنوان
+              <label 
+                htmlFor="address" 
+                className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base flex items-center justify-end gap-2"
+              >
+                <span>العنوان</span>
+                <Home className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
               </label>
               <input
                 type="text"
@@ -135,14 +159,20 @@ const CompleteProfile = () => {
                 value={formData.address}
                 onChange={handleChange}
                 required
-                className="w-full p-3 rounded-full bg-gray-100 text-right border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all duration-300"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-purple-50 text-right border-2 border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-sm sm:text-base"
                 placeholder="أدخل العنوان"
                 disabled={loading}
               />
             </div>
+
+            {/* Governorate */}
             <div>
-              <label htmlFor="governorate" className="block text-right text-gray-700 font-semibold mb-2">
-                المحافظة
+              <label 
+                htmlFor="governorate" 
+                className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base flex items-center justify-end gap-2"
+              >
+                <span>المحافظة</span>
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
               </label>
               <select
                 id="governorate"
@@ -150,17 +180,18 @@ const CompleteProfile = () => {
                 value={formData.governorate}
                 onChange={handleChange}
                 required
-                className="w-full p-3 rounded-full bg-gray-100 text-right border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all duration-300"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-purple-50 text-right border-2 border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-sm sm:text-base"
                 disabled={loading}
+                dir="rtl"
               >
-                <option value="0">اختر...</option>
-                <option value="7">الدقهلية</option>
+                <option value="0">اختر المحافظة...</option>
                 <option value="1">القاهرة</option>
                 <option value="2">الأسكندرية</option>
                 <option value="3">بورسعيد</option>
                 <option value="4">السويس</option>
                 <option value="5">الإسماعيلية</option>
                 <option value="6">دمياط</option>
+                <option value="7">الدقهلية</option>
                 <option value="8">الشرقية</option>
                 <option value="9">القليوبية</option>
                 <option value="10">كفر الشيخ</option>
@@ -183,9 +214,15 @@ const CompleteProfile = () => {
                 <option value="27">الأقصر</option>
               </select>
             </div>
+
+            {/* Phone Number */}
             <div>
-              <label htmlFor="phoneNumber" className="block text-right text-gray-700 font-semibold mb-2">
-                رقم الهاتف
+              <label 
+                htmlFor="phoneNumber" 
+                className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base flex items-center justify-end gap-2"
+              >
+                <span>رقم الهاتف</span>
+                <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
               </label>
               <input
                 type="tel"
@@ -194,28 +231,40 @@ const CompleteProfile = () => {
                 value={formData.phoneNumber}
                 onChange={handleChange}
                 required
-                className="w-full p-3 rounded-full bg-gray-100 text-right border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-300 transition-all duration-300"
-                placeholder="أدخل رقم الهاتف"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl bg-purple-50 text-right border-2 border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-sm sm:text-base"
+                placeholder="01xxxxxxxxx"
                 disabled={loading}
               />
             </div>
-            <div className="text-center">
+
+            {/* Submit Button */}
+            <div className="pt-2 sm:pt-4">
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-pink-600 text-white py-3 px-8 rounded-full hover:bg-pink-700 transition-all duration-300 font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-purple-600 text-white py-3 sm:py-3.5 md:py-4 px-6 sm:px-8 rounded-xl sm:rounded-2xl hover:bg-purple-700 transition-all font-bold shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base md:text-lg flex items-center justify-center gap-2"
               >
                 {loading ? (
-                  <span className="flex items-center justify-center">
-                    <Loader className="animate-spin mr-2" size={20} />
-                    جارٍ الإرسال...
-                  </span>
+                  <>
+                    <Loader className="animate-spin" size={20} />
+                    <span>جارٍ الإرسال...</span>
+                  </>
                 ) : (
-                  'إكمال الملف الشخصي'
+                  <>
+                    <Sparkles size={20} />
+                    <span>إكمال الملف الشخصي</span>
+                  </>
                 )}
               </button>
             </div>
           </form>
+
+          {/* Help Text */}
+          <div className="mt-4 sm:mt-6 text-center">
+            <p className="text-xs sm:text-sm text-gray-500">
+              🔒 بياناتك آمنة ومحمية
+            </p>
+          </div>
         </div>
       </div>
     </div>
