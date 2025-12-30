@@ -83,11 +83,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   return (
     <div
-      className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 group hover:shadow-2xl cursor-pointer transform hover:scale-[1.02] active:scale-[0.98] border-2 border-transparent hover:border-purple-200"
+      className="bg-white rounded-3xl shadow-xl overflow-hidden transition-all duration-300 group hover:shadow-2xl cursor-pointer transform hover:scale-[1.03] active:scale-[0.98] border-2 border-purple-100 hover:border-purple-300"
       onClick={handleCardClick}
     >
       {/* Image Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-purple-50 to-pink-50">
+      <div className="relative overflow-hidden bg-gradient-to-br from-purple-50 via-pink-50 to-amber-50">
         <img
           src={`${apiUrl}${product.images[0]?.imagePath || ''}`}
           alt={product.name}
@@ -101,43 +101,43 @@ const ProductCard: React.FC<ProductCardProps> = ({
         />
 
         {/* Badges */}
-        <div className="absolute top-3 right-3 flex flex-col gap-2">
-          {/* Offer Badge */}
-          {/* {product.isOffer && (
-            <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1 animate-pulse">
-              <Sparkles size={12} />
-              <span>عرض خاص</span>
-            </div>
-          )} */}
+        <div className="absolute top-4 right-4 flex flex-col gap-2">
 
           {/* Discount Badge */}
           {discountPercentage > 0 && (
-            <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+            <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-2xl text-sm font-bold shadow-lg">
               خصم {discountPercentage}%
             </div>
           )}
         </div>
 
+        {/* Stock Status Badge */}
+        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-xl shadow-lg border-2 border-purple-200">
+          <Cake size={20} className="text-purple-600" />
+        </div>
+
         {/* Out of Stock Overlay */}
         {!product.inStock && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <span className="bg-red-500 text-white px-4 py-2 rounded-full font-bold text-sm">
-              غير متوفر حالياً
-            </span>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/40 flex items-center justify-center backdrop-blur-sm">
+            <div className="text-center">
+              <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-3 rounded-2xl font-bold text-base shadow-2xl block">
+                غير متوفر حالياً
+              </span>
+            </div>
           </div>
         )}
 
         {/* Hover Actions - Desktop Only */}
-        <div className="hidden md:flex absolute inset-0 bg-gradient-to-t from-purple-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 items-end justify-center pb-4 gap-3">
+        <div className="hidden md:flex absolute inset-0 bg-gradient-to-t from-purple-900/80 via-pink-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 items-end justify-center pb-6 gap-3">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onViewProduct(product);
             }}
-            className="bg-white text-purple-700 px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-xl hover:shadow-2xl hover:scale-105 transition-all"
+            className="bg-white text-purple-700 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-2xl hover:shadow-purple-500/50 hover:scale-110 transition-all"
           >
             <Eye size={18} />
-            <span>عرض</span>
+            <span>عرض التفاصيل</span>
           </button>
 
           <button
@@ -146,9 +146,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
               e.stopPropagation();
               onAddToCart(product);
             }}
-            className={`px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 shadow-xl transition-all ${
+            className={`px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-2xl transition-all ${
               product.inStock
-                ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:shadow-2xl hover:scale-105'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:shadow-pink-500/50 hover:scale-110'
                 : 'bg-gray-400 text-white cursor-not-allowed'
             }`}
             disabled={!product.inStock}
@@ -165,115 +165,154 @@ const ProductCard: React.FC<ProductCardProps> = ({
             e.stopPropagation();
             onAddToCart(product);
           }}
-          className={`md:hidden absolute bottom-3 left-3 p-3 rounded-full shadow-xl transition-all ${
+          className={`md:hidden absolute bottom-4 left-4 p-3.5 rounded-2xl shadow-2xl transition-all ${
             product.inStock
               ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white active:scale-90'
               : 'bg-gray-400 text-white cursor-not-allowed'
           }`}
           disabled={!product.inStock}
         >
-          <ShoppingCart size={20} />
+          <ShoppingCart size={22} />
         </button>
-
-        {/* Cake Icon Decoration */}
-        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-md">
-          <Cake size={18} className="text-purple-600" />
-        </div>
       </div>
 
       {/* Content Section */}
-      <div className="p-4 space-y-3">
+      <div className="p-5 space-y-3.5">
         {/* Name & Code */}
-        <div className="flex justify-between items-start gap-2">
-          <h3 className="font-bold text-lg text-purple-900 flex-1 text-right leading-tight line-clamp-2">
+        <div className="flex justify-between items-start gap-3">
+          <h3 className="font-bold text-xl text-purple-900 flex-1 text-right leading-tight line-clamp-2">
             {product.name}
           </h3>
-          <span className="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded-full font-medium whitespace-nowrap">
+          <span className="text-xs text-purple-700 bg-gradient-to-r from-purple-100 to-pink-100 px-3 py-1.5 rounded-xl font-bold whitespace-nowrap border-2 border-purple-200">
             {product.code}
           </span>
         </div>
 
         {/* Description */}
-        <p className="text-gray-500 text-sm line-clamp-2 text-right leading-relaxed">
+        <p className="text-gray-600 text-sm line-clamp-2 text-right leading-relaxed">
           {product.description}
         </p>
 
-        {/* Price */}
-        <div className="flex items-center justify-between pt-2 border-t border-purple-100">
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-black text-purple-600">
-              {product.price}
-            </span>
-            <span className="text-sm text-purple-600 font-medium">جنيه</span>
-            {product.originalPrice && (
-              <span className="text-sm text-gray-400 line-through">
-                {product.originalPrice}
+        {/* Price Section */}
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border-2 border-amber-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-black text-amber-600">
+                {product.price}
               </span>
-            )}
-          </div>
+              <span className="text-sm text-amber-700 font-bold">جنيه</span>
+              {product.originalPrice && (
+                <span className="text-sm text-gray-400 line-through font-medium">
+                  {product.originalPrice}
+                </span>
+              )}
+            </div>
 
-          {/* Rating placeholder */}
-          <div className="flex items-center gap-1 text-amber-500">
-            <Star size={14} className="fill-current" />
-            <span className="text-xs font-medium">4.9</span>
+            {/* Rating */}
+            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border-2 border-amber-200">
+              <Star size={16} className="fill-amber-400 text-amber-400" />
+              <span className="text-sm font-bold text-amber-600">4.9</span>
+            </div>
           </div>
         </div>
 
         {/* Flavors (formerly colors) */}
         {product.colors.length > 0 && (
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-500">النكهات:</span>
-            <div className="flex items-center gap-1">
-              {product.colors.slice(0, 4).map((flavor, index) => (
-                <div
-                  key={index}
-                  className="w-6 h-6 rounded-full border-2 border-white shadow-md transition-transform hover:scale-110 flex items-center justify-center text-xs"
-                  style={{ backgroundColor: getFlavorColor(flavor) }}
-                  title={flavor}
-                >
-                  {isFlavorDark(flavor) && (
-                    <span className="text-white text-[8px]">🍫</span>
-                  )}
-                </div>
-              ))}
-              {product.colors.length > 4 && (
-                <span className="text-xs text-purple-600 bg-purple-100 px-2 py-0.5 rounded-full font-medium">
-                  +{product.colors.length - 4}
-                </span>
-              )}
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-3 border-2 border-purple-200">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-bold text-purple-700 flex items-center gap-1.5">
+                <Sparkles size={14} className="text-purple-500" />
+                النكهات المتاحة:
+              </span>
+              <div className="flex items-center gap-1.5">
+                {product.colors.slice(0, 4).map((flavor, index) => (
+                  <div
+                    key={index}
+                    className="w-7 h-7 rounded-xl border-3 border-white shadow-md transition-all hover:scale-125 hover:rotate-12 flex items-center justify-center text-xs cursor-pointer"
+                    style={{ backgroundColor: getFlavorColor(flavor) }}
+                    title={flavor}
+                  >
+                    {isFlavorDark(flavor) && (
+                      <span className="text-white text-[10px]">🍫</span>
+                    )}
+                  </div>
+                ))}
+                {product.colors.length > 4 && (
+                  <span className="text-xs text-purple-700 bg-white px-2.5 py-1 rounded-xl font-bold border-2 border-purple-200">
+                    +{product.colors.length - 4}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         )}
 
         {/* Sizes */}
         {product.sizes.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 justify-end">
-            {product.sizes.slice(0, 3).map((size, index) => (
-              <span
-                key={index}
-                className="text-xs font-medium bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 px-3 py-1 rounded-full"
-              >
-                {size}
-              </span>
-            ))}
-            {product.sizes.length > 3 && (
-              <span className="text-xs text-gray-400 py-1">
-                +{product.sizes.length - 3}
-              </span>
-            )}
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Cake size={14} className="text-purple-600" />
+              <span className="text-sm font-bold text-purple-700">الأحجام المتاحة:</span>
+            </div>
+            <div className="flex flex-wrap gap-2 justify-end">
+              {product.sizes.slice(0, 3).map((size, index) => (
+                <span
+                  key={index}
+                  className="text-sm font-bold bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 px-4 py-2 rounded-xl border-2 border-purple-200 hover:scale-105 transition-transform"
+                >
+                  {size}
+                </span>
+              ))}
+              {product.sizes.length > 3 && (
+                <span className="text-sm text-purple-600 bg-purple-50 px-3 py-2 rounded-xl font-bold border-2 border-purple-200">
+                  +{product.sizes.length - 3} أخرى
+                </span>
+              )}
+            </div>
           </div>
         )}
 
-        {/* Quick Info */}
-        <div className="flex items-center justify-between pt-2 text-xs text-gray-400">
-          <div className="flex items-center gap-1">
-            <Heart size={12} className="text-pink-400" />
+        {/* Quick Info Footer */}
+        <div className="flex items-center justify-between pt-3 border-t-2 border-purple-100">
+          <div className="flex items-center gap-1.5 text-sm text-pink-600 font-medium">
+            <Heart size={14} className="text-pink-500 fill-pink-200" />
             <span>صنع بحب</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Sparkles size={12} className="text-amber-400" />
+          <div className="flex items-center gap-1.5 text-sm text-amber-600 font-medium">
+            <Sparkles size={14} className="text-amber-500" />
             <span>جودة عالية</span>
           </div>
+        </div>
+
+        {/* Mobile Action Buttons */}
+        <div className="md:hidden flex gap-2 pt-2">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewProduct(product);
+            }}
+            className="flex-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 border-2 border-purple-200 active:scale-95 transition-all"
+          >
+            <Eye size={18} />
+            <span>عرض</span>
+          </button>
+
+          <button
+            data-action="add-to-cart"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart(product);
+            }}
+            className={`flex-1 px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
+              product.inStock
+                ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white border-2 border-purple-400 active:scale-95'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed border-2 border-gray-400'
+            }`}
+            disabled={!product.inStock}
+          >
+            <ShoppingCart size={18} />
+            <span>{product.inStock ? 'أضف' : 'غير متوفر'}</span>
+          </button>
         </div>
       </div>
     </div>
