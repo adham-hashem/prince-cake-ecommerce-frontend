@@ -279,7 +279,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <span>عرض</span>
           </button>
 
-          <button
+          {/* <button
             data-action="add-to-cart"
             onClick={(e) => {
               e.stopPropagation();
@@ -295,7 +295,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <ShoppingCart size={16} className="sm:hidden" />
             <ShoppingCart size={18} className="hidden sm:block" />
             <span>{product.inStock ? 'أضف' : 'غير متوفر'}</span>
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
