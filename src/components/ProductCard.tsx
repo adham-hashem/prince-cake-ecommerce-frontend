@@ -103,12 +103,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {/* Badges */}
         <div className="absolute top-3 right-3 flex flex-col gap-2">
           {/* Offer Badge */}
-          {product.isOffer && (
+          {/* {product.isOffer && (
             <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1 animate-pulse">
               <Sparkles size={12} />
               <span>عرض خاص</span>
             </div>
-          )}
+          )} */}
 
           {/* Discount Badge */}
           {discountPercentage > 0 && (
