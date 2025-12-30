@@ -37,6 +37,7 @@ import CompleteProfile from './pages/CompleteProfile';
 import ProfilePage from './pages/ProfilePage';
 import CustomOrders from './pages/CustomOrders';
 import CakeConfigurationManagement from './pages/admin/CakeConfigurationManagement';
+import CustomOrdersManagement from './pages/admin/CustomOrdersManagement';
 
 function AppContent() {
   // 🚨 THE PROBLEMATIC useEffect FOR FCM REGISTRATION HAS BEEN REMOVED. 🚨
@@ -103,7 +104,7 @@ function AppContent() {
               <Route path="customers" element={<CustomersManagement />} />
               <Route path="discounts" element={<DiscountCodesManagement />} />
               <Route path="shipping" element={<ShippingManagement />} />
-              <Route path="custom-orders" element={<CustomOrders />} />
+              <Route path="custom-orders-management" element={<CustomOrdersManagement />} />
               <Route path="cake-configuration" element={<CakeConfigurationManagement />} />
             </Route>
             <Route path="*" element={<NotFoundPage />} />

@@ -19,19 +19,17 @@ import {
   Package,
   DollarSign,
   Image as ImageIcon,
-  FileCheck,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
-// Enums matching backend (UPDATED)
+// Enums matching backend
 enum CustomOrderStatus {
   Pending = 0,
-  Reviewed = 1,
-  Confirmed = 2,
-  InProgress = 3,
-  Ready = 4,
-  Completed = 5,
-  Cancelled = 6,
+  Confirmed = 1,
+  InProgress = 2,
+  Ready = 3,
+  Completed = 4,
+  Cancelled = 5,
 }
 
 enum PaymentMethod {
@@ -70,10 +68,26 @@ interface PaginatedResponse {
   totalPages: number;
 }
 
+interface OrderStats {
+  totalOrders: number;
+  pendingOrders: number;
+  inProgressOrders: number;
+  completedOrders: number;
+  cancelledOrders: number;
+  todayOrders: number;
+  thisMonthOrders: number;
+  totalRevenue: number;
+  thisMonthRevenue: number;
+  mostPopularOccasion: string;
+  mostPopularSize: string;
+  mostPopularFlavor: string;
+}
+
 const CustomOrdersManagement: React.FC = () => {
   const { isAuthenticated, userRole } = useAuth();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<CustomOrder[]>([]);
+  const [stats, setStats] = useState<OrderStats | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<CustomOrder | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
@@ -110,6 +124,7 @@ const CustomOrdersManagement: React.FC = () => {
     }
 
     fetchOrders();
+    fetchStats();
   }, [isAuthenticated, userRole, navigate, currentPage, statusFilter]);
 
   const getAuthHeaders = () => {
@@ -169,6 +184,21 @@ const CustomOrdersManagement: React.FC = () => {
     }
   };
 
+  const fetchStats = async () => {
+    try {
+      const response = await fetch(`${apiUrl}/api/CustomOrders/stats`, {
+        headers: getAuthHeaders(),
+      });
+
+      if (response.ok) {
+        const data: OrderStats = await response.json();
+        setStats(data);
+      }
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+    }
+  };
+
   const handleUpdateStatus = async () => {
     if (!selectedOrder || isLoading) return;
 
@@ -195,6 +225,7 @@ const CustomOrdersManagement: React.FC = () => {
       }
 
       await fetchOrders();
+      await fetchStats();
       setShowStatusModal(false);
       setSelectedOrder(null);
       alert('تم تحديث حالة الطلب بنجاح!');
@@ -222,6 +253,7 @@ const CustomOrdersManagement: React.FC = () => {
       }
 
       await fetchOrders();
+      await fetchStats();
       alert('تم حذف الطلب بنجاح!');
     } catch (error) {
       alert(error instanceof Error ? error.message : 'حدث خطأ أثناء حذف الطلب');
@@ -233,7 +265,6 @@ const CustomOrdersManagement: React.FC = () => {
   const getStatusText = (status: CustomOrderStatus) => {
     const statusMap = {
       [CustomOrderStatus.Pending]: 'قيد الانتظار',
-      [CustomOrderStatus.Reviewed]: 'تمت المراجعة',
       [CustomOrderStatus.Confirmed]: 'مؤكد',
       [CustomOrderStatus.InProgress]: 'قيد التنفيذ',
       [CustomOrderStatus.Ready]: 'جاهز للاستلام',
@@ -246,7 +277,6 @@ const CustomOrdersManagement: React.FC = () => {
   const getStatusColor = (status: CustomOrderStatus) => {
     const colorMap = {
       [CustomOrderStatus.Pending]: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      [CustomOrderStatus.Reviewed]: 'bg-cyan-100 text-cyan-800 border-cyan-200',
       [CustomOrderStatus.Confirmed]: 'bg-blue-100 text-blue-800 border-blue-200',
       [CustomOrderStatus.InProgress]: 'bg-purple-100 text-purple-800 border-purple-200',
       [CustomOrderStatus.Ready]: 'bg-green-100 text-green-800 border-green-200',
@@ -274,6 +304,7 @@ const CustomOrdersManagement: React.FC = () => {
   };
 
   const formatTime = (timeString: string) => {
+    // If the time is in HH:mm:ss format, extract HH:mm
     if (timeString && timeString.includes(':')) {
       return timeString.substring(0, 5);
     }
@@ -287,7 +318,7 @@ const CustomOrdersManagement: React.FC = () => {
   };
 
   const handleSearch = () => {
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page on new search
     fetchOrders();
   };
 
@@ -296,14 +327,6 @@ const CustomOrdersManagement: React.FC = () => {
     setStatusFilter('');
     setDateFilter('');
     setCurrentPage(1);
-  };
-
-  // Calculate quick stats from current orders
-  const quickStats = {
-    pending: orders.filter(o => o.status === CustomOrderStatus.Pending).length,
-    reviewed: orders.filter(o => o.status === CustomOrderStatus.Reviewed).length,
-    inProgress: orders.filter(o => o.status === CustomOrderStatus.InProgress).length,
-    completed: orders.filter(o => o.status === CustomOrderStatus.Completed).length,
   };
 
   return (
@@ -321,40 +344,42 @@ const CustomOrdersManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Quick Stats Cards (from current page) */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-200 rounded-2xl p-4 shadow-md">
-          <div className="flex items-center justify-between mb-2">
-            <Clock3 className="h-8 w-8 text-yellow-600" />
-            <span className="text-3xl font-bold text-yellow-900">{quickStats.pending}</span>
+      {/* Stats Cards */}
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-200 rounded-2xl p-4 shadow-md">
+            <div className="flex items-center justify-between mb-2">
+              <Clock3 className="h-8 w-8 text-yellow-600" />
+              <span className="text-3xl font-bold text-yellow-900">{stats.pendingOrders}</span>
+            </div>
+            <p className="text-sm text-gray-700 font-medium">قيد الانتظار</p>
           </div>
-          <p className="text-sm text-gray-700 font-medium">قيد الانتظار (الصفحة الحالية)</p>
-        </div>
 
-        <div className="bg-gradient-to-br from-cyan-50 to-blue-50 border-2 border-cyan-200 rounded-2xl p-4 shadow-md">
-          <div className="flex items-center justify-between mb-2">
-            <FileCheck className="h-8 w-8 text-cyan-600" />
-            <span className="text-3xl font-bold text-cyan-900">{quickStats.reviewed}</span>
+          <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 shadow-md">
+            <div className="flex items-center justify-between mb-2">
+              <Package className="h-8 w-8 text-purple-600" />
+              <span className="text-3xl font-bold text-purple-900">{stats.inProgressOrders}</span>
+            </div>
+            <p className="text-sm text-gray-700 font-medium">قيد التنفيذ</p>
           </div>
-          <p className="text-sm text-gray-700 font-medium">تمت المراجعة (الصفحة الحالية)</p>
-        </div>
 
-        <div className="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 shadow-md">
-          <div className="flex items-center justify-between mb-2">
-            <Package className="h-8 w-8 text-purple-600" />
-            <span className="text-3xl font-bold text-purple-900">{quickStats.inProgress}</span>
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-4 shadow-md">
+            <div className="flex items-center justify-between mb-2">
+              <CheckCircle className="h-8 w-8 text-green-600" />
+              <span className="text-3xl font-bold text-green-900">{stats.completedOrders}</span>
+            </div>
+            <p className="text-sm text-gray-700 font-medium">مكتمل</p>
           </div>
-          <p className="text-sm text-gray-700 font-medium">قيد التنفيذ (الصفحة الحالية)</p>
-        </div>
 
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-4 shadow-md">
-          <div className="flex items-center justify-between mb-2">
-            <CheckCircle className="h-8 w-8 text-green-600" />
-            <span className="text-3xl font-bold text-green-900">{quickStats.completed}</span>
+          <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4 shadow-md">
+            <div className="flex items-center justify-between mb-2">
+              <DollarSign className="h-8 w-8 text-amber-600" />
+              <span className="text-3xl font-bold text-amber-900">{stats.totalRevenue.toFixed(0)}</span>
+            </div>
+            <p className="text-sm text-gray-700 font-medium">الإيرادات (جنيه)</p>
           </div>
-          <p className="text-sm text-gray-700 font-medium">مكتمل (الصفحة الحالية)</p>
         </div>
-      </div>
+      )}
 
       {/* Error Message */}
       {error && (
@@ -404,7 +429,6 @@ const CustomOrdersManagement: React.FC = () => {
             >
               <option value="">الكل</option>
               <option value={CustomOrderStatus.Pending}>قيد الانتظار</option>
-              <option value={CustomOrderStatus.Reviewed}>تمت المراجعة</option>
               <option value={CustomOrderStatus.Confirmed}>مؤكد</option>
               <option value={CustomOrderStatus.InProgress}>قيد التنفيذ</option>
               <option value={CustomOrderStatus.Ready}>جاهز للاستلام</option>
@@ -771,7 +795,6 @@ const CustomOrdersManagement: React.FC = () => {
                   dir="rtl"
                 >
                   <option value={CustomOrderStatus.Pending}>قيد الانتظار</option>
-                  <option value={CustomOrderStatus.Reviewed}>تمت المراجعة</option>
                   <option value={CustomOrderStatus.Confirmed}>مؤكد</option>
                   <option value={CustomOrderStatus.InProgress}>قيد التنفيذ</option>
                   <option value={CustomOrderStatus.Ready}>جاهز للاستلام</option>
