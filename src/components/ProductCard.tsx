@@ -83,11 +83,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   return (
     <div
-      className="bg-white rounded-3xl shadow-xl overflow-hidden transition-all duration-300 group hover:shadow-2xl cursor-pointer transform hover:scale-[1.03] active:scale-[0.98] border-2 border-purple-100 hover:border-purple-300"
+      className="bg-white rounded-2xl sm:rounded-3xl shadow-lg overflow-hidden transition-all duration-300 group hover:shadow-2xl cursor-pointer transform hover:scale-[1.02] active:scale-[0.98] border-2 border-purple-100 hover:border-purple-400"
       onClick={handleCardClick}
     >
       {/* Image Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-purple-50 via-pink-50 to-amber-50">
+      <div className="relative overflow-hidden bg-purple-50">
         <img
           src={`${apiUrl}${product.images[0]?.imagePath || ''}`}
           alt={product.name}
@@ -97,30 +97,30 @@ const ProductCard: React.FC<ProductCardProps> = ({
             target.src =
               'https://placehold.co/600x400/f5f3ff/7c3aed?text=🎂+Prince+Cake';
           }}
-          className="w-full h-56 sm:h-64 object-contain group-hover:scale-110 transition-transform duration-500"
+          className="w-full h-48 sm:h-56 md:h-64 object-contain group-hover:scale-110 transition-transform duration-500"
         />
 
         {/* Badges */}
-        <div className="absolute top-4 right-4 flex flex-col gap-2">
-
+        <div className="absolute top-2 sm:top-3 right-2 sm:right-3 flex flex-col gap-1.5 sm:gap-2">
           {/* Discount Badge */}
           {discountPercentage > 0 && (
-            <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-2xl text-sm font-bold shadow-lg">
+            <div className="bg-orange-500 text-white px-2.5 sm:px-4 py-1 sm:py-2 rounded-xl sm:rounded-2xl text-[10px] sm:text-sm font-bold shadow-lg">
               خصم {discountPercentage}%
             </div>
           )}
         </div>
 
         {/* Stock Status Badge */}
-        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-2 rounded-xl shadow-lg border-2 border-purple-200">
-          <Cake size={20} className="text-purple-600" />
+        <div className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-white p-1.5 sm:p-2 rounded-lg sm:rounded-xl shadow-md border-2 border-purple-200">
+          <Cake size={16} className="sm:hidden text-purple-600" />
+          <Cake size={20} className="hidden sm:block text-purple-600" />
         </div>
 
         {/* Out of Stock Overlay */}
         {!product.inStock && (
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/40 flex items-center justify-center backdrop-blur-sm">
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
             <div className="text-center">
-              <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-6 py-3 rounded-2xl font-bold text-base shadow-2xl block">
+              <span className="bg-red-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base shadow-2xl block">
                 غير متوفر حالياً
               </span>
             </div>
@@ -128,13 +128,13 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
 
         {/* Hover Actions - Desktop Only */}
-        <div className="hidden md:flex absolute inset-0 bg-gradient-to-t from-purple-900/80 via-pink-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 items-end justify-center pb-6 gap-3">
+        <div className="hidden md:flex absolute inset-0 bg-purple-900/80 opacity-0 group-hover:opacity-100 transition-all duration-300 items-end justify-center pb-6 gap-3">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onViewProduct(product);
             }}
-            className="bg-white text-purple-700 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-2xl hover:shadow-purple-500/50 hover:scale-110 transition-all"
+            className="bg-white text-purple-700 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-2xl hover:bg-purple-50 hover:scale-110 transition-all"
           >
             <Eye size={18} />
             <span>عرض التفاصيل</span>
@@ -148,7 +148,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             }}
             className={`px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-2xl transition-all ${
               product.inStock
-                ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:shadow-pink-500/50 hover:scale-110'
+                ? 'bg-purple-600 text-white hover:bg-purple-700 hover:scale-110'
                 : 'bg-gray-400 text-white cursor-not-allowed'
             }`}
             disabled={!product.inStock}
@@ -157,88 +157,66 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <span>{product.inStock ? 'أضف للسلة' : 'غير متوفر'}</span>
           </button>
         </div>
-
-        {/* Quick Add - Mobile */}
-        <button
-          data-action="add-to-cart"
-          onClick={(e) => {
-            e.stopPropagation();
-            onAddToCart(product);
-          }}
-          className={`md:hidden absolute bottom-4 left-4 p-3.5 rounded-2xl shadow-2xl transition-all ${
-            product.inStock
-              ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white active:scale-90'
-              : 'bg-gray-400 text-white cursor-not-allowed'
-          }`}
-          disabled={!product.inStock}
-        >
-          <ShoppingCart size={22} />
-        </button>
       </div>
 
       {/* Content Section */}
-      <div className="p-5 space-y-3.5">
+      <div className="p-3 sm:p-4 md:p-5 space-y-2.5 sm:space-y-3">
         {/* Name & Code */}
-        <div className="flex justify-between items-start gap-3">
-          <h3 className="font-bold text-xl text-purple-900 flex-1 text-right leading-tight line-clamp-2">
+        <div className="flex justify-between items-start gap-2">
+          <h3 className="font-bold text-base sm:text-lg md:text-xl text-purple-900 flex-1 text-right leading-tight line-clamp-2">
             {product.name}
           </h3>
-          <span className="text-xs text-purple-700 bg-gradient-to-r from-purple-100 to-pink-100 px-3 py-1.5 rounded-xl font-bold whitespace-nowrap border-2 border-purple-200">
+          <span className="text-[10px] sm:text-xs text-purple-700 bg-purple-100 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl font-bold whitespace-nowrap border border-purple-300 sm:border-2">
             {product.code}
           </span>
         </div>
 
         {/* Description */}
-        <p className="text-gray-600 text-sm line-clamp-2 text-right leading-relaxed">
+        <p className="text-gray-600 text-xs sm:text-sm line-clamp-2 text-right leading-relaxed">
           {product.description}
         </p>
 
         {/* Price Section */}
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border-2 border-amber-200">
+        <div className="bg-amber-50 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-amber-300 sm:border-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-black text-amber-600">
+            <div className="flex items-baseline gap-1.5 sm:gap-2">
+              <span className="text-2xl sm:text-3xl font-black text-amber-700">
                 {product.price}
               </span>
-              <span className="text-sm text-amber-700 font-bold">جنيه</span>
+              <span className="text-xs sm:text-sm text-amber-700 font-bold">جنيه</span>
               {product.originalPrice && (
-                <span className="text-sm text-gray-400 line-through font-medium">
+                <span className="text-xs sm:text-sm text-gray-400 line-through font-medium">
                   {product.originalPrice}
                 </span>
               )}
             </div>
-
-            {/* Rating */}
-            <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border-2 border-amber-200">
-              <Star size={16} className="fill-amber-400 text-amber-400" />
-              <span className="text-sm font-bold text-amber-600">4.9</span>
-            </div>
           </div>
         </div>
 
-        {/* Flavors (formerly colors) */}
+        {/* Flavors */}
         {product.colors.length > 0 && (
-          <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-3 border-2 border-purple-200">
+          <div className="bg-purple-50 rounded-xl sm:rounded-2xl p-2.5 sm:p-3 border border-purple-300 sm:border-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-purple-700 flex items-center gap-1.5">
-                <Sparkles size={14} className="text-purple-500" />
-                النكهات المتاحة:
+              <span className="text-xs sm:text-sm font-bold text-purple-700 flex items-center gap-1 sm:gap-1.5">
+                <Sparkles size={12} className="sm:hidden text-purple-600" />
+                <Sparkles size={14} className="hidden sm:block text-purple-600" />
+                النكهات:
               </span>
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 sm:gap-1.5">
                 {product.colors.slice(0, 4).map((flavor, index) => (
                   <div
                     key={index}
-                    className="w-7 h-7 rounded-xl border-3 border-white shadow-md transition-all hover:scale-125 hover:rotate-12 flex items-center justify-center text-xs cursor-pointer"
+                    className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-lg sm:rounded-xl border-2 sm:border-3 border-white shadow-md transition-all hover:scale-125 hover:rotate-12 flex items-center justify-center text-[8px] sm:text-xs cursor-pointer"
                     style={{ backgroundColor: getFlavorColor(flavor) }}
                     title={flavor}
                   >
                     {isFlavorDark(flavor) && (
-                      <span className="text-white text-[10px]">🍫</span>
+                      <span className="text-white text-[8px] sm:text-[10px]">🍫</span>
                     )}
                   </div>
                 ))}
                 {product.colors.length > 4 && (
-                  <span className="text-xs text-purple-700 bg-white px-2.5 py-1 rounded-xl font-bold border-2 border-purple-200">
+                  <span className="text-[10px] sm:text-xs text-purple-700 bg-white px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg sm:rounded-xl font-bold border border-purple-300 sm:border-2">
                     +{product.colors.length - 4}
                   </span>
                 )}
@@ -250,22 +228,23 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {/* Sizes */}
         {product.sizes.length > 0 && (
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Cake size={14} className="text-purple-600" />
-              <span className="text-sm font-bold text-purple-700">الأحجام المتاحة:</span>
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+              <Cake size={12} className="sm:hidden text-purple-600" />
+              <Cake size={14} className="hidden sm:block text-purple-600" />
+              <span className="text-xs sm:text-sm font-bold text-purple-700">الأحجام:</span>
             </div>
-            <div className="flex flex-wrap gap-2 justify-end">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2 justify-end">
               {product.sizes.slice(0, 3).map((size, index) => (
                 <span
                   key={index}
-                  className="text-sm font-bold bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 px-4 py-2 rounded-xl border-2 border-purple-200 hover:scale-105 transition-transform"
+                  className="text-xs sm:text-sm font-bold bg-purple-100 text-purple-700 px-2.5 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-lg sm:rounded-xl border border-purple-300 sm:border-2 hover:scale-105 transition-transform"
                 >
                   {size}
                 </span>
               ))}
               {product.sizes.length > 3 && (
-                <span className="text-sm text-purple-600 bg-purple-50 px-3 py-2 rounded-xl font-bold border-2 border-purple-200">
-                  +{product.sizes.length - 3} أخرى
+                <span className="text-xs sm:text-sm text-purple-600 bg-purple-50 px-2 sm:px-3 py-1 sm:py-1.5 md:py-2 rounded-lg sm:rounded-xl font-bold border border-purple-300 sm:border-2">
+                  +{product.sizes.length - 3}
                 </span>
               )}
             </div>
@@ -273,13 +252,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
 
         {/* Quick Info Footer */}
-        <div className="flex items-center justify-between pt-3 border-t-2 border-purple-100">
-          <div className="flex items-center gap-1.5 text-sm text-pink-600 font-medium">
-            <Heart size={14} className="text-pink-500 fill-pink-200" />
+        <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-purple-200 sm:border-t-2">
+          <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-pink-600 font-medium">
+            <Heart size={12} className="sm:hidden text-pink-500 fill-pink-200" />
+            <Heart size={14} className="hidden sm:block text-pink-500 fill-pink-200" />
             <span>صنع بحب</span>
           </div>
-          <div className="flex items-center gap-1.5 text-sm text-amber-600 font-medium">
-            <Sparkles size={14} className="text-amber-500" />
+          <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-amber-600 font-medium">
+            <Sparkles size={12} className="sm:hidden text-amber-500" />
+            <Sparkles size={14} className="hidden sm:block text-amber-500" />
             <span>جودة عالية</span>
           </div>
         </div>
@@ -291,9 +272,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
               e.stopPropagation();
               onViewProduct(product);
             }}
-            className="flex-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 border-2 border-purple-200 active:scale-95 transition-all"
+            className="flex-1 bg-purple-100 text-purple-700 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl font-bold flex items-center justify-center gap-1.5 sm:gap-2 border-2 border-purple-300 active:scale-95 transition-all text-sm sm:text-base"
           >
-            <Eye size={18} />
+            <Eye size={16} className="sm:hidden" />
+            <Eye size={18} className="hidden sm:block" />
             <span>عرض</span>
           </button>
 
@@ -303,14 +285,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
               e.stopPropagation();
               onAddToCart(product);
             }}
-            className={`flex-1 px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
+            className={`flex-1 px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all text-sm sm:text-base ${
               product.inStock
-                ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white border-2 border-purple-400 active:scale-95'
+                ? 'bg-purple-600 text-white border-2 border-purple-700 active:scale-95 hover:bg-purple-700'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed border-2 border-gray-400'
             }`}
             disabled={!product.inStock}
           >
-            <ShoppingCart size={18} />
+            <ShoppingCart size={16} className="sm:hidden" />
+            <ShoppingCart size={18} className="hidden sm:block" />
             <span>{product.inStock ? 'أضف' : 'غير متوفر'}</span>
           </button>
         </div>
