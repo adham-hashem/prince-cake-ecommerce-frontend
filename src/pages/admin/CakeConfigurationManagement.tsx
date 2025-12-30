@@ -472,99 +472,106 @@ const CakeConfigurationManagement: React.FC = () => {
   const iconOptions = ['🎂', '💒', '💍', '🎓', '👶', '🏆', '❤️', '🎉', '🎈', '🎁', '⭐', '✨'];
 
   return (
-    <div className="p-6 bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50 min-h-screen">
+    <div className="p-3 sm:p-4 md:p-6 bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50 min-h-screen">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-3 rounded-xl">
-            <Cake className="h-6 w-6 text-purple-600" />
+      <div className="mb-4 sm:mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="bg-gradient-to-br from-purple-100 to-pink-100 p-2 sm:p-3 rounded-xl">
+            <Cake className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-purple-900">إعدادات التورتات المخصصة</h2>
-            <p className="text-sm text-purple-600">إدارة المناسبات والأحجام والنكهات والأسعار</p>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-purple-900">إعدادات التورتات</h2>
+            <p className="text-xs sm:text-sm text-purple-600 hidden sm:block">إدارة المناسبات والأحجام والنكهات والأسعار</p>
           </div>
         </div>
-        <Sparkles className="h-8 w-8 text-amber-500 animate-pulse" />
+        <Sparkles className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-amber-500 animate-pulse" />
       </div>
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-4 mb-6 flex items-center shadow-lg">
-          <AlertCircle className="h-5 w-5 text-red-600 ml-2 flex-shrink-0" />
-          <span className="text-red-800 font-medium flex-1">{error}</span>
+        <div className="bg-red-50 border-2 border-red-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 mb-4 sm:mb-6 flex items-start sm:items-center shadow-lg">
+          <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 ml-2 flex-shrink-0 mt-0.5 sm:mt-0" />
+          <span className="text-sm sm:text-base text-red-800 font-medium flex-1">{error}</span>
           <button
             onClick={fetchData}
-            className="mr-auto bg-red-100 hover:bg-red-200 px-4 py-2 rounded-xl text-sm text-red-800 flex items-center font-semibold transition-all"
+            className="mr-auto bg-red-100 hover:bg-red-200 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm text-red-800 flex items-center font-semibold transition-all"
             disabled={isLoading}
           >
-            <RefreshCw className="h-4 w-4 ml-1" />
-            إعادة المحاولة
+            <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
+            <span className="hidden sm:inline">إعادة المحاولة</span>
+            <span className="sm:hidden">إعادة</span>
           </button>
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="bg-white rounded-2xl shadow-xl p-2 mb-6 border-2 border-purple-100 flex gap-2">
-        <button
-          onClick={() => setActiveTab('occasions')}
-          className={`flex-1 py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
-            activeTab === 'occasions'
-              ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md'
-              : 'text-purple-700 hover:bg-purple-50'
-          }`}
-        >
-          <Calendar className="h-5 w-5" />
-          المناسبات
-        </button>
-        <button
-          onClick={() => setActiveTab('sizes')}
-          className={`flex-1 py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
-            activeTab === 'sizes'
-              ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md'
-              : 'text-purple-700 hover:bg-purple-50'
-          }`}
-        >
-          <Ruler className="h-5 w-5" />
-          الأحجام
-        </button>
-        <button
-          onClick={() => setActiveTab('flavors')}
-          className={`flex-1 py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
-            activeTab === 'flavors'
-              ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md'
-              : 'text-purple-700 hover:bg-purple-50'
-          }`}
-        >
-          <Cookie className="h-5 w-5" />
-          النكهات
-        </button>
-        <button
-          onClick={() => setActiveTab('pricing')}
-          className={`flex-1 py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
-            activeTab === 'pricing'
-              ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md'
-              : 'text-purple-700 hover:bg-purple-50'
-          }`}
-        >
-          <DollarSign className="h-5 w-5" />
-          الأسعار
-        </button>
+      {/* Tabs - Mobile Optimized */}
+      <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-1 sm:p-2 mb-4 sm:mb-6 border-2 border-purple-100">
+        <div className="grid grid-cols-2 sm:flex gap-1 sm:gap-2">
+          <button
+            onClick={() => setActiveTab('occasions')}
+            className={`py-2 sm:py-3 px-2 sm:px-4 rounded-lg sm:rounded-xl font-bold transition-all flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base ${
+              activeTab === 'occasions'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md'
+                : 'text-purple-700 hover:bg-purple-50'
+            }`}
+          >
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">المناسبات</span>
+            <span className="sm:hidden">مناسبات</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('sizes')}
+            className={`py-2 sm:py-3 px-2 sm:px-4 rounded-lg sm:rounded-xl font-bold transition-all flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base ${
+              activeTab === 'sizes'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md'
+                : 'text-purple-700 hover:bg-purple-50'
+            }`}
+          >
+            <Ruler className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">الأحجام</span>
+            <span className="sm:hidden">أحجام</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('flavors')}
+            className={`py-2 sm:py-3 px-2 sm:px-4 rounded-lg sm:rounded-xl font-bold transition-all flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base ${
+              activeTab === 'flavors'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md'
+                : 'text-purple-700 hover:bg-purple-50'
+            }`}
+          >
+            <Cookie className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">النكهات</span>
+            <span className="sm:hidden">نكهات</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('pricing')}
+            className={`py-2 sm:py-3 px-2 sm:px-4 rounded-lg sm:rounded-xl font-bold transition-all flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base ${
+              activeTab === 'pricing'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md'
+                : 'text-purple-700 hover:bg-purple-50'
+            }`}
+          >
+            <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">الأسعار</span>
+            <span className="sm:hidden">أسعار</span>
+          </button>
+        </div>
       </div>
 
       {/* Include Inactive Toggle */}
       {activeTab !== 'pricing' && (
-        <div className="mb-6 flex items-center justify-end gap-2">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <span className="text-sm font-medium text-purple-900">عرض المحذوفات</span>
+        <div className="mb-4 sm:mb-6 flex items-center justify-end gap-2">
+          <label className="flex items-center gap-1.5 sm:gap-2 cursor-pointer">
+            <span className="text-xs sm:text-sm font-medium text-purple-900">عرض المحذوفات</span>
             <button
               onClick={() => setIncludeInactive(!includeInactive)}
-              className={`relative w-12 h-6 rounded-full transition-colors ${
+              className={`relative w-10 h-5 sm:w-12 sm:h-6 rounded-full transition-colors ${
                 includeInactive ? 'bg-purple-600' : 'bg-gray-300'
               }`}
             >
               <span
-                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-                  includeInactive ? 'transform translate-x-6' : ''
+                className={`absolute top-0.5 sm:top-1 left-0.5 sm:left-1 w-4 h-4 sm:w-4 sm:h-4 bg-white rounded-full transition-transform ${
+                  includeInactive ? 'transform translate-x-5 sm:translate-x-6' : ''
                 }`}
               />
             </button>
@@ -576,48 +583,48 @@ const CakeConfigurationManagement: React.FC = () => {
       {activeTab === 'occasions' && (
         <>
           {/* Add/Edit Form */}
-          <div className="mb-8 p-6 bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-xl border-2 border-purple-100">
-            <h3 className="text-xl font-bold text-purple-900 mb-6 flex items-center gap-2">
-              {editingOccasion ? <Edit className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-              {editingOccasion ? 'تعديل المناسبة' : 'إضافة مناسبة جديدة'}
+          <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-gradient-to-br from-white to-purple-50 rounded-xl sm:rounded-2xl shadow-xl border-2 border-purple-100">
+            <h3 className="text-base sm:text-lg md:text-xl font-bold text-purple-900 mb-4 sm:mb-6 flex items-center gap-2">
+              {editingOccasion ? <Edit className="h-4 w-4 sm:h-5 sm:w-5" /> : <Plus className="h-4 w-4 sm:h-5 sm:w-5" />}
+              <span className="text-sm sm:text-base md:text-xl">{editingOccasion ? 'تعديل المناسبة' : 'إضافة مناسبة جديدة'}</span>
             </h3>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-sm font-bold text-purple-900 mb-2">
+                <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                   الاسم بالعربية <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={occasionForm.nameAr}
                   onChange={(e) => setOccasionForm({ ...occasionForm, nameAr: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right text-sm sm:text-base"
                   dir="rtl"
                   placeholder="مثال: عيد ميلاد"
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-purple-900 mb-2">
+                <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                   Name in English <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={occasionForm.name}
                   onChange={(e) => setOccasionForm({ ...occasionForm, name: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base"
                   placeholder="e.g., Birthday"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-bold text-purple-900 mb-2">
+              <div className="sm:col-span-2">
+                <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                   الأيقونة <span className="text-red-500">*</span>
                 </label>
-                <div className="grid grid-cols-6 gap-2 mb-2">
+                <div className="grid grid-cols-6 sm:grid-cols-6 md:grid-cols-12 gap-1.5 sm:gap-2 mb-2">
                   {iconOptions.map((icon) => (
                     <button
                       key={icon}
                       type="button"
                       onClick={() => setOccasionForm({ ...occasionForm, icon })}
-                      className={`text-2xl p-2 rounded-xl border-2 transition-all ${
+                      className={`text-xl sm:text-2xl p-1.5 sm:p-2 rounded-lg sm:rounded-xl border-2 transition-all ${
                         occasionForm.icon === icon
                           ? 'border-purple-500 bg-purple-50 scale-110'
                           : 'border-purple-200 hover:border-purple-400 hover:bg-purple-50'
@@ -631,16 +638,16 @@ const CakeConfigurationManagement: React.FC = () => {
                   type="text"
                   value={occasionForm.icon}
                   onChange={(e) => setOccasionForm({ ...occasionForm, icon: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-center text-2xl"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-center text-xl sm:text-2xl"
                   placeholder="🎂"
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-purple-900 mb-2">الحالة</label>
+                <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">الحالة</label>
                 <select
                   value={occasionForm.isActive ? 'true' : 'false'}
                   onChange={(e) => setOccasionForm({ ...occasionForm, isActive: e.target.value === 'true' })}
-                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right font-medium"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right font-medium text-sm sm:text-base"
                   dir="rtl"
                 >
                   <option value="true">مفعّل</option>
@@ -648,11 +655,11 @@ const CakeConfigurationManagement: React.FC = () => {
                 </select>
               </div>
             </div>
-            <div className="flex gap-3 mt-6">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4 sm:mt-6">
               <button
                 onClick={handleSaveOccasion}
                 disabled={isLoading}
-                className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-semibold shadow-md flex items-center gap-2 disabled:opacity-50"
+                className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-semibold shadow-md flex items-center justify-center gap-2 disabled:opacity-50 text-sm sm:text-base"
               >
                 <Save className="h-4 w-4" />
                 {editingOccasion ? 'تحديث' : 'إضافة'}
@@ -661,7 +668,7 @@ const CakeConfigurationManagement: React.FC = () => {
                 <button
                   onClick={resetOccasionForm}
                   disabled={isLoading}
-                  className="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-300 transition-all font-semibold flex items-center gap-2"
+                  className="bg-gray-200 text-gray-700 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl hover:bg-gray-300 transition-all font-semibold flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
                   <X className="h-4 w-4" />
                   إلغاء
@@ -671,38 +678,38 @@ const CakeConfigurationManagement: React.FC = () => {
           </div>
 
           {/* List */}
-          <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-purple-100">
-            <h4 className="text-lg font-bold text-purple-900 mb-4 flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border-2 border-purple-100">
+            <h4 className="text-base sm:text-lg font-bold text-purple-900 mb-3 sm:mb-4 flex items-center gap-2">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
               المناسبات المتاحة ({occasions.length})
             </h4>
             {occasions.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">لا توجد مناسبات</p>
+              <p className="text-center text-gray-500 py-6 sm:py-8 text-sm sm:text-base">لا توجد مناسبات</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {occasions.map((occasion) => (
                   <div
                     key={occasion.id}
-                    className="flex items-center justify-between p-4 border-2 border-purple-100 rounded-xl bg-gradient-to-r from-white to-purple-50 hover:shadow-md transition-all"
+                    className="flex items-center justify-between p-3 sm:p-4 border-2 border-purple-100 rounded-lg sm:rounded-xl bg-gradient-to-r from-white to-purple-50 hover:shadow-md transition-all"
                   >
-                    <div className="flex items-center gap-4">
-                      <span className="text-3xl">{occasion.icon}</span>
-                      <div>
-                        <p className="font-bold text-purple-900">{occasion.nameAr}</p>
-                        <p className="text-sm text-gray-600">{occasion.name}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                    <div className="flex items-center gap-2 sm:gap-4 flex-1">
+                      <span className="text-2xl sm:text-3xl">{occasion.icon}</span>
+                      <div className="flex-1">
+                        <p className="font-bold text-purple-900 text-sm sm:text-base">{occasion.nameAr}</p>
+                        <p className="text-xs sm:text-sm text-gray-600">{occasion.name}</p>
+                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
+                          <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold ${
                             occasion.isActive
                               ? 'bg-green-100 text-green-800 border border-green-200'
                               : 'bg-gray-100 text-gray-800 border border-gray-200'
                           }`}>
                             {occasion.isActive ? 'مفعّل' : 'غير مفعّل'}
                           </span>
-                          <span className="text-xs text-gray-500">{formatDate(occasion.createdAt)}</span>
+                          <span className="text-[10px] sm:text-xs text-gray-500 hidden sm:inline">{formatDate(occasion.createdAt)}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 sm:gap-2">
                       <button
                         onClick={() => {
                           setEditingOccasion(occasion);
@@ -713,19 +720,21 @@ const CakeConfigurationManagement: React.FC = () => {
                             isActive: occasion.isActive,
                           });
                         }}
-                        className="text-blue-600 hover:text-blue-700 p-2 hover:bg-blue-50 rounded-xl transition-colors"
+                        className="text-blue-600 hover:text-blue-700 p-1.5 sm:p-2 hover:bg-blue-50 rounded-lg sm:rounded-xl transition-colors"
                         title="تعديل"
                         disabled={isLoading}
                       >
-                        <Edit size={18} />
+                        <Edit size={16} className="sm:hidden" />
+                        <Edit size={18} className="hidden sm:block" />
                       </button>
                       <button
                         onClick={() => handleDeleteOccasion(occasion.id)}
-                        className="text-red-600 hover:text-red-700 p-2 hover:bg-red-50 rounded-xl transition-colors"
+                        className="text-red-600 hover:text-red-700 p-1.5 sm:p-2 hover:bg-red-50 rounded-lg sm:rounded-xl transition-colors"
                         title="حذف"
                         disabled={isLoading}
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={16} className="sm:hidden" />
+                        <Trash2 size={18} className="hidden sm:block" />
                       </button>
                     </div>
                   </div>
@@ -740,68 +749,68 @@ const CakeConfigurationManagement: React.FC = () => {
       {activeTab === 'sizes' && (
         <>
           {/* Add/Edit Form */}
-          <div className="mb-8 p-6 bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-xl border-2 border-purple-100">
-            <h3 className="text-xl font-bold text-purple-900 mb-6 flex items-center gap-2">
-              {editingSize ? <Edit className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-              {editingSize ? 'تعديل الحجم' : 'إضافة حجم جديد'}
+          <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-gradient-to-br from-white to-purple-50 rounded-xl sm:rounded-2xl shadow-xl border-2 border-purple-100">
+            <h3 className="text-base sm:text-lg md:text-xl font-bold text-purple-900 mb-4 sm:mb-6 flex items-center gap-2">
+              {editingSize ? <Edit className="h-4 w-4 sm:h-5 sm:w-5" /> : <Plus className="h-4 w-4 sm:h-5 sm:w-5" />}
+              <span className="text-sm sm:text-base md:text-xl">{editingSize ? 'تعديل الحجم' : 'إضافة حجم جديد'}</span>
             </h3>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-sm font-bold text-purple-900 mb-2">
+                <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                   الاسم بالعربية <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={sizeForm.nameAr}
                   onChange={(e) => setSizeForm({ ...sizeForm, nameAr: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right text-sm sm:text-base"
                   dir="rtl"
                   placeholder="مثال: صغير"
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-purple-900 mb-2">
+                <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                   Name in English <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={sizeForm.name}
                   onChange={(e) => setSizeForm({ ...sizeForm, name: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base"
                   placeholder="e.g., Small"
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-purple-900 mb-2">
+                <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                   عدد الأشخاص (عربي) <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={sizeForm.personsCountAr}
                   onChange={(e) => setSizeForm({ ...sizeForm, personsCountAr: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right text-sm sm:text-base"
                   dir="rtl"
                   placeholder="مثال: 2-4 أشخاص"
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-purple-900 mb-2">
+                <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                   Servings (English) <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={sizeForm.personsCount}
                   onChange={(e) => setSizeForm({ ...sizeForm, personsCount: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base"
                   placeholder="e.g., 2-4 persons"
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-purple-900 mb-2">الحالة</label>
+                <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">الحالة</label>
                 <select
                   value={sizeForm.isActive ? 'true' : 'false'}
                   onChange={(e) => setSizeForm({ ...sizeForm, isActive: e.target.value === 'true' })}
-                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right font-medium"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right font-medium text-sm sm:text-base"
                   dir="rtl"
                 >
                   <option value="true">مفعّل</option>
@@ -809,11 +818,11 @@ const CakeConfigurationManagement: React.FC = () => {
                 </select>
               </div>
             </div>
-            <div className="flex gap-3 mt-6">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4 sm:mt-6">
               <button
                 onClick={handleSaveSize}
                 disabled={isLoading}
-                className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-semibold shadow-md flex items-center gap-2 disabled:opacity-50"
+                className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-semibold shadow-md flex items-center justify-center gap-2 disabled:opacity-50 text-sm sm:text-base"
               >
                 <Save className="h-4 w-4" />
                 {editingSize ? 'تحديث' : 'إضافة'}
@@ -822,7 +831,7 @@ const CakeConfigurationManagement: React.FC = () => {
                 <button
                   onClick={resetSizeForm}
                   disabled={isLoading}
-                  className="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-300 transition-all font-semibold flex items-center gap-2"
+                  className="bg-gray-200 text-gray-700 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl hover:bg-gray-300 transition-all font-semibold flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
                   <X className="h-4 w-4" />
                   إلغاء
@@ -832,36 +841,36 @@ const CakeConfigurationManagement: React.FC = () => {
           </div>
 
           {/* List */}
-          <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-purple-100">
-            <h4 className="text-lg font-bold text-purple-900 mb-4 flex items-center gap-2">
-              <Ruler className="h-5 w-5" />
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border-2 border-purple-100">
+            <h4 className="text-base sm:text-lg font-bold text-purple-900 mb-3 sm:mb-4 flex items-center gap-2">
+              <Ruler className="h-4 w-4 sm:h-5 sm:w-5" />
               الأحجام المتاحة ({sizes.length})
             </h4>
             {sizes.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">لا توجد أحجام</p>
+              <p className="text-center text-gray-500 py-6 sm:py-8 text-sm sm:text-base">لا توجد أحجام</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {sizes.map((size) => (
                   <div
                     key={size.id}
-                    className="flex items-center justify-between p-4 border-2 border-purple-100 rounded-xl bg-gradient-to-r from-white to-purple-50 hover:shadow-md transition-all"
+                    className="flex items-center justify-between p-3 sm:p-4 border-2 border-purple-100 rounded-lg sm:rounded-xl bg-gradient-to-r from-white to-purple-50 hover:shadow-md transition-all"
                   >
-                    <div>
-                      <p className="font-bold text-purple-900">{size.nameAr}</p>
-                      <p className="text-sm text-gray-600">{size.name}</p>
-                      <p className="text-sm text-purple-600 mt-1">يكفي {size.personsCountAr} | {size.personsCount}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                    <div className="flex-1">
+                      <p className="font-bold text-purple-900 text-sm sm:text-base">{size.nameAr}</p>
+                      <p className="text-xs sm:text-sm text-gray-600">{size.name}</p>
+                      <p className="text-xs sm:text-sm text-purple-600 mt-1">يكفي {size.personsCountAr}</p>
+                      <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
+                        <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold ${
                           size.isActive
                             ? 'bg-green-100 text-green-800 border border-green-200'
                             : 'bg-gray-100 text-gray-800 border border-gray-200'
                         }`}>
                           {size.isActive ? 'مفعّل' : 'غير مفعّل'}
                         </span>
-                        <span className="text-xs text-gray-500">{formatDate(size.createdAt)}</span>
+                        <span className="text-[10px] sm:text-xs text-gray-500 hidden sm:inline">{formatDate(size.createdAt)}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 sm:gap-2">
                       <button
                         onClick={() => {
                           setEditingSize(size);
@@ -873,19 +882,21 @@ const CakeConfigurationManagement: React.FC = () => {
                             isActive: size.isActive,
                           });
                         }}
-                        className="text-blue-600 hover:text-blue-700 p-2 hover:bg-blue-50 rounded-xl transition-colors"
+                        className="text-blue-600 hover:text-blue-700 p-1.5 sm:p-2 hover:bg-blue-50 rounded-lg sm:rounded-xl transition-colors"
                         title="تعديل"
                         disabled={isLoading}
                       >
-                        <Edit size={18} />
+                        <Edit size={16} className="sm:hidden" />
+                        <Edit size={18} className="hidden sm:block" />
                       </button>
                       <button
                         onClick={() => handleDeleteSize(size.id)}
-                        className="text-red-600 hover:text-red-700 p-2 hover:bg-red-50 rounded-xl transition-colors"
+                        className="text-red-600 hover:text-red-700 p-1.5 sm:p-2 hover:bg-red-50 rounded-lg sm:rounded-xl transition-colors"
                         title="حذف"
                         disabled={isLoading}
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={16} className="sm:hidden" />
+                        <Trash2 size={18} className="hidden sm:block" />
                       </button>
                     </div>
                   </div>
@@ -900,57 +911,57 @@ const CakeConfigurationManagement: React.FC = () => {
       {activeTab === 'flavors' && (
         <>
           {/* Add/Edit Form */}
-          <div className="mb-8 p-6 bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-xl border-2 border-purple-100">
-            <h3 className="text-xl font-bold text-purple-900 mb-6 flex items-center gap-2">
-              {editingFlavor ? <Edit className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
-              {editingFlavor ? 'تعديل النكهة' : 'إضافة نكهة جديدة'}
+          <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-gradient-to-br from-white to-purple-50 rounded-xl sm:rounded-2xl shadow-xl border-2 border-purple-100">
+            <h3 className="text-base sm:text-lg md:text-xl font-bold text-purple-900 mb-4 sm:mb-6 flex items-center gap-2">
+              {editingFlavor ? <Edit className="h-4 w-4 sm:h-5 sm:w-5" /> : <Plus className="h-4 w-4 sm:h-5 sm:w-5" />}
+              <span className="text-sm sm:text-base md:text-xl">{editingFlavor ? 'تعديل النكهة' : 'إضافة نكهة جديدة'}</span>
             </h3>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-sm font-bold text-purple-900 mb-2">
+                <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                   الاسم بالعربية <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={flavorForm.nameAr}
                   onChange={(e) => setFlavorForm({ ...flavorForm, nameAr: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right text-sm sm:text-base"
                   dir="rtl"
                   placeholder="مثال: فانيليا"
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-purple-900 mb-2">
+                <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                   Name in English <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={flavorForm.name}
                   onChange={(e) => setFlavorForm({ ...flavorForm, name: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base"
                   placeholder="e.g., Vanilla"
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-purple-900 mb-2">اللون</label>
+                <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">اللون</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
                     value={flavorForm.color}
                     onChange={(e) => setFlavorForm({ ...flavorForm, color: e.target.value })}
-                    className="w-16 h-12 border-2 border-purple-200 rounded-xl cursor-pointer"
+                    className="w-12 sm:w-16 h-10 sm:h-12 border-2 border-purple-200 rounded-lg sm:rounded-xl cursor-pointer"
                   />
                   <input
                     type="text"
                     value={flavorForm.color}
                     onChange={(e) => setFlavorForm({ ...flavorForm, color: e.target.value })}
-                    className="flex-1 px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base"
                     placeholder="#FCD34D"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-bold text-purple-900 mb-2">
+                <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                   سعر إضافي (جنيه)
                 </label>
                 <input
@@ -958,17 +969,17 @@ const CakeConfigurationManagement: React.FC = () => {
                   step="0.01"
                   value={flavorForm.additionalPrice}
                   onChange={(e) => setFlavorForm({ ...flavorForm, additionalPrice: e.target.value })}
-                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right text-sm sm:text-base"
                   dir="rtl"
                   placeholder="0"
                 />
               </div>
               <div>
-                <label className="block text-sm font-bold text-purple-900 mb-2">الحالة</label>
+                <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">الحالة</label>
                 <select
                   value={flavorForm.isActive ? 'true' : 'false'}
                   onChange={(e) => setFlavorForm({ ...flavorForm, isActive: e.target.value === 'true' })}
-                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right font-medium"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right font-medium text-sm sm:text-base"
                   dir="rtl"
                 >
                   <option value="true">مفعّل</option>
@@ -976,11 +987,11 @@ const CakeConfigurationManagement: React.FC = () => {
                 </select>
               </div>
             </div>
-            <div className="flex gap-3 mt-6">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4 sm:mt-6">
               <button
                 onClick={handleSaveFlavor}
                 disabled={isLoading}
-                className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-semibold shadow-md flex items-center gap-2 disabled:opacity-50"
+                className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-semibold shadow-md flex items-center justify-center gap-2 disabled:opacity-50 text-sm sm:text-base"
               >
                 <Save className="h-4 w-4" />
                 {editingFlavor ? 'تحديث' : 'إضافة'}
@@ -989,7 +1000,7 @@ const CakeConfigurationManagement: React.FC = () => {
                 <button
                   onClick={resetFlavorForm}
                   disabled={isLoading}
-                  className="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-300 transition-all font-semibold flex items-center gap-2"
+                  className="bg-gray-200 text-gray-700 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl hover:bg-gray-300 transition-all font-semibold flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
                   <X className="h-4 w-4" />
                   إلغاء
@@ -999,35 +1010,35 @@ const CakeConfigurationManagement: React.FC = () => {
           </div>
 
           {/* List */}
-          <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-purple-100">
-            <h4 className="text-lg font-bold text-purple-900 mb-4 flex items-center gap-2">
-              <Cookie className="h-5 w-5" />
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border-2 border-purple-100">
+            <h4 className="text-base sm:text-lg font-bold text-purple-900 mb-3 sm:mb-4 flex items-center gap-2">
+              <Cookie className="h-4 w-4 sm:h-5 sm:w-5" />
               النكهات المتاحة ({flavors.length})
             </h4>
             {flavors.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">لا توجد نكهات</p>
+              <p className="text-center text-gray-500 py-6 sm:py-8 text-sm sm:text-base">لا توجد نكهات</p>
             ) : (
-              <div className="grid md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
                 {flavors.map((flavor) => (
                   <div
                     key={flavor.id}
-                    className="flex items-center justify-between p-4 border-2 border-purple-100 rounded-xl bg-gradient-to-r from-white to-purple-50 hover:shadow-md transition-all"
+                    className="flex items-center justify-between p-3 sm:p-4 border-2 border-purple-100 rounded-lg sm:rounded-xl bg-gradient-to-r from-white to-purple-50 hover:shadow-md transition-all"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1">
                       <div
-                        className="w-12 h-12 rounded-full border-2 border-purple-200"
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-purple-200 flex-shrink-0"
                         style={{ backgroundColor: flavor.color }}
                       />
-                      <div>
-                        <p className="font-bold text-purple-900">{flavor.nameAr}</p>
-                        <p className="text-sm text-gray-600">{flavor.name}</p>
+                      <div className="flex-1">
+                        <p className="font-bold text-purple-900 text-sm sm:text-base">{flavor.nameAr}</p>
+                        <p className="text-xs sm:text-sm text-gray-600">{flavor.name}</p>
                         {flavor.additionalPrice > 0 && (
                           <p className="text-xs text-amber-600 font-semibold mt-1">
                             +{flavor.additionalPrice} جنيه
                           </p>
                         )}
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                        <div className="flex items-center gap-1 sm:gap-2 mt-1">
+                          <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold ${
                             flavor.isActive
                               ? 'bg-green-100 text-green-800 border border-green-200'
                               : 'bg-gray-100 text-gray-800 border border-gray-200'
@@ -1037,7 +1048,7 @@ const CakeConfigurationManagement: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 sm:gap-2">
                       <button
                         onClick={() => {
                           setEditingFlavor(flavor);
@@ -1049,19 +1060,21 @@ const CakeConfigurationManagement: React.FC = () => {
                             isActive: flavor.isActive,
                           });
                         }}
-                        className="text-blue-600 hover:text-blue-700 p-2 hover:bg-blue-50 rounded-xl transition-colors"
+                        className="text-blue-600 hover:text-blue-700 p-1.5 sm:p-2 hover:bg-blue-50 rounded-lg sm:rounded-xl transition-colors"
                         title="تعديل"
                         disabled={isLoading}
                       >
-                        <Edit size={18} />
+                        <Edit size={16} className="sm:hidden" />
+                        <Edit size={18} className="hidden sm:block" />
                       </button>
                       <button
                         onClick={() => handleDeleteFlavor(flavor.id)}
-                        className="text-red-600 hover:text-red-700 p-2 hover:bg-red-50 rounded-xl transition-colors"
+                        className="text-red-600 hover:text-red-700 p-1.5 sm:p-2 hover:bg-red-50 rounded-lg sm:rounded-xl transition-colors"
                         title="حذف"
                         disabled={isLoading}
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={16} className="sm:hidden" />
+                        <Trash2 size={18} className="hidden sm:block" />
                       </button>
                     </div>
                   </div>
@@ -1075,14 +1088,14 @@ const CakeConfigurationManagement: React.FC = () => {
       {/* PRICING TAB */}
       {activeTab === 'pricing' && (
         <>
-          <div className="mb-8 p-6 bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-xl border-2 border-purple-100">
-            <h3 className="text-xl font-bold text-purple-900 mb-6 flex items-center gap-2">
-              <LinkIcon className="h-5 w-5" />
+          <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-gradient-to-br from-white to-purple-50 rounded-xl sm:rounded-2xl shadow-xl border-2 border-purple-100">
+            <h3 className="text-base sm:text-lg md:text-xl font-bold text-purple-900 mb-4 sm:mb-6 flex items-center gap-2">
+              <LinkIcon className="h-4 w-4 sm:h-5 sm:w-5" />
               ربط الأسعار بالمناسبات
             </h3>
             
-            <div className="mb-6">
-              <label className="block text-sm font-bold text-purple-900 mb-2">
+            <div className="mb-4 sm:mb-6">
+              <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                 اختر المناسبة <span className="text-red-500">*</span>
               </label>
               <select
@@ -1096,7 +1109,7 @@ const CakeConfigurationManagement: React.FC = () => {
                     setPricingForm({});
                   }
                 }}
-                className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right font-medium"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right font-medium text-sm sm:text-base"
                 dir="rtl"
               >
                 <option value="">اختر مناسبة...</option>
@@ -1110,13 +1123,13 @@ const CakeConfigurationManagement: React.FC = () => {
 
             {selectedOccasionForPricing && (
               <>
-                <div className="space-y-3 mb-6">
-                  <p className="text-sm font-bold text-purple-900 mb-3">أسعار الأحجام المختلفة:</p>
+                <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
+                  <p className="text-xs sm:text-sm font-bold text-purple-900 mb-2 sm:mb-3">أسعار الأحجام المختلفة:</p>
                   {sizes.filter(s => s.isActive).map((size) => (
-                    <div key={size.id} className="flex items-center justify-between p-4 border-2 border-purple-100 rounded-xl bg-white">
-                      <div>
-                        <p className="font-bold text-purple-900">{size.nameAr}</p>
-                        <p className="text-sm text-gray-600">{size.personsCountAr}</p>
+                    <div key={size.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border-2 border-purple-100 rounded-lg sm:rounded-xl bg-white gap-2 sm:gap-0">
+                      <div className="flex-1">
+                        <p className="font-bold text-purple-900 text-sm sm:text-base">{size.nameAr}</p>
+                        <p className="text-xs sm:text-sm text-gray-600">{size.personsCountAr}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <input
@@ -1130,12 +1143,12 @@ const CakeConfigurationManagement: React.FC = () => {
                               isActive: pricingForm[size.id]?.isActive ?? true 
                             } 
                           })}
-                          className="w-32 px-4 py-2 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right"
+                          className="w-24 sm:w-32 px-3 sm:px-4 py-2 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right text-sm sm:text-base"
                           dir="rtl"
                           placeholder="0"
                         />
-                        <span className="text-gray-600 font-medium">جنيه</span>
-                        <label className="flex items-center gap-1 mr-2">
+                        <span className="text-gray-600 font-medium text-sm sm:text-base">جنيه</span>
+                        <label className="flex items-center gap-1 mr-1 sm:mr-2">
                           <input
                             type="checkbox"
                             checked={pricingForm[size.id]?.isActive ?? true}
@@ -1148,7 +1161,7 @@ const CakeConfigurationManagement: React.FC = () => {
                             })}
                             className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500"
                           />
-                          <span className="text-sm text-gray-700">مفعّل</span>
+                          <span className="text-xs sm:text-sm text-gray-700">مفعّل</span>
                         </label>
                       </div>
                     </div>
@@ -1158,7 +1171,7 @@ const CakeConfigurationManagement: React.FC = () => {
                 <button
                   onClick={handleSavePricing}
                   disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-semibold shadow-md flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-semibold shadow-md flex items-center justify-center gap-2 disabled:opacity-50 text-sm sm:text-base"
                 >
                   <Save className="h-4 w-4" />
                   حفظ الأسعار
@@ -1168,17 +1181,17 @@ const CakeConfigurationManagement: React.FC = () => {
           </div>
 
           {selectedOccasionForPricing && occasionSizes.length > 0 && (
-            <div className="bg-white rounded-2xl shadow-xl p-6 border-2 border-purple-100">
-              <h4 className="text-lg font-bold text-purple-900 mb-4 flex items-center gap-2">
-                <DollarSign className="h-5 w-5" />
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border-2 border-purple-100">
+              <h4 className="text-base sm:text-lg font-bold text-purple-900 mb-3 sm:mb-4 flex items-center gap-2">
+                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
                 الأسعار الحالية
               </h4>
               <div className="space-y-2">
                 {occasionSizes.map((os) => (
-                  <div key={os.sizeId} className="flex items-center justify-between p-3 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl">
+                  <div key={os.sizeId} className="flex items-center justify-between p-2.5 sm:p-3 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-lg sm:rounded-xl">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-purple-900">{os.sizeName}</span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                      <span className="font-bold text-purple-900 text-sm sm:text-base">{os.sizeName}</span>
+                      <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold ${
                         os.isActive
                           ? 'bg-green-100 text-green-800 border border-green-200'
                           : 'bg-gray-100 text-gray-800 border border-gray-200'
@@ -1186,7 +1199,7 @@ const CakeConfigurationManagement: React.FC = () => {
                         {os.isActive ? 'مفعّل' : 'غير مفعّل'}
                       </span>
                     </div>
-                    <span className="text-xl font-bold text-amber-600">{os.price} جنيه</span>
+                    <span className="text-base sm:text-xl font-bold text-amber-600">{os.price} جنيه</span>
                   </div>
                 ))}
               </div>
