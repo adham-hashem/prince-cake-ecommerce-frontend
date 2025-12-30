@@ -127,17 +127,23 @@ const CustomOrdersManagement: React.FC = () => {
     fetchStats();
   }, [isAuthenticated, userRole, navigate, currentPage, statusFilter]);
 
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      navigate('/login');
+      throw new Error('لا يوجد رمز مصادقة. يرجى تسجيل الدخول مرة أخرى.');
+    }
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+  };
+
   const fetchOrders = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) {
-        navigate('/login');
-        throw new Error('لا يوجد رمز مصادقة. يرجى تسجيل الدخول مرة أخرى.');
-      }
-
       let url = `${apiUrl}/api/CustomOrders?pageNumber=${currentPage}&pageSize=${pageSize}`;
       
       if (statusFilter !== '') {
@@ -151,10 +157,7 @@ const CustomOrdersManagement: React.FC = () => {
       }
 
       const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -183,14 +186,8 @@ const CustomOrdersManagement: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('accessToken');
-      if (!token) return;
-
       const response = await fetch(`${apiUrl}/api/CustomOrders/stats`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
       });
 
       if (response.ok) {
@@ -205,13 +202,6 @@ const CustomOrdersManagement: React.FC = () => {
   const handleUpdateStatus = async () => {
     if (!selectedOrder || isLoading) return;
 
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      navigate('/login');
-      alert('لا يوجد رمز مصادقة. يرجى تسجيل الدخول مرة أخرى.');
-      return;
-    }
-
     setIsLoading(true);
     try {
       const updateData = {
@@ -224,10 +214,7 @@ const CustomOrdersManagement: React.FC = () => {
         `${apiUrl}/api/CustomOrders/${selectedOrder.id}/status`,
         {
           method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify(updateData),
         }
       );
@@ -254,21 +241,11 @@ const CustomOrdersManagement: React.FC = () => {
       return;
     }
 
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      navigate('/login');
-      alert('لا يوجد رمز مصادقة. يرجى تسجيل الدخول مرة أخرى.');
-      return;
-    }
-
     setIsLoading(true);
     try {
       const response = await fetch(`${apiUrl}/api/CustomOrders/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
+        headers: getAuthHeaders(),
       });
 
       if (!response.ok) {
@@ -327,6 +304,10 @@ const CustomOrdersManagement: React.FC = () => {
   };
 
   const formatTime = (timeString: string) => {
+    // If the time is in HH:mm:ss format, extract HH:mm
+    if (timeString && timeString.includes(':')) {
+      return timeString.substring(0, 5);
+    }
     return timeString;
   };
 
@@ -334,6 +315,18 @@ const CustomOrdersManagement: React.FC = () => {
     if (page >= 1 && page <= totalPages && page !== currentPage) {
       setCurrentPage(page);
     }
+  };
+
+  const handleSearch = () => {
+    setCurrentPage(1); // Reset to first page on new search
+    fetchOrders();
+  };
+
+  const handleResetFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('');
+    setDateFilter('');
+    setCurrentPage(1);
   };
 
   return (
@@ -416,6 +409,7 @@ const CustomOrdersManagement: React.FC = () => {
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right"
               placeholder="ابحث..."
               dir="rtl"
@@ -446,7 +440,7 @@ const CustomOrdersManagement: React.FC = () => {
           <div>
             <label className="block text-sm font-bold text-purple-900 mb-2">
               <Calendar className="inline h-4 w-4 ml-1" />
-              تاريخ الاستلام
+              تاريخ الاستلام (من)
             </label>
             <input
               type="date"
@@ -459,7 +453,7 @@ const CustomOrdersManagement: React.FC = () => {
 
         <div className="flex gap-3 mt-4">
           <button
-            onClick={fetchOrders}
+            onClick={handleSearch}
             className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-semibold shadow-md flex items-center gap-2"
             disabled={isLoading}
           >
@@ -467,12 +461,7 @@ const CustomOrdersManagement: React.FC = () => {
             بحث
           </button>
           <button
-            onClick={() => {
-              setSearchTerm('');
-              setStatusFilter('');
-              setDateFilter('');
-              setCurrentPage(1);
-            }}
+            onClick={handleResetFilters}
             className="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-300 transition-all font-semibold"
           >
             إعادة تعيين

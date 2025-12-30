@@ -12,8 +12,6 @@ import {
   Ruler,
   Cookie,
   DollarSign,
-  Eye,
-  EyeOff,
   Save,
   X,
   Link as LinkIcon,
@@ -23,8 +21,8 @@ import { useAuth } from '../../contexts/AuthContext';
 // Interfaces
 interface CakeOccasion {
   id: string;
+  nameAr: string;
   name: string;
-  nameEn: string;
   icon: string;
   isActive: boolean;
   createdAt: string;
@@ -32,17 +30,18 @@ interface CakeOccasion {
 
 interface CakeSize {
   id: string;
+  nameAr: string;
   name: string;
-  nameEn: string;
-  servings: string;
+  personsCount: string;
+  personsCountAr: string;
   isActive: boolean;
   createdAt: string;
 }
 
 interface CakeFlavor {
   id: string;
+  nameAr: string;
   name: string;
-  nameEn: string;
   color: string;
   additionalPrice: number;
   isActive: boolean;
@@ -54,6 +53,7 @@ interface OccasionSize {
   sizeId: string;
   sizeName: string;
   price: number;
+  isActive: boolean;
 }
 
 type TabType = 'occasions' | 'sizes' | 'flavors' | 'pricing';
@@ -67,8 +67,8 @@ const CakeConfigurationManagement: React.FC = () => {
   const [occasions, setOccasions] = useState<CakeOccasion[]>([]);
   const [editingOccasion, setEditingOccasion] = useState<CakeOccasion | null>(null);
   const [occasionForm, setOccasionForm] = useState({
+    nameAr: '',
     name: '',
-    nameEn: '',
     icon: '',
     isActive: true,
   });
@@ -77,9 +77,10 @@ const CakeConfigurationManagement: React.FC = () => {
   const [sizes, setSizes] = useState<CakeSize[]>([]);
   const [editingSize, setEditingSize] = useState<CakeSize | null>(null);
   const [sizeForm, setSizeForm] = useState({
+    nameAr: '',
     name: '',
-    nameEn: '',
-    servings: '',
+    personsCount: '',
+    personsCountAr: '',
     isActive: true,
   });
 
@@ -87,8 +88,8 @@ const CakeConfigurationManagement: React.FC = () => {
   const [flavors, setFlavors] = useState<CakeFlavor[]>([]);
   const [editingFlavor, setEditingFlavor] = useState<CakeFlavor | null>(null);
   const [flavorForm, setFlavorForm] = useState({
+    nameAr: '',
     name: '',
-    nameEn: '',
     color: '#FCD34D',
     additionalPrice: '',
     isActive: true,
@@ -97,7 +98,7 @@ const CakeConfigurationManagement: React.FC = () => {
   // Pricing state
   const [selectedOccasionForPricing, setSelectedOccasionForPricing] = useState('');
   const [occasionSizes, setOccasionSizes] = useState<OccasionSize[]>([]);
-  const [pricingForm, setPricingForm] = useState<{ [key: string]: string }>({});
+  const [pricingForm, setPricingForm] = useState<{ [key: string]: { price: string; isActive: boolean } }>({});
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -170,7 +171,7 @@ const CakeConfigurationManagement: React.FC = () => {
   };
 
   const handleSaveOccasion = async () => {
-    if (!occasionForm.name || !occasionForm.nameEn || !occasionForm.icon) {
+    if (!occasionForm.nameAr || !occasionForm.name || !occasionForm.icon) {
       alert('جميع الحقول مطلوبة');
       return;
     }
@@ -184,7 +185,12 @@ const CakeConfigurationManagement: React.FC = () => {
       const response = await fetch(url, {
         method: editingOccasion ? 'PUT' : 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify(occasionForm),
+        body: JSON.stringify({
+          nameAr: occasionForm.nameAr,
+          name: occasionForm.name,
+          icon: occasionForm.icon,
+          isActive: occasionForm.isActive,
+        }),
       });
 
       if (!response.ok) throw new Error('فشل في حفظ المناسبة');
@@ -222,7 +228,7 @@ const CakeConfigurationManagement: React.FC = () => {
 
   const resetOccasionForm = () => {
     setEditingOccasion(null);
-    setOccasionForm({ name: '', nameEn: '', icon: '', isActive: true });
+    setOccasionForm({ nameAr: '', name: '', icon: '', isActive: true });
   };
 
   // ========== SIZES ==========
@@ -246,7 +252,7 @@ const CakeConfigurationManagement: React.FC = () => {
   };
 
   const handleSaveSize = async () => {
-    if (!sizeForm.name || !sizeForm.nameEn || !sizeForm.servings) {
+    if (!sizeForm.nameAr || !sizeForm.name || !sizeForm.personsCount || !sizeForm.personsCountAr) {
       alert('جميع الحقول مطلوبة');
       return;
     }
@@ -260,7 +266,13 @@ const CakeConfigurationManagement: React.FC = () => {
       const response = await fetch(url, {
         method: editingSize ? 'PUT' : 'POST',
         headers: getAuthHeaders(),
-        body: JSON.stringify(sizeForm),
+        body: JSON.stringify({
+          nameAr: sizeForm.nameAr,
+          name: sizeForm.name,
+          personsCount: sizeForm.personsCount,
+          personsCountAr: sizeForm.personsCountAr,
+          isActive: sizeForm.isActive,
+        }),
       });
 
       if (!response.ok) throw new Error('فشل في حفظ الحجم');
@@ -298,7 +310,7 @@ const CakeConfigurationManagement: React.FC = () => {
 
   const resetSizeForm = () => {
     setEditingSize(null);
-    setSizeForm({ name: '', nameEn: '', servings: '', isActive: true });
+    setSizeForm({ nameAr: '', name: '', personsCount: '', personsCountAr: '', isActive: true });
   };
 
   // ========== FLAVORS ==========
@@ -322,7 +334,7 @@ const CakeConfigurationManagement: React.FC = () => {
   };
 
   const handleSaveFlavor = async () => {
-    if (!flavorForm.name || !flavorForm.nameEn) {
+    if (!flavorForm.nameAr || !flavorForm.name) {
       alert('الاسم بالعربية والإنجليزية مطلوب');
       return;
     }
@@ -334,8 +346,11 @@ const CakeConfigurationManagement: React.FC = () => {
         : `${apiUrl}/api/CakeConfiguration/flavors`;
       
       const body = {
-        ...flavorForm,
+        nameAr: flavorForm.nameAr,
+        name: flavorForm.name,
+        color: flavorForm.color,
         additionalPrice: parseFloat(flavorForm.additionalPrice) || 0,
+        isActive: flavorForm.isActive,
       };
 
       const response = await fetch(url, {
@@ -379,7 +394,7 @@ const CakeConfigurationManagement: React.FC = () => {
 
   const resetFlavorForm = () => {
     setEditingFlavor(null);
-    setFlavorForm({ name: '', nameEn: '', color: '#FCD34D', additionalPrice: '', isActive: true });
+    setFlavorForm({ nameAr: '', name: '', color: '#FCD34D', additionalPrice: '', isActive: true });
   };
 
   // ========== PRICING ==========
@@ -396,9 +411,13 @@ const CakeConfigurationManagement: React.FC = () => {
       setOccasionSizes(data);
       
       // Initialize pricing form
-      const initialPrices: { [key: string]: string } = {};
-      data.forEach((os: OccasionSize) => {
-        initialPrices[os.sizeId] = os.price.toString();
+      const initialPrices: { [key: string]: { price: string; isActive: boolean } } = {};
+      sizes.forEach((size) => {
+        const existingSize = data.find((os: OccasionSize) => os.sizeId === size.id);
+        initialPrices[size.id] = {
+          price: existingSize ? existingSize.price.toString() : '',
+          isActive: existingSize ? existingSize.isActive : true,
+        };
       });
       setPricingForm(initialPrices);
     } catch (error) {
@@ -418,7 +437,8 @@ const CakeConfigurationManagement: React.FC = () => {
     try {
       const sizesData = sizes.map(size => ({
         sizeId: size.id,
-        price: parseFloat(pricingForm[size.id] || '0'),
+        price: parseFloat(pricingForm[size.id]?.price || '0'),
+        isActive: pricingForm[size.id]?.isActive ?? true,
       })).filter(item => item.price > 0);
 
       const response = await fetch(
@@ -568,8 +588,8 @@ const CakeConfigurationManagement: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value={occasionForm.name}
-                  onChange={(e) => setOccasionForm({ ...occasionForm, name: e.target.value })}
+                  value={occasionForm.nameAr}
+                  onChange={(e) => setOccasionForm({ ...occasionForm, nameAr: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right"
                   dir="rtl"
                   placeholder="مثال: عيد ميلاد"
@@ -581,8 +601,8 @@ const CakeConfigurationManagement: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value={occasionForm.nameEn}
-                  onChange={(e) => setOccasionForm({ ...occasionForm, nameEn: e.target.value })}
+                  value={occasionForm.name}
+                  onChange={(e) => setOccasionForm({ ...occasionForm, name: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="e.g., Birthday"
                 />
@@ -637,7 +657,7 @@ const CakeConfigurationManagement: React.FC = () => {
                 <Save className="h-4 w-4" />
                 {editingOccasion ? 'تحديث' : 'إضافة'}
               </button>
-              {(editingOccasion || occasionForm.name || occasionForm.nameEn || occasionForm.icon) && (
+              {(editingOccasion || occasionForm.nameAr || occasionForm.name || occasionForm.icon) && (
                 <button
                   onClick={resetOccasionForm}
                   disabled={isLoading}
@@ -668,8 +688,8 @@ const CakeConfigurationManagement: React.FC = () => {
                     <div className="flex items-center gap-4">
                       <span className="text-3xl">{occasion.icon}</span>
                       <div>
-                        <p className="font-bold text-purple-900">{occasion.name}</p>
-                        <p className="text-sm text-gray-600">{occasion.nameEn}</p>
+                        <p className="font-bold text-purple-900">{occasion.nameAr}</p>
+                        <p className="text-sm text-gray-600">{occasion.name}</p>
                         <div className="flex items-center gap-2 mt-1">
                           <span className={`px-2 py-1 rounded-full text-xs font-bold ${
                             occasion.isActive
@@ -687,8 +707,8 @@ const CakeConfigurationManagement: React.FC = () => {
                         onClick={() => {
                           setEditingOccasion(occasion);
                           setOccasionForm({
+                            nameAr: occasion.nameAr,
                             name: occasion.name,
-                            nameEn: occasion.nameEn,
                             icon: occasion.icon,
                             isActive: occasion.isActive,
                           });
@@ -732,8 +752,8 @@ const CakeConfigurationManagement: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value={sizeForm.name}
-                  onChange={(e) => setSizeForm({ ...sizeForm, name: e.target.value })}
+                  value={sizeForm.nameAr}
+                  onChange={(e) => setSizeForm({ ...sizeForm, nameAr: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right"
                   dir="rtl"
                   placeholder="مثال: صغير"
@@ -745,23 +765,35 @@ const CakeConfigurationManagement: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value={sizeForm.nameEn}
-                  onChange={(e) => setSizeForm({ ...sizeForm, nameEn: e.target.value })}
+                  value={sizeForm.name}
+                  onChange={(e) => setSizeForm({ ...sizeForm, name: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="e.g., Small"
                 />
               </div>
               <div>
                 <label className="block text-sm font-bold text-purple-900 mb-2">
-                  عدد الأشخاص <span className="text-red-500">*</span>
+                  عدد الأشخاص (عربي) <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
-                  value={sizeForm.servings}
-                  onChange={(e) => setSizeForm({ ...sizeForm, servings: e.target.value })}
+                  value={sizeForm.personsCountAr}
+                  onChange={(e) => setSizeForm({ ...sizeForm, personsCountAr: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right"
                   dir="rtl"
-                  placeholder="مثال: 8-10 أشخاص"
+                  placeholder="مثال: 2-4 أشخاص"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-purple-900 mb-2">
+                  Servings (English) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={sizeForm.personsCount}
+                  onChange={(e) => setSizeForm({ ...sizeForm, personsCount: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  placeholder="e.g., 2-4 persons"
                 />
               </div>
               <div>
@@ -786,7 +818,7 @@ const CakeConfigurationManagement: React.FC = () => {
                 <Save className="h-4 w-4" />
                 {editingSize ? 'تحديث' : 'إضافة'}
               </button>
-              {(editingSize || sizeForm.name || sizeForm.nameEn || sizeForm.servings) && (
+              {(editingSize || sizeForm.nameAr || sizeForm.name || sizeForm.personsCount || sizeForm.personsCountAr) && (
                 <button
                   onClick={resetSizeForm}
                   disabled={isLoading}
@@ -815,9 +847,9 @@ const CakeConfigurationManagement: React.FC = () => {
                     className="flex items-center justify-between p-4 border-2 border-purple-100 rounded-xl bg-gradient-to-r from-white to-purple-50 hover:shadow-md transition-all"
                   >
                     <div>
-                      <p className="font-bold text-purple-900">{size.name}</p>
-                      <p className="text-sm text-gray-600">{size.nameEn}</p>
-                      <p className="text-sm text-purple-600 mt-1">يكفي {size.servings}</p>
+                      <p className="font-bold text-purple-900">{size.nameAr}</p>
+                      <p className="text-sm text-gray-600">{size.name}</p>
+                      <p className="text-sm text-purple-600 mt-1">يكفي {size.personsCountAr} | {size.personsCount}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className={`px-2 py-1 rounded-full text-xs font-bold ${
                           size.isActive
@@ -834,9 +866,10 @@ const CakeConfigurationManagement: React.FC = () => {
                         onClick={() => {
                           setEditingSize(size);
                           setSizeForm({
+                            nameAr: size.nameAr,
                             name: size.name,
-                            nameEn: size.nameEn,
-                            servings: size.servings,
+                            personsCount: size.personsCount,
+                            personsCountAr: size.personsCountAr,
                             isActive: size.isActive,
                           });
                         }}
@@ -879,8 +912,8 @@ const CakeConfigurationManagement: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value={flavorForm.name}
-                  onChange={(e) => setFlavorForm({ ...flavorForm, name: e.target.value })}
+                  value={flavorForm.nameAr}
+                  onChange={(e) => setFlavorForm({ ...flavorForm, nameAr: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right"
                   dir="rtl"
                   placeholder="مثال: فانيليا"
@@ -892,8 +925,8 @@ const CakeConfigurationManagement: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value={flavorForm.nameEn}
-                  onChange={(e) => setFlavorForm({ ...flavorForm, nameEn: e.target.value })}
+                  value={flavorForm.name}
+                  onChange={(e) => setFlavorForm({ ...flavorForm, name: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   placeholder="e.g., Vanilla"
                 />
@@ -952,7 +985,7 @@ const CakeConfigurationManagement: React.FC = () => {
                 <Save className="h-4 w-4" />
                 {editingFlavor ? 'تحديث' : 'إضافة'}
               </button>
-              {(editingFlavor || flavorForm.name || flavorForm.nameEn) && (
+              {(editingFlavor || flavorForm.nameAr || flavorForm.name) && (
                 <button
                   onClick={resetFlavorForm}
                   disabled={isLoading}
@@ -986,8 +1019,8 @@ const CakeConfigurationManagement: React.FC = () => {
                         style={{ backgroundColor: flavor.color }}
                       />
                       <div>
-                        <p className="font-bold text-purple-900">{flavor.name}</p>
-                        <p className="text-sm text-gray-600">{flavor.nameEn}</p>
+                        <p className="font-bold text-purple-900">{flavor.nameAr}</p>
+                        <p className="text-sm text-gray-600">{flavor.name}</p>
                         {flavor.additionalPrice > 0 && (
                           <p className="text-xs text-amber-600 font-semibold mt-1">
                             +{flavor.additionalPrice} جنيه
@@ -1009,8 +1042,8 @@ const CakeConfigurationManagement: React.FC = () => {
                         onClick={() => {
                           setEditingFlavor(flavor);
                           setFlavorForm({
+                            nameAr: flavor.nameAr,
                             name: flavor.name,
-                            nameEn: flavor.nameEn,
                             color: flavor.color,
                             additionalPrice: flavor.additionalPrice.toString(),
                             isActive: flavor.isActive,
@@ -1069,7 +1102,7 @@ const CakeConfigurationManagement: React.FC = () => {
                 <option value="">اختر مناسبة...</option>
                 {occasions.filter(o => o.isActive).map((occasion) => (
                   <option key={occasion.id} value={occasion.id}>
-                    {occasion.icon} {occasion.name}
+                    {occasion.icon} {occasion.nameAr}
                   </option>
                 ))}
               </select>
@@ -1082,20 +1115,41 @@ const CakeConfigurationManagement: React.FC = () => {
                   {sizes.filter(s => s.isActive).map((size) => (
                     <div key={size.id} className="flex items-center justify-between p-4 border-2 border-purple-100 rounded-xl bg-white">
                       <div>
-                        <p className="font-bold text-purple-900">{size.name}</p>
-                        <p className="text-sm text-gray-600">{size.servings}</p>
+                        <p className="font-bold text-purple-900">{size.nameAr}</p>
+                        <p className="text-sm text-gray-600">{size.personsCountAr}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <input
                           type="number"
                           step="0.01"
-                          value={pricingForm[size.id] || ''}
-                          onChange={(e) => setPricingForm({ ...pricingForm, [size.id]: e.target.value })}
+                          value={pricingForm[size.id]?.price || ''}
+                          onChange={(e) => setPricingForm({ 
+                            ...pricingForm, 
+                            [size.id]: { 
+                              price: e.target.value,
+                              isActive: pricingForm[size.id]?.isActive ?? true 
+                            } 
+                          })}
                           className="w-32 px-4 py-2 border-2 border-purple-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right"
                           dir="rtl"
                           placeholder="0"
                         />
                         <span className="text-gray-600 font-medium">جنيه</span>
+                        <label className="flex items-center gap-1 mr-2">
+                          <input
+                            type="checkbox"
+                            checked={pricingForm[size.id]?.isActive ?? true}
+                            onChange={(e) => setPricingForm({ 
+                              ...pricingForm, 
+                              [size.id]: { 
+                                price: pricingForm[size.id]?.price || '',
+                                isActive: e.target.checked 
+                              } 
+                            })}
+                            className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500"
+                          />
+                          <span className="text-sm text-gray-700">مفعّل</span>
+                        </label>
                       </div>
                     </div>
                   ))}
@@ -1122,7 +1176,16 @@ const CakeConfigurationManagement: React.FC = () => {
               <div className="space-y-2">
                 {occasionSizes.map((os) => (
                   <div key={os.sizeId} className="flex items-center justify-between p-3 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl">
-                    <span className="font-bold text-purple-900">{os.sizeName}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-purple-900">{os.sizeName}</span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                        os.isActive
+                          ? 'bg-green-100 text-green-800 border border-green-200'
+                          : 'bg-gray-100 text-gray-800 border border-gray-200'
+                      }`}>
+                        {os.isActive ? 'مفعّل' : 'غير مفعّل'}
+                      </span>
+                    </div>
                     <span className="text-xl font-bold text-amber-600">{os.price} جنيه</span>
                   </div>
                 ))}
