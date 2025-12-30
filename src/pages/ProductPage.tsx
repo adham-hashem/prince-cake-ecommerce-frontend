@@ -273,13 +273,13 @@ const ProductPage: React.FC = () => {
   if (loading) {
     return (
       <div
-        className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50 flex items-center justify-center px-4"
+        className="min-h-screen bg-purple-50 flex items-center justify-center px-4"
         dir="rtl"
       >
         <div className="text-center py-12">
           <div className="relative inline-block mb-6">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-xl opacity-30 animate-pulse"></div>
-            <div className="relative bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-4">
+            <div className="absolute inset-0 bg-purple-400 rounded-full blur-xl opacity-30 animate-pulse"></div>
+            <div className="relative bg-purple-600 rounded-full p-4">
               <Cake className="h-12 w-12 text-white animate-bounce" />
             </div>
           </div>
@@ -296,33 +296,33 @@ const ProductPage: React.FC = () => {
   if (error || !product || productRestricted) {
     return (
       <div
-        className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50 flex items-center justify-center px-4 py-8"
+        className="min-h-screen bg-purple-50 flex items-center justify-center px-4 py-8"
         dir="rtl"
       >
-        <div className="bg-white/90 backdrop-blur-sm p-8 rounded-3xl shadow-2xl text-center w-full max-w-md border border-white/50">
+        <div className="bg-white/90 backdrop-blur-sm p-6 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl text-center w-full max-w-md border border-white/50">
           <div className="mb-6">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full">
               <AlertTriangle className="text-red-500" size={40} />
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-purple-900 mb-3">
+          <h2 className="text-xl sm:text-2xl font-bold text-purple-900 mb-3">
             {error ? 'حدث خطأ' : 'عذراً!'}
           </h2>
-          <p className="text-gray-600 mb-8 leading-relaxed">
+          <p className="text-gray-600 mb-6 sm:mb-8 leading-relaxed text-sm sm:text-base">
             {error || productRestricted}
           </p>
 
           <div className="space-y-3">
             <Link
               to="/"
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-4 rounded-2xl hover:from-purple-700 hover:to-pink-600 font-bold flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all"
+              className="w-full bg-purple-600 text-white px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl hover:bg-purple-700 font-bold flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all text-sm sm:text-base"
             >
               <Cake size={20} />
               <span>تصفح التورتات</span>
             </Link>
             <button
               onClick={() => navigate(-1)}
-              className="w-full bg-gray-100 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-200 font-medium transition-all"
+              className="w-full bg-gray-100 text-gray-700 px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl hover:bg-gray-200 font-medium transition-all text-sm sm:text-base"
             >
               العودة للخلف
             </button>
@@ -335,23 +335,24 @@ const ProductPage: React.FC = () => {
   // MAIN PRODUCT PAGE
   return (
     <div
-      className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50"
+      className="min-h-screen bg-purple-50"
       dir="rtl"
     >
-      <div className="pt-4 pb-12 px-4 lg:px-8 max-w-7xl mx-auto">
+      <div className="pt-4 pb-12 px-3 sm:px-4 lg:px-8 max-w-7xl mx-auto">
         {/* Back button + Share */}
-        <div className="mb-6 lg:mb-8 flex items-center justify-between">
+        <div className="mb-4 sm:mb-6 lg:mb-8 flex items-center justify-between">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center text-gray-600 hover:text-purple-600 font-medium py-2 transition-colors"
+            className="flex items-center text-gray-600 hover:text-purple-600 font-medium py-2 transition-colors text-sm sm:text-base"
           >
-            <ArrowRight size={20} className="ml-2" />
+            <ArrowRight size={18} className="sm:hidden ml-2" />
+            <ArrowRight size={20} className="hidden sm:block ml-2" />
             <span>العودة</span>
           </button>
 
           <button
             onClick={handleShare}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all font-medium shadow-md ${
+            className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl transition-all font-medium shadow-md text-sm sm:text-base ${
               copied
                 ? 'bg-green-500 text-white shadow-green-300'
                 : 'bg-white text-gray-700 border-2 border-purple-200 hover:border-purple-400 hover:text-purple-600 hover:shadow-lg'
@@ -359,12 +360,14 @@ const ProductPage: React.FC = () => {
           >
             {copied ? (
               <>
-                <Check size={18} />
+                <Check size={16} className="sm:hidden" />
+                <Check size={18} className="hidden sm:block" />
                 <span>تم النسخ!</span>
               </>
             ) : (
               <>
-                <Share2 size={18} />
+                <Share2 size={16} className="sm:hidden" />
+                <Share2 size={18} className="hidden sm:block" />
                 <span className="hidden sm:inline">مشاركة</span>
               </>
             )}
@@ -374,20 +377,21 @@ const ProductPage: React.FC = () => {
         {/* Added to Cart Notification */}
         {addedToCart && (
           <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-bounce">
-            <div className="bg-green-500 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3">
-              <Check size={24} />
+            <div className="bg-green-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl shadow-2xl flex items-center gap-2 sm:gap-3 text-sm sm:text-base">
+              <Check size={20} className="sm:hidden" />
+              <Check size={24} className="hidden sm:block" />
               <span className="font-bold">تمت الإضافة للسلة بنجاح! 🎂</span>
             </div>
           </div>
         )}
 
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border border-white/50">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-white/50">
           {/* Product Grid */}
           <div className="lg:grid lg:grid-cols-2 lg:gap-0">
             {/* Images Section */}
             <div className="w-full lg:order-1">
               <div
-                className="relative w-full overflow-hidden bg-gradient-to-br from-purple-100 to-pink-100 aspect-square"
+                className="relative w-full overflow-hidden bg-purple-100 aspect-square"
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
@@ -400,7 +404,7 @@ const ProductPage: React.FC = () => {
 
                 {/* Discount Badge */}
                 {product.originalPrice && (
-                  <div className="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
+                  <div className="absolute top-3 sm:top-4 right-3 sm:right-4 bg-red-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-bold text-xs sm:text-sm shadow-lg">
                     خصم{' '}
                     {Math.round(
                       ((product.originalPrice - product.price) /
@@ -440,12 +444,12 @@ const ProductPage: React.FC = () => {
 
                 {/* Dots indicator */}
                 {product.images.length > 1 && (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-white/80 backdrop-blur-sm rounded-full py-2 px-4 shadow-lg">
+                  <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 sm:gap-2 bg-white/80 backdrop-blur-sm rounded-full py-1.5 sm:py-2 px-3 sm:px-4 shadow-lg">
                     {product.images.map((_, i) => (
                       <button
                         key={i}
                         onClick={() => setCurrentImageIndex(i)}
-                        className={`w-3 h-3 rounded-full transition-all ${
+                        className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all ${
                           currentImageIndex === i
                             ? 'bg-purple-600 scale-125'
                             : 'bg-gray-300 hover:bg-purple-400'
@@ -458,13 +462,13 @@ const ProductPage: React.FC = () => {
 
               {/* Thumbnails */}
               {product.images.length > 1 && (
-                <div className="px-4 lg:px-6 py-4 bg-gradient-to-r from-purple-50 to-pink-50">
-                  <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+                <div className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 bg-purple-50">
+                  <div className="flex gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-1">
                     {product.images.map((image, i) => (
                       <button
                         key={i}
                         onClick={() => setCurrentImageIndex(i)}
-                        className={`h-20 w-20 lg:h-24 lg:w-24 flex-shrink-0 rounded-xl overflow-hidden border-3 transition-all shadow-md hover:shadow-xl ${
+                        className={`h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 flex-shrink-0 rounded-lg sm:rounded-xl overflow-hidden border-3 transition-all shadow-md hover:shadow-xl ${
                           currentImageIndex === i
                             ? 'border-purple-500 shadow-purple-300 scale-105'
                             : 'border-white hover:border-purple-300'
@@ -483,39 +487,39 @@ const ProductPage: React.FC = () => {
             </div>
 
             {/* Details Section */}
-            <div className="p-6 lg:p-8 xl:p-10 space-y-6 lg:order-2">
+            <div className="p-4 sm:p-6 lg:p-8 xl:p-10 space-y-4 sm:space-y-5 lg:space-y-6 lg:order-2">
               {/* Title */}
               <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="h-5 w-5 text-amber-500" />
-                  <span className="text-amber-600 font-medium text-sm">
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
+                  <span className="text-amber-600 font-medium text-xs sm:text-sm">
                     من برنس كيك
                   </span>
                 </div>
-                <h1 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-purple-900 leading-tight mb-4">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-purple-900 leading-tight mb-3 sm:mb-4">
                   {product.name}
                 </h1>
-                <p className="text-gray-600 text-base lg:text-lg leading-relaxed">
+                <p className="text-gray-600 text-sm sm:text-base lg:text-lg leading-relaxed">
                   {product.description}
                 </p>
               </div>
 
               {/* Category + Code */}
-              <div className="flex flex-wrap gap-3">
-                <span className="px-4 py-2 bg-pink-100 text-pink-700 text-sm rounded-full font-medium">
+              <div className="flex flex-wrap gap-2 sm:gap-3">
+                <span className="px-3 sm:px-4 py-1.5 sm:py-2 bg-pink-100 text-pink-700 text-xs sm:text-sm rounded-full font-medium">
                   كود: {product.code}
                 </span>
               </div>
 
               {/* Price */}
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-4 border-2 border-purple-100">
-                <div className="flex items-baseline gap-3">
-                  <span className="text-3xl lg:text-4xl font-black text-purple-600">
+              <div className="bg-purple-50 rounded-xl sm:rounded-2xl p-3 sm:p-4 border-2 border-purple-200">
+                <div className="flex items-baseline gap-2 sm:gap-3">
+                  <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-purple-700">
                     {product.price.toFixed(2)}
                   </span>
-                  <span className="text-xl text-purple-600 font-bold">جنيه</span>
+                  <span className="text-lg sm:text-xl text-purple-700 font-bold">جنيه</span>
                   {product.originalPrice && (
-                    <span className="text-xl text-gray-400 line-through font-medium">
+                    <span className="text-base sm:text-lg lg:text-xl text-gray-400 line-through font-medium">
                       {product.originalPrice.toFixed(2)} جنيه
                     </span>
                   )}
@@ -523,23 +527,23 @@ const ProductPage: React.FC = () => {
               </div>
 
               {/* Quantity Selector */}
-              <div className="flex justify-between items-center bg-gray-50 rounded-2xl p-4">
-                <h3 className="font-bold text-purple-900 text-lg">الكمية</h3>
-                <div className="flex items-center gap-4">
+              <div className="flex justify-between items-center bg-gray-50 rounded-xl sm:rounded-2xl p-3 sm:p-4">
+                <h3 className="font-bold text-purple-900 text-base sm:text-lg">الكمية</h3>
+                <div className="flex items-center gap-3 sm:gap-4">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     disabled={isPurchaseDisabled}
-                    className="w-12 h-12 flex items-center justify-center bg-white border-2 border-purple-200 rounded-xl font-bold text-xl text-purple-600 shadow-md hover:shadow-lg hover:border-purple-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white border-2 border-purple-200 rounded-lg sm:rounded-xl font-bold text-lg sm:text-xl text-purple-600 shadow-md hover:shadow-lg hover:border-purple-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     -
                   </button>
-                  <span className="text-2xl font-black text-purple-600 min-w-[2rem] text-center">
+                  <span className="text-xl sm:text-2xl font-black text-purple-600 min-w-[2rem] text-center">
                     {quantity}
                   </span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
                     disabled={isPurchaseDisabled}
-                    className="w-12 h-12 flex items-center justify-center bg-white border-2 border-purple-200 rounded-xl font-bold text-xl text-purple-600 shadow-md hover:shadow-lg hover:border-purple-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-white border-2 border-purple-200 rounded-lg sm:rounded-xl font-bold text-lg sm:text-xl text-purple-600 shadow-md hover:shadow-lg hover:border-purple-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     +
                   </button>
@@ -550,25 +554,28 @@ const ProductPage: React.FC = () => {
               <button
                 onClick={handleAddToCart}
                 disabled={isPurchaseDisabled}
-                className={`w-full py-4 rounded-2xl font-bold text-lg shadow-xl transition-all flex items-center justify-center gap-3 ${
+                className={`w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg shadow-xl transition-all flex items-center justify-center gap-2 sm:gap-3 ${
                   addedToCart
                     ? 'bg-green-500 text-white hover:bg-green-600'
-                    : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600 hover:shadow-2xl hover:scale-[1.02]'
+                    : 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-2xl hover:scale-[1.02]'
                 } disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
               >
                 {addingToCart ? (
                   <>
-                    <Loader2 size={24} className="animate-spin" />
+                    <Loader2 size={20} className="sm:hidden animate-spin" />
+                    <Loader2 size={24} className="hidden sm:block animate-spin" />
                     <span>جاري الإضافة...</span>
                   </>
                 ) : addedToCart ? (
                   <>
-                    <Check size={24} />
+                    <Check size={20} className="sm:hidden" />
+                    <Check size={24} className="hidden sm:block" />
                     <span>تمت الإضافة ✓</span>
                   </>
                 ) : (
                   <>
-                    <ShoppingCart size={24} />
+                    <ShoppingCart size={20} className="sm:hidden" />
+                    <ShoppingCart size={24} className="hidden sm:block" />
                     <span>أضف للسلة</span>
                   </>
                 )}
@@ -576,33 +583,39 @@ const ProductPage: React.FC = () => {
 
               {/* Status */}
               <div
-                className={`p-4 rounded-2xl font-medium flex items-center gap-3 ${
+                className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl font-medium flex items-center gap-2 sm:gap-3 text-sm sm:text-base ${
                   isPurchaseDisabled
                     ? 'bg-red-50 border-2 border-red-200 text-red-700'
                     : 'bg-green-50 border-2 border-green-200 text-green-700'
                 }`}
               >
                 {isPurchaseDisabled ? (
-                  <AlertTriangle size={24} />
+                  <>
+                    <AlertTriangle size={20} className="sm:hidden flex-shrink-0" />
+                    <AlertTriangle size={24} className="hidden sm:block flex-shrink-0" />
+                  </>
                 ) : (
-                  <Check size={24} className="text-green-600" />
+                  <>
+                    <Check size={20} className="sm:hidden text-green-600 flex-shrink-0" />
+                    <Check size={24} className="hidden sm:block text-green-600 flex-shrink-0" />
+                  </>
                 )}
                 <span>{statusMessage}</span>
               </div>
 
               {/* Features */}
-              <div className="grid grid-cols-3 gap-3 pt-4 border-t border-purple-100">
-                <div className="text-center p-3 bg-purple-50 rounded-xl">
-                  <Cake className="h-6 w-6 text-purple-600 mx-auto mb-1" />
-                  <p className="text-xs text-gray-600">جودة عالية</p>
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-purple-100">
+                <div className="text-center p-2 sm:p-3 bg-purple-50 rounded-lg sm:rounded-xl">
+                  <Cake className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 mx-auto mb-1" />
+                  <p className="text-[10px] sm:text-xs text-gray-600">جودة عالية</p>
                 </div>
-                <div className="text-center p-3 bg-pink-50 rounded-xl">
-                  <Heart className="h-6 w-6 text-pink-600 mx-auto mb-1 fill-current" />
-                  <p className="text-xs text-gray-600">صنع بحب</p>
+                <div className="text-center p-2 sm:p-3 bg-pink-50 rounded-lg sm:rounded-xl">
+                  <Heart className="h-5 w-5 sm:h-6 sm:w-6 text-pink-600 mx-auto mb-1 fill-current" />
+                  <p className="text-[10px] sm:text-xs text-gray-600">صنع بحب</p>
                 </div>
-                <div className="text-center p-3 bg-amber-50 rounded-xl">
-                  <Star className="h-6 w-6 text-amber-600 mx-auto mb-1 fill-current" />
-                  <p className="text-xs text-gray-600">طعم مميز</p>
+                <div className="text-center p-2 sm:p-3 bg-amber-50 rounded-lg sm:rounded-xl">
+                  <Star className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 mx-auto mb-1 fill-current" />
+                  <p className="text-[10px] sm:text-xs text-gray-600">طعم مميز</p>
                 </div>
               </div>
             </div>
@@ -610,13 +623,13 @@ const ProductPage: React.FC = () => {
         </div>
 
         {/* WhatsApp Contact */}
-        <div className="mt-8 text-center">
-          <p className="text-gray-600 mb-3">هل لديك سؤال عن هذه التورتة؟</p>
+        <div className="mt-6 sm:mt-8 text-center">
+          <p className="text-gray-600 mb-3 text-sm sm:text-base">هل لديك سؤال عن هذه التورتة؟</p>
           <a
             href={`https://wa.me/201000070653?text=مرحباً، أريد الاستفسار عن: ${product.name}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-xl font-medium hover:bg-green-600 transition-all shadow-lg hover:shadow-xl"
+            className="inline-flex items-center gap-2 bg-green-500 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-medium hover:bg-green-600 transition-all shadow-lg hover:shadow-xl text-sm sm:text-base"
           >
             <span>💬</span>
             <span>تواصل معنا عبر واتساب</span>
