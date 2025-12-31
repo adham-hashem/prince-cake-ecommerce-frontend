@@ -15,7 +15,8 @@ import { Link } from 'react-router-dom';
 interface OccasionOption {
   id: string;
   value: string;
-  label: string;
+  name: string;
+  nameAr: string;
   icon: string;
   sizes: SizeOption[];
 }
@@ -23,7 +24,8 @@ interface OccasionOption {
 interface SizeOption {
   id: string;
   value: string;
-  label: string;
+  name: string;
+  nameAr: string;
   persons: string;
   price: number;
 }
@@ -31,14 +33,16 @@ interface SizeOption {
 interface FlavorOption {
   id: string;
   value: string;
-  label: string;
+  name: string;
+  nameAr: string;
   color: string;
   additionalPrice: number;
 }
 
 interface PaymentMethodOption {
   value: string;
-  label: string;
+  name: string;
+  nameAr: string;
   icon: string;
 }
 
@@ -276,19 +280,19 @@ export default function CustomOrders() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  {getSelectedOccasion()?.icon} {getSelectedOccasion()?.label}
+                  {getSelectedOccasion()?.icon} {getSelectedOccasion()?.nameAr}
                 </span>
                 <span className="font-medium">المناسبة</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  {getSelectedSize()?.label} ({getSelectedSize()?.persons})
+                  {getSelectedSize()?.nameAr} ({getSelectedSize()?.persons})
                 </span>
                 <span className="font-medium">الحجم</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  {getSelectedFlavor()?.label}
+                  {getSelectedFlavor()?.nameAr}
                 </span>
                 <span className="font-medium">النكهة</span>
               </div>
@@ -354,7 +358,7 @@ export default function CustomOrders() {
                   }`}
                 >
                   <span className="text-2xl block mb-1">{occasion.icon}</span>
-                  <span>{occasion.label}</span>
+                  <span>{occasion.nameAr}</span>
                 </button>
               ))}
             </div>
@@ -394,7 +398,7 @@ export default function CustomOrders() {
                     </div>
                     <div className="text-right">
                       <span className="text-purple-900 font-bold block">
-                        {size.label}
+                        {size.nameAr}
                       </span>
                       <span className="text-gray-500 text-sm">
                         يكفي {size.persons}
@@ -433,7 +437,7 @@ export default function CustomOrders() {
                 >
                   <div className={`w-8 h-8 rounded-full mx-auto mb-2 ${flavor.color}`} />
                   <div>
-                    <span className="block">{flavor.label}</span>
+                    <span className="block">{flavor.nameAr}</span>
                     {flavor.additionalPrice > 0 && (
                       <span className="text-xs text-purple-600">
                         +{flavor.additionalPrice} جنيه
@@ -663,7 +667,7 @@ export default function CustomOrders() {
                   >
                     <span className="text-gray-700 font-medium flex items-center gap-2">
                       <span>{method.icon}</span>
-                      <span>{method.label}</span>
+                      <span>{method.nameAr}</span>
                     </span>
                     <input
                       type="radio"
@@ -691,15 +695,15 @@ export default function CustomOrders() {
               </h3>
               <div className="space-y-2 text-sm text-right">
                 <div className="flex justify-between">
-                  <span>{getSelectedOccasion()?.label}</span>
+                  <span>{getSelectedOccasion()?.nameAr}</span>
                   <span className="text-gray-500">المناسبة</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>{getSelectedSize()?.label}</span>
+                  <span>{getSelectedSize()?.nameAr}</span>
                   <span className="text-gray-500">الحجم</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>{getSelectedFlavor()?.label}</span>
+                  <span>{getSelectedFlavor()?.nameAr}</span>
                   <span className="text-gray-500">النكهة</span>
                 </div>
                 {formData.customText && (
