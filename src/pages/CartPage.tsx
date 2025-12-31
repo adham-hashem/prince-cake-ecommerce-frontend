@@ -485,33 +485,6 @@ const CartPage: React.FC = () => {
                 <span>ملخص الطلب</span>
               </h3>
 
-              {/* Discount Code */}
-              <div className="mb-4 sm:mb-6">
-                <label className="block text-sm font-medium text-purple-900 mb-2">كود الخصم</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={discountCode}
-                    onChange={(e) => setDiscountCode(e.target.value)}
-                    placeholder="أدخل الكود"
-                    className="flex-1 px-3 py-2 sm:py-2.5 border-2 border-purple-200 rounded-lg sm:rounded-xl text-sm sm:text-base text-right focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    dir="rtl"
-                    disabled={isClearingCart}
-                  />
-                  <button
-                    onClick={handleApplyDiscountCode}
-                    disabled={isApplyingDiscount || isClearingCart}
-                    className="bg-purple-600 text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl hover:bg-purple-700 font-medium flex items-center justify-center transition-all text-sm sm:text-base disabled:opacity-50 min-w-[70px] sm:min-w-[80px]"
-                  >
-                    {isApplyingDiscount ? (
-                      <Loader2 className="animate-spin" size={18} />
-                    ) : (
-                      'تطبيق'
-                    )}
-                  </button>
-                </div>
-              </div>
-
               {/* Price Summary */}
               <div className="space-y-3 mb-4 sm:mb-6 pb-4 border-b-2 border-purple-100">
                 <div className="flex justify-between text-sm sm:text-base">
