@@ -81,7 +81,7 @@ interface CustomOrderForm {
   customerName: string;
   customerPhone: string;
   occasionId: string;
-  sizeId: string; // should be the real SizeId (from /sizes)
+  sizeId: string; // real SizeId (from /sizes)
   flavorId: string;
   customText: string;
   designImage: File | null;
@@ -93,6 +93,25 @@ interface CustomOrderForm {
 }
 
 const EMPTY_GUID = '00000000-0000-0000-0000-000000000000';
+
+// Converts Arabic-Indic digits (٠١٢٣٤٥٦٧٨٩) and Eastern Arabic-Indic (۰۱۲۳۴۵۶۷۸۹) to English digits
+const normalizeDigitsToEnglish = (value: string) => {
+  const ar = '٠١٢٣٤٥٦٧٨٩';
+  const fa = '۰۱۲۳۴۵۶۷۸۹';
+  let out = value;
+
+  out = out.replace(/[٠-٩]/g, (d) => String(ar.indexOf(d)));
+  out = out.replace(/[۰-۹]/g, (d) => String(fa.indexOf(d)));
+
+  return out;
+};
+
+const normalizePhone = (value: string) => {
+  const englishDigits = normalizeDigitsToEnglish(value);
+  return englishDigits.replace(/\D/g, '').slice(0, 11);
+};
+
+const isValidEgyptPhone = (value: string) => /^01[0125][0-9]{8}$/.test(value);
 
 export default function CustomOrders() {
   const [step, setStep] = useState(1);
@@ -130,13 +149,11 @@ export default function CustomOrders() {
     paymentMethod: 0,
   });
 
-  // Fetch cake options on component mount
   useEffect(() => {
     fetchCakeOptions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Calculate price when occasion, size, or flavor changes
   useEffect(() => {
     if (formData.occasionId && formData.sizeId && formData.flavorId) {
       calculatePrice();
@@ -162,11 +179,12 @@ export default function CustomOrders() {
       const sizes = (await sizesRes.json()) as SizeMasterOption[];
       const flavors = (await flavorsRes.json()) as FlavorOption[];
 
-      // Sort by displayOrder (then by nameAr as a stable fallback)
       const byOrder = <T extends { displayOrder: number; nameAr?: string }>(
         a: T,
         b: T
-      ) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0) || (a.nameAr || '').localeCompare(b.nameAr || '');
+      ) =>
+        (a.displayOrder ?? 0) - (b.displayOrder ?? 0) ||
+        (a.nameAr || '').localeCompare(b.nameAr || '');
 
       setCakeOptions({
         occasions: [...occasions].sort(byOrder),
@@ -188,9 +206,7 @@ export default function CustomOrders() {
         `${apiUrl}/api/CakeConfiguration/price?occasionId=${formData.occasionId}&sizeId=${formData.sizeId}&flavorId=${formData.flavorId}`
       );
 
-      if (!response.ok) {
-        throw new Error('فشل في حساب السعر');
-      }
+      if (!response.ok) throw new Error('فشل في حساب السعر');
 
       const data = await response.json();
       setEstimatedPrice(data.price);
@@ -203,7 +219,6 @@ export default function CustomOrders() {
     return cakeOptions?.occasions.find((o) => o.id === formData.occasionId);
   };
 
-  // Normalize "occasion size" -> actual sizeId
   const getOccasionSizeRealId = (s: OccasionSizeOption) => {
     const candidate = s.sizeId && s.sizeId !== EMPTY_GUID ? s.sizeId : s.id;
     return candidate || '';
@@ -214,12 +229,10 @@ export default function CustomOrders() {
 
     const occasion = getSelectedOccasion();
 
-    // First try: match against occasion sizes (if present)
     const rel = occasion?.sizes?.find(
       (s) => getOccasionSizeRealId(s) === formData.sizeId
     );
 
-    // Pull Arabic name from /sizes master if missing in relation
     const master = cakeOptions.sizes.find((m) => m.id === formData.sizeId);
 
     return {
@@ -261,11 +274,20 @@ export default function CustomOrders() {
     setLoading(true);
 
     try {
+      // Normalize phone before validation + send
+      const normalizedPhone = normalizePhone(formData.customerPhone);
+
+      if (!isValidEgyptPhone(normalizedPhone)) {
+        alert('من فضلك أدخل رقم موبايل مصري صحيح (11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015)');
+        setLoading(false);
+        return;
+      }
+
       const formDataToSend = new FormData();
       formDataToSend.append('CustomerName', formData.customerName);
-      formDataToSend.append('CustomerPhone', formData.customerPhone);
+      formDataToSend.append('CustomerPhone', normalizedPhone);
       formDataToSend.append('OccasionId', formData.occasionId);
-      formDataToSend.append('SizeId', formData.sizeId); // real sizeId from /sizes
+      formDataToSend.append('SizeId', formData.sizeId);
       formDataToSend.append('FlavorId', formData.flavorId);
       formDataToSend.append('CustomText', formData.customText || '');
 
@@ -273,9 +295,7 @@ export default function CustomOrders() {
         formDataToSend.append('DesignImage', formData.designImage);
       }
 
-      const pickupDateTime = new Date(
-        `${formData.pickupDate}T${formData.pickupTime}`
-      );
+      const pickupDateTime = new Date(`${formData.pickupDate}T${formData.pickupTime}`);
       formDataToSend.append('PickupDate', pickupDateTime.toISOString());
       formDataToSend.append('PickupTime', formData.pickupTime);
       formDataToSend.append('Notes', formData.notes || '');
@@ -297,11 +317,7 @@ export default function CustomOrders() {
       setOrderComplete(true);
     } catch (error) {
       console.error('Error creating custom order:', error);
-      alert(
-        error instanceof Error
-          ? error.message
-          : 'حدث خطأ أثناء إنشاء الطلب. حاول مرة أخرى.'
-      );
+      alert(error instanceof Error ? error.message : 'حدث خطأ أثناء إنشاء الطلب. حاول مرة أخرى.');
     } finally {
       setLoading(false);
     }
@@ -334,7 +350,6 @@ export default function CustomOrders() {
     );
   }
 
-  // Order Complete Screen
   if (orderComplete) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50 flex items-center justify-center p-4">
@@ -346,12 +361,8 @@ export default function CustomOrders() {
             </div>
           </div>
 
-          <h1 className="text-3xl font-bold text-purple-900 mb-2">
-            تم استلام طلبك!
-          </h1>
-          <p className="text-gray-600 mb-6">
-            سيتم التواصل معك قريباً لتأكيد التفاصيل
-          </p>
+          <h1 className="text-3xl font-bold text-purple-900 mb-2">تم استلام طلبك!</h1>
+          <p className="text-gray-600 mb-6">سيتم التواصل معك قريباً لتأكيد التفاصيل</p>
 
           <div className="bg-purple-50 rounded-2xl p-4 mb-6">
             <p className="text-sm text-gray-600 mb-1">رقم الطلب</p>
@@ -370,9 +381,7 @@ export default function CustomOrders() {
               <div className="flex justify-between">
                 <span className="text-gray-600">
                   {getSelectedSize()?.nameAr}{' '}
-                  {getSelectedSize()?.personsCountAr
-                    ? `(${getSelectedSize()?.personsCountAr})`
-                    : ''}
+                  {getSelectedSize()?.personsCountAr ? `(${getSelectedSize()?.personsCountAr})` : ''}
                 </span>
                 <span className="font-medium">الحجم</span>
               </div>
@@ -393,9 +402,7 @@ export default function CustomOrders() {
                 <span className="font-medium">الاستلام</span>
               </div>
               <div className="flex justify-between pt-2 border-t border-amber-200">
-                <span className="text-xl font-bold text-amber-600">
-                  {estimatedPrice.toFixed(2)} جنيه
-                </span>
+                <span className="text-xl font-bold text-amber-600">{estimatedPrice.toFixed(2)} جنيه</span>
                 <span className="font-bold text-purple-900">السعر التقديري</span>
               </div>
             </div>
@@ -419,9 +426,7 @@ export default function CustomOrders() {
         return (
           <div className="space-y-4">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-purple-900 mb-2">
-                اختر المناسبة
-              </h2>
+              <h2 className="text-2xl font-bold text-purple-900 mb-2">اختر المناسبة</h2>
               <p className="text-gray-600 text-sm">ما هي المناسبة السعيدة؟</p>
             </div>
 
@@ -431,12 +436,7 @@ export default function CustomOrders() {
                   key={occasion.id}
                   type="button"
                   onClick={() => {
-                    setFormData({
-                      ...formData,
-                      occasionId: occasion.id,
-                      sizeId: '',
-                      flavorId: '',
-                    });
+                    setFormData({ ...formData, occasionId: occasion.id, sizeId: '', flavorId: '' });
                     setStep(2);
                   }}
                   className={`p-4 border-2 rounded-2xl font-medium transition-all hover:scale-105 ${
@@ -456,7 +456,6 @@ export default function CustomOrders() {
       case 2: {
         const selectedOccasion = getSelectedOccasion();
 
-        // If occasion has configured sizes, use them; otherwise fallback to all master sizes
         const availableSizes =
           selectedOccasion?.sizes?.length && selectedOccasion.sizes.length > 0
             ? selectedOccasion.sizes.map((rel) => {
@@ -478,16 +477,12 @@ export default function CustomOrders() {
                 displayOrder: m.displayOrder ?? 0,
               }));
 
-        availableSizes.sort(
-          (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
-        );
+        availableSizes.sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
 
         return (
           <div className="space-y-4">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-purple-900 mb-2">
-                اختر الحجم
-              </h2>
+              <h2 className="text-2xl font-bold text-purple-900 mb-2">اختر الحجم</h2>
               <p className="text-gray-600 text-sm">كم عدد الضيوف المتوقع؟</p>
             </div>
 
@@ -508,18 +503,12 @@ export default function CustomOrders() {
                 >
                   <div className="flex justify-between items-center">
                     <div className="bg-amber-100 px-3 py-1 rounded-full">
-                      <span className="text-amber-600 font-bold">
-                        {Number(size.price).toFixed(2)} جنيه
-                      </span>
+                      <span className="text-amber-600 font-bold">{Number(size.price).toFixed(2)} جنيه</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-purple-900 font-bold block">
-                        {size.nameAr}
-                      </span>
+                      <span className="text-purple-900 font-bold block">{size.nameAr}</span>
                       {size.personsCountAr && (
-                        <span className="text-gray-500 text-sm">
-                          يكفي {size.personsCountAr}
-                        </span>
+                        <span className="text-gray-500 text-sm">يكفي {size.personsCountAr}</span>
                       )}
                     </div>
                   </div>
@@ -534,9 +523,7 @@ export default function CustomOrders() {
         return (
           <div className="space-y-4">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-purple-900 mb-2">
-                اختر النكهة
-              </h2>
+              <h2 className="text-2xl font-bold text-purple-900 mb-2">اختر النكهة</h2>
               <p className="text-gray-600 text-sm">ما هي نكهتك المفضلة؟</p>
             </div>
 
@@ -555,16 +542,11 @@ export default function CustomOrders() {
                       : 'border-purple-200 hover:border-purple-400 text-gray-700 hover:bg-purple-50'
                   }`}
                 >
-                  <div
-                    className="w-8 h-8 rounded-full mx-auto mb-2"
-                    style={{ backgroundColor: flavor.color }}
-                  />
+                  <div className="w-8 h-8 rounded-full mx-auto mb-2" style={{ backgroundColor: flavor.color }} />
                   <div>
                     <span className="block">{flavor.nameAr}</span>
                     {flavor.additionalPrice > 0 && (
-                      <span className="text-xs text-purple-600">
-                        +{flavor.additionalPrice} جنيه
-                      </span>
+                      <span className="text-xs text-purple-600">+{flavor.additionalPrice} جنيه</span>
                     )}
                   </div>
                 </button>
@@ -577,29 +559,21 @@ export default function CustomOrders() {
         return (
           <div className="space-y-4">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-purple-900 mb-2">
-                التخصيص
-              </h2>
+              <h2 className="text-2xl font-bold text-purple-900 mb-2">التخصيص</h2>
               <p className="text-gray-600 text-sm">أضف لمستك الخاصة</p>
             </div>
 
             <div>
-              <label className="block text-right text-purple-900 font-medium mb-2">
-                نص على التورتة (اختياري)
-              </label>
+              <label className="block text-right text-purple-900 font-medium mb-2">نص على التورتة (اختياري)</label>
               <input
                 type="text"
                 value={formData.customText}
-                onChange={(e) =>
-                  setFormData({ ...formData, customText: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, customText: e.target.value })}
                 className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl text-right focus:border-purple-500 focus:outline-none transition-colors"
                 placeholder="مثال: كل سنة وأنت طيب يا أحمد"
                 maxLength={50}
               />
-              <p className="text-xs text-gray-400 text-right mt-1">
-                {formData.customText.length}/50 حرف
-              </p>
+              <p className="text-xs text-gray-400 text-right mt-1">{formData.customText.length}/50 حرف</p>
             </div>
 
             <div>
@@ -609,9 +583,7 @@ export default function CustomOrders() {
               </label>
               <div
                 className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
-                  formData.imagePreview
-                    ? 'border-green-400 bg-green-50'
-                    : 'border-purple-300 hover:border-purple-500 hover:bg-purple-50'
+                  formData.imagePreview ? 'border-green-400 bg-green-50' : 'border-purple-300 hover:border-purple-500 hover:bg-purple-50'
                 }`}
               >
                 <input
@@ -627,18 +599,12 @@ export default function CustomOrders() {
                       alt="Preview"
                       className="w-32 h-32 object-cover rounded-xl mx-auto mb-2"
                     />
-                    <p className="text-green-600 font-medium text-sm">
-                      ✓ تم رفع الصورة
-                    </p>
+                    <p className="text-green-600 font-medium text-sm">✓ تم رفع الصورة</p>
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setFormData({
-                          ...formData,
-                          designImage: null,
-                          imagePreview: null,
-                        });
+                        setFormData({ ...formData, designImage: null, imagePreview: null });
                       }}
                       className="text-red-500 text-xs mt-1 hover:underline"
                     >
@@ -649,9 +615,7 @@ export default function CustomOrders() {
                   <div>
                     <Upload className="h-10 w-10 text-purple-400 mx-auto mb-2" />
                     <p className="text-gray-700 font-medium">اضغط لاختيار صورة</p>
-                    <p className="text-sm text-gray-500 mt-1">
-                      PNG أو JPG - حتى 5MB
-                    </p>
+                    <p className="text-sm text-gray-500 mt-1">PNG أو JPG - حتى 5MB</p>
                   </div>
                 )}
               </div>
@@ -671,44 +635,44 @@ export default function CustomOrders() {
         return (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-purple-900 mb-2">
-                معلومات التسليم
-              </h2>
+              <h2 className="text-2xl font-bold text-purple-900 mb-2">معلومات التسليم</h2>
               <p className="text-gray-600 text-sm">أدخل بياناتك لإتمام الطلب</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-right text-purple-900 font-medium mb-2">
-                  الاسم بالكامل *
-                </label>
+                <label className="block text-right text-purple-900 font-medium mb-2">الاسم بالكامل *</label>
                 <input
                   type="text"
                   required
                   value={formData.customerName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, customerName: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl text-right focus:border-purple-500 focus:outline-none"
                   placeholder="أحمد محمد"
                 />
               </div>
 
               <div>
-                <label className="block text-right text-purple-900 font-medium mb-2">
-                  رقم الهاتف *
-                </label>
+                <label className="block text-right text-purple-900 font-medium mb-2">رقم الهاتف *</label>
                 <input
                   type="tel"
                   required
-                  pattern="^01[0-2,5]\\d{8}$"
+                  inputMode="numeric"
+                  autoComplete="tel"
+                  maxLength={11}
+                  pattern="01[0125][0-9]{8}"
+                  title="رقم مصري 11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015"
                   value={formData.customerPhone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, customerPhone: e.target.value })
-                  }
+                  onChange={(e) => {
+                    const v = normalizePhone(e.target.value);
+                    setFormData({ ...formData, customerPhone: v });
+                  }}
                   className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl text-right focus:border-purple-500 focus:outline-none"
                   placeholder="01xxxxxxxxx"
                 />
+                <p className="text-xs text-gray-400 text-right mt-1">
+                  مثال: 01012345678
+                </p>
               </div>
             </div>
 
@@ -722,17 +686,11 @@ export default function CustomOrders() {
                   type="date"
                   required
                   value={formData.pickupDate}
-                  onChange={(e) =>
-                    setFormData({ ...formData, pickupDate: e.target.value })
-                  }
-                  min={new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
-                    .toISOString()
-                    .split('T')[0]}
+                  onChange={(e) => setFormData({ ...formData, pickupDate: e.target.value })}
+                  min={new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
                   className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl text-right focus:border-purple-500 focus:outline-none"
                 />
-                <p className="text-xs text-gray-400 text-right mt-1">
-                  الحد الأدنى يومين من الآن
-                </p>
+                <p className="text-xs text-gray-400 text-right mt-1">الحد الأدنى يومين من الآن</p>
               </div>
 
               <div>
@@ -744,23 +702,17 @@ export default function CustomOrders() {
                   type="time"
                   required
                   value={formData.pickupTime}
-                  onChange={(e) =>
-                    setFormData({ ...formData, pickupTime: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, pickupTime: e.target.value })}
                   className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl text-right focus:border-purple-500 focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-right text-purple-900 font-medium mb-2">
-                ملاحظات إضافية
-              </label>
+              <label className="block text-right text-purple-900 font-medium mb-2">ملاحظات إضافية</label>
               <textarea
                 value={formData.notes}
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 rows={3}
                 className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl text-right focus:border-purple-500 focus:outline-none resize-none"
                 placeholder="أي تفاصيل إضافية تريد إخبارنا بها..."
@@ -832,17 +784,11 @@ export default function CustomOrders() {
               </div>
 
               <div className="flex justify-between items-center mt-4 pt-4 border-t-2 border-amber-200">
-                <span className="text-2xl font-bold text-amber-600">
-                  {estimatedPrice.toFixed(2)} جنيه
-                </span>
-                <span className="text-lg font-bold text-purple-900">
-                  السعر التقديري
-                </span>
+                <span className="text-2xl font-bold text-amber-600">{estimatedPrice.toFixed(2)} جنيه</span>
+                <span className="text-lg font-bold text-purple-900">السعر التقديري</span>
               </div>
 
-              <p className="text-xs text-gray-500 text-right mt-2">
-                * السعر النهائي قد يختلف حسب التصميم المطلوب
-              </p>
+              <p className="text-xs text-gray-500 text-right mt-2">* السعر النهائي قد يختلف حسب التصميم المطلوب</p>
             </div>
 
             <button
@@ -871,10 +817,7 @@ export default function CustomOrders() {
   };
 
   return (
-    <div
-      className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50"
-      dir="rtl"
-    >
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50" dir="rtl">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <Link
@@ -897,9 +840,7 @@ export default function CustomOrders() {
                 <Cake className="h-12 w-12 text-white" />
               </div>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-purple-900 mb-2">
-              اطلب تورتة خاصة
-            </h1>
+            <h1 className="text-3xl md:text-4xl font-bold text-purple-900 mb-2">اطلب تورتة خاصة</h1>
             <p className="text-gray-600">صمم تورتتك المثالية خطوة بخطوة</p>
           </div>
 
@@ -918,32 +859,18 @@ export default function CustomOrders() {
                   {s < step ? '✓' : s}
                 </div>
                 {s < 5 && (
-                  <div
-                    className={`w-8 h-1 rounded-full mx-1 transition-colors ${
-                      s < step ? 'bg-green-500' : 'bg-purple-200'
-                    }`}
-                  />
+                  <div className={`w-8 h-1 rounded-full mx-1 transition-colors ${s < step ? 'bg-green-500' : 'bg-purple-200'}`} />
                 )}
               </div>
             ))}
           </div>
 
           <div className="flex justify-center gap-4 mb-8 text-xs text-gray-500">
-            <span className={step >= 1 ? 'text-purple-600 font-medium' : ''}>
-              المناسبة
-            </span>
-            <span className={step >= 2 ? 'text-purple-600 font-medium' : ''}>
-              الحجم
-            </span>
-            <span className={step >= 3 ? 'text-purple-600 font-medium' : ''}>
-              النكهة
-            </span>
-            <span className={step >= 4 ? 'text-purple-600 font-medium' : ''}>
-              التخصيص
-            </span>
-            <span className={step >= 5 ? 'text-purple-600 font-medium' : ''}>
-              التسليم
-            </span>
+            <span className={step >= 1 ? 'text-purple-600 font-medium' : ''}>المناسبة</span>
+            <span className={step >= 2 ? 'text-purple-600 font-medium' : ''}>الحجم</span>
+            <span className={step >= 3 ? 'text-purple-600 font-medium' : ''}>النكهة</span>
+            <span className={step >= 4 ? 'text-purple-600 font-medium' : ''}>التخصيص</span>
+            <span className={step >= 5 ? 'text-purple-600 font-medium' : ''}>التسليم</span>
           </div>
 
           <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8">
