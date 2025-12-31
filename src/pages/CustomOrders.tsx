@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Upload,
   Calendar,
@@ -12,6 +12,18 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+interface OccasionSizeOption {
+  id: string;
+  sizeId?: string | null;
+  name?: string;
+  nameAr?: string;
+  personsCount?: string;
+  personsCountAr?: string;
+  price: number;
+  displayOrder: number;
+  isActive: boolean;
+}
+
 interface OccasionOption {
   id: string;
   name: string;
@@ -22,19 +34,21 @@ interface OccasionOption {
   displayOrder: number;
   isActive: boolean;
   createdAt: string;
-  sizes: SizeOption[];
+  sizes: OccasionSizeOption[];
 }
 
-interface SizeOption {
+interface SizeMasterOption {
   id: string;
-  sizeId?: string;
   name: string;
   nameAr: string;
   personsCount: string;
   personsCountAr: string;
-  price: number;
+  description?: string | null;
+  descriptionAr?: string | null;
+  defaultPrice: number;
   displayOrder: number;
   isActive: boolean;
+  createdAt: string;
 }
 
 interface FlavorOption {
@@ -58,6 +72,7 @@ interface PaymentMethodOption {
 
 interface CakeOptions {
   occasions: OccasionOption[];
+  sizes: SizeMasterOption[];
   flavors: FlavorOption[];
   paymentMethods: PaymentMethodOption[];
 }
@@ -66,7 +81,7 @@ interface CustomOrderForm {
   customerName: string;
   customerPhone: string;
   occasionId: string;
-  sizeId: string;
+  sizeId: string; // should be the real SizeId (from /sizes)
   flavorId: string;
   customText: string;
   designImage: File | null;
@@ -76,6 +91,8 @@ interface CustomOrderForm {
   notes: string;
   paymentMethod: 0 | 1 | 2; // Cash = 0, Vodafone Cash = 1, Instapay = 2
 }
+
+const EMPTY_GUID = '00000000-0000-0000-0000-000000000000';
 
 export default function CustomOrders() {
   const [step, setStep] = useState(1);
@@ -88,6 +105,15 @@ export default function CustomOrders() {
   const [estimatedPrice, setEstimatedPrice] = useState(0);
 
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
+
+  const paymentMethods: PaymentMethodOption[] = useMemo(
+    () => [
+      { value: 'cash', label: 'كاش', icon: '💵' },
+      { value: 'vodafoneCash', label: 'فودافون كاش', icon: '📱' },
+      { value: 'instapay', label: 'إنستا باي', icon: '🏦' },
+    ],
+    []
+  );
 
   const [formData, setFormData] = useState<CustomOrderForm>({
     customerName: '',
@@ -107,6 +133,7 @@ export default function CustomOrders() {
   // Fetch cake options on component mount
   useEffect(() => {
     fetchCakeOptions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Calculate price when occasion, size, or flavor changes
@@ -114,19 +141,39 @@ export default function CustomOrders() {
     if (formData.occasionId && formData.sizeId && formData.flavorId) {
       calculatePrice();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.occasionId, formData.sizeId, formData.flavorId]);
 
   const fetchCakeOptions = async () => {
     try {
       setLoadingOptions(true);
-      const response = await fetch(`${apiUrl}/api/CakeConfiguration/options`);
-      
-      if (!response.ok) {
-        throw new Error('فشل في تحميل الخيارات');
-      }
 
-      const data = await response.json();
-      setCakeOptions(data);
+      const [occRes, sizesRes, flavorsRes] = await Promise.all([
+        fetch(`${apiUrl}/api/CakeConfiguration/occasions?includeInactive=false`),
+        fetch(`${apiUrl}/api/CakeConfiguration/sizes?includeInactive=false`),
+        fetch(`${apiUrl}/api/CakeConfiguration/flavors?includeInactive=false`),
+      ]);
+
+      if (!occRes.ok) throw new Error('فشل في تحميل المناسبات');
+      if (!sizesRes.ok) throw new Error('فشل في تحميل الأحجام');
+      if (!flavorsRes.ok) throw new Error('فشل في تحميل النكهات');
+
+      const occasions = (await occRes.json()) as OccasionOption[];
+      const sizes = (await sizesRes.json()) as SizeMasterOption[];
+      const flavors = (await flavorsRes.json()) as FlavorOption[];
+
+      // Sort by displayOrder (then by nameAr as a stable fallback)
+      const byOrder = <T extends { displayOrder: number; nameAr?: string }>(
+        a: T,
+        b: T
+      ) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0) || (a.nameAr || '').localeCompare(b.nameAr || '');
+
+      setCakeOptions({
+        occasions: [...occasions].sort(byOrder),
+        sizes: [...sizes].sort(byOrder),
+        flavors: [...flavors].sort(byOrder),
+        paymentMethods,
+      });
     } catch (error) {
       console.error('Error fetching cake options:', error);
       alert('حدث خطأ أثناء تحميل الخيارات. يرجى إعادة المحاولة.');
@@ -156,9 +203,31 @@ export default function CustomOrders() {
     return cakeOptions?.occasions.find((o) => o.id === formData.occasionId);
   };
 
+  // Normalize "occasion size" -> actual sizeId
+  const getOccasionSizeRealId = (s: OccasionSizeOption) => {
+    const candidate = s.sizeId && s.sizeId !== EMPTY_GUID ? s.sizeId : s.id;
+    return candidate || '';
+  };
+
   const getSelectedSize = () => {
+    if (!cakeOptions) return undefined;
+
     const occasion = getSelectedOccasion();
-    return occasion?.sizes.find((s) => s.id === formData.sizeId || s.sizeId === formData.sizeId);
+
+    // First try: match against occasion sizes (if present)
+    const rel = occasion?.sizes?.find(
+      (s) => getOccasionSizeRealId(s) === formData.sizeId
+    );
+
+    // Pull Arabic name from /sizes master if missing in relation
+    const master = cakeOptions.sizes.find((m) => m.id === formData.sizeId);
+
+    return {
+      id: formData.sizeId,
+      nameAr: rel?.nameAr ?? master?.nameAr ?? '',
+      personsCountAr: rel?.personsCountAr ?? master?.personsCountAr ?? '',
+      price: rel?.price ?? master?.defaultPrice ?? 0,
+    };
   };
 
   const getSelectedFlavor = () => {
@@ -192,21 +261,21 @@ export default function CustomOrders() {
     setLoading(true);
 
     try {
-      // Create FormData for multipart/form-data
       const formDataToSend = new FormData();
       formDataToSend.append('CustomerName', formData.customerName);
       formDataToSend.append('CustomerPhone', formData.customerPhone);
       formDataToSend.append('OccasionId', formData.occasionId);
-      formDataToSend.append('SizeId', formData.sizeId);
+      formDataToSend.append('SizeId', formData.sizeId); // real sizeId from /sizes
       formDataToSend.append('FlavorId', formData.flavorId);
       formDataToSend.append('CustomText', formData.customText || '');
-      
+
       if (formData.designImage) {
         formDataToSend.append('DesignImage', formData.designImage);
       }
 
-      // Combine date and time for pickup
-      const pickupDateTime = new Date(`${formData.pickupDate}T${formData.pickupTime}`);
+      const pickupDateTime = new Date(
+        `${formData.pickupDate}T${formData.pickupTime}`
+      );
       formDataToSend.append('PickupDate', pickupDateTime.toISOString());
       formDataToSend.append('PickupTime', formData.pickupTime);
       formDataToSend.append('Notes', formData.notes || '');
@@ -228,7 +297,11 @@ export default function CustomOrders() {
       setOrderComplete(true);
     } catch (error) {
       console.error('Error creating custom order:', error);
-      alert(error instanceof Error ? error.message : 'حدث خطأ أثناء إنشاء الطلب. حاول مرة أخرى.');
+      alert(
+        error instanceof Error
+          ? error.message
+          : 'حدث خطأ أثناء إنشاء الطلب. حاول مرة أخرى.'
+      );
     } finally {
       setLoading(false);
     }
@@ -274,7 +347,7 @@ export default function CustomOrders() {
           </div>
 
           <h1 className="text-3xl font-bold text-purple-900 mb-2">
-            تم استلام طلبك! 🎉
+            تم استلام طلبك!
           </h1>
           <p className="text-gray-600 mb-6">
             سيتم التواصل معك قريباً لتأكيد التفاصيل
@@ -296,14 +369,15 @@ export default function CustomOrders() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  {getSelectedSize()?.nameAr} ({getSelectedSize()?.personsCountAr})
+                  {getSelectedSize()?.nameAr}{' '}
+                  {getSelectedSize()?.personsCountAr
+                    ? `(${getSelectedSize()?.personsCountAr})`
+                    : ''}
                 </span>
                 <span className="font-medium">الحجم</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">
-                  {getSelectedFlavor()?.nameAr}
-                </span>
+                <span className="text-gray-600">{getSelectedFlavor()?.nameAr}</span>
                 <span className="font-medium">النكهة</span>
               </div>
               {formData.customText && (
@@ -346,19 +420,23 @@ export default function CustomOrders() {
           <div className="space-y-4">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-purple-900 mb-2">
-                اختر المناسبة 🎉
+                اختر المناسبة
               </h2>
-              <p className="text-gray-600 text-sm">
-                ما هي المناسبة السعيدة؟
-              </p>
+              <p className="text-gray-600 text-sm">ما هي المناسبة السعيدة؟</p>
             </div>
+
             <div className="grid grid-cols-2 gap-3">
               {cakeOptions.occasions.map((occasion) => (
                 <button
                   key={occasion.id}
                   type="button"
                   onClick={() => {
-                    setFormData({ ...formData, occasionId: occasion.id, sizeId: '', flavorId: '' });
+                    setFormData({
+                      ...formData,
+                      occasionId: occasion.id,
+                      sizeId: '',
+                      flavorId: '',
+                    });
                     setStep(2);
                   }}
                   className={`p-4 border-2 rounded-2xl font-medium transition-all hover:scale-105 ${
@@ -375,27 +453,55 @@ export default function CustomOrders() {
           </div>
         );
 
-      case 2:
+      case 2: {
         const selectedOccasion = getSelectedOccasion();
+
+        // If occasion has configured sizes, use them; otherwise fallback to all master sizes
+        const availableSizes =
+          selectedOccasion?.sizes?.length && selectedOccasion.sizes.length > 0
+            ? selectedOccasion.sizes.map((rel) => {
+                const realId = getOccasionSizeRealId(rel);
+                const master = cakeOptions.sizes.find((m) => m.id === realId);
+                return {
+                  realId,
+                  nameAr: rel.nameAr ?? master?.nameAr ?? '',
+                  personsCountAr: rel.personsCountAr ?? master?.personsCountAr ?? '',
+                  price: rel.price ?? master?.defaultPrice ?? 0,
+                  displayOrder: rel.displayOrder ?? master?.displayOrder ?? 0,
+                };
+              })
+            : cakeOptions.sizes.map((m) => ({
+                realId: m.id,
+                nameAr: m.nameAr,
+                personsCountAr: m.personsCountAr,
+                price: m.defaultPrice ?? 0,
+                displayOrder: m.displayOrder ?? 0,
+              }));
+
+        availableSizes.sort(
+          (a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0)
+        );
+
         return (
           <div className="space-y-4">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-purple-900 mb-2">
-                اختر الحجم 📏
+                اختر الحجم
               </h2>
               <p className="text-gray-600 text-sm">كم عدد الضيوف المتوقع؟</p>
             </div>
+
             <div className="space-y-3">
-              {selectedOccasion?.sizes.map((size) => (
+              {availableSizes.map((size) => (
                 <button
-                  key={size.id}
+                  key={size.realId}
                   type="button"
                   onClick={() => {
-                    setFormData({ ...formData, sizeId: size.id || size.sizeId || '' });
+                    setFormData({ ...formData, sizeId: size.realId });
                     setStep(3);
                   }}
                   className={`w-full p-4 border-2 rounded-2xl transition-all hover:scale-[1.02] ${
-                    formData.sizeId === size.id || formData.sizeId === size.sizeId
+                    formData.sizeId === size.realId
                       ? 'border-purple-500 bg-purple-50 shadow-lg'
                       : 'border-purple-200 hover:border-purple-400 hover:bg-purple-50'
                   }`}
@@ -403,16 +509,18 @@ export default function CustomOrders() {
                   <div className="flex justify-between items-center">
                     <div className="bg-amber-100 px-3 py-1 rounded-full">
                       <span className="text-amber-600 font-bold">
-                        {size.price.toFixed(2)} جنيه
+                        {Number(size.price).toFixed(2)} جنيه
                       </span>
                     </div>
                     <div className="text-right">
                       <span className="text-purple-900 font-bold block">
                         {size.nameAr}
                       </span>
-                      <span className="text-gray-500 text-sm">
-                        يكفي {size.personsCountAr}
-                      </span>
+                      {size.personsCountAr && (
+                        <span className="text-gray-500 text-sm">
+                          يكفي {size.personsCountAr}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </button>
@@ -420,16 +528,18 @@ export default function CustomOrders() {
             </div>
           </div>
         );
+      }
 
       case 3:
         return (
           <div className="space-y-4">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-purple-900 mb-2">
-                اختر النكهة 🍰
+                اختر النكهة
               </h2>
               <p className="text-gray-600 text-sm">ما هي نكهتك المفضلة؟</p>
             </div>
+
             <div className="grid grid-cols-2 gap-3">
               {cakeOptions.flavors.map((flavor) => (
                 <button
@@ -445,8 +555,8 @@ export default function CustomOrders() {
                       : 'border-purple-200 hover:border-purple-400 text-gray-700 hover:bg-purple-50'
                   }`}
                 >
-                  <div 
-                    className="w-8 h-8 rounded-full mx-auto mb-2" 
+                  <div
+                    className="w-8 h-8 rounded-full mx-auto mb-2"
                     style={{ backgroundColor: flavor.color }}
                   />
                   <div>
@@ -468,7 +578,7 @@ export default function CustomOrders() {
           <div className="space-y-4">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-purple-900 mb-2">
-                التخصيص ✨
+                التخصيص
               </h2>
               <p className="text-gray-600 text-sm">أضف لمستك الخاصة</p>
             </div>
@@ -484,7 +594,7 @@ export default function CustomOrders() {
                   setFormData({ ...formData, customText: e.target.value })
                 }
                 className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl text-right focus:border-purple-500 focus:outline-none transition-colors"
-                placeholder="مثال: كل سنة وأنت طيب يا أحمد 🎂"
+                placeholder="مثال: كل سنة وأنت طيب يا أحمد"
                 maxLength={50}
               />
               <p className="text-xs text-gray-400 text-right mt-1">
@@ -507,9 +617,7 @@ export default function CustomOrders() {
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) =>
-                    handleFileUpload(e.target.files?.[0] || null)
-                  }
+                  onChange={(e) => handleFileUpload(e.target.files?.[0] || null)}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
                 {formData.imagePreview ? (
@@ -540,9 +648,7 @@ export default function CustomOrders() {
                 ) : (
                   <div>
                     <Upload className="h-10 w-10 text-purple-400 mx-auto mb-2" />
-                    <p className="text-gray-700 font-medium">
-                      اضغط لاختيار صورة
-                    </p>
+                    <p className="text-gray-700 font-medium">اضغط لاختيار صورة</p>
                     <p className="text-sm text-gray-500 mt-1">
                       PNG أو JPG - حتى 5MB
                     </p>
@@ -566,7 +672,7 @@ export default function CustomOrders() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-purple-900 mb-2">
-                معلومات التسليم 📦
+                معلومات التسليم
               </h2>
               <p className="text-gray-600 text-sm">أدخل بياناتك لإتمام الطلب</p>
             </div>
@@ -595,7 +701,7 @@ export default function CustomOrders() {
                 <input
                   type="tel"
                   required
-                  pattern="^01[0-2,5]\d{8}$"
+                  pattern="^01[0-2,5]\\d{8}$"
                   value={formData.customerPhone}
                   onChange={(e) =>
                     setFormData({ ...formData, customerPhone: e.target.value })
@@ -619,11 +725,9 @@ export default function CustomOrders() {
                   onChange={(e) =>
                     setFormData({ ...formData, pickupDate: e.target.value })
                   }
-                  min={
-                    new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
-                      .toISOString()
-                      .split('T')[0]
-                  }
+                  min={new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
+                    .toISOString()
+                    .split('T')[0]}
                   className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl text-right focus:border-purple-500 focus:outline-none"
                 />
                 <p className="text-xs text-gray-400 text-right mt-1">
@@ -700,12 +804,12 @@ export default function CustomOrders() {
               </div>
             </div>
 
-            {/* Order Summary */}
             <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4">
               <h3 className="font-bold text-purple-900 mb-3 text-right flex items-center justify-end gap-2">
                 <span>ملخص الطلب</span>
                 <Cake className="h-5 w-5" />
               </h3>
+
               <div className="space-y-2 text-sm text-right">
                 <div className="flex justify-between">
                   <span>{getSelectedOccasion()?.nameAr}</span>
@@ -726,6 +830,7 @@ export default function CustomOrders() {
                   </div>
                 )}
               </div>
+
               <div className="flex justify-between items-center mt-4 pt-4 border-t-2 border-amber-200">
                 <span className="text-2xl font-bold text-amber-600">
                   {estimatedPrice.toFixed(2)} جنيه
@@ -734,6 +839,7 @@ export default function CustomOrders() {
                   السعر التقديري
                 </span>
               </div>
+
               <p className="text-xs text-gray-500 text-right mt-2">
                 * السعر النهائي قد يختلف حسب التصميم المطلوب
               </p>
@@ -765,10 +871,12 @@ export default function CustomOrders() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50" dir="rtl">
+    <div
+      className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50"
+      dir="rtl"
+    >
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-          {/* Back Link */}
           <Link
             to="/"
             className="inline-flex items-center space-x-reverse space-x-2 text-gray-600 hover:text-purple-600 mb-6 transition-colors"
@@ -777,7 +885,6 @@ export default function CustomOrders() {
             <span>العودة للرئيسية</span>
           </Link>
 
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="relative inline-block mb-4">
               <div className="absolute -top-2 -right-2 text-pink-400 animate-pulse">
@@ -793,10 +900,9 @@ export default function CustomOrders() {
             <h1 className="text-3xl md:text-4xl font-bold text-purple-900 mb-2">
               اطلب تورتة خاصة
             </h1>
-            <p className="text-gray-600">صمم تورتتك المثالية خطوة بخطوة ✨</p>
+            <p className="text-gray-600">صمم تورتتك المثالية خطوة بخطوة</p>
           </div>
 
-          {/* Progress Bar */}
           <div className="flex justify-center items-center gap-2 mb-8">
             {[1, 2, 3, 4, 5].map((s) => (
               <div key={s} className="flex items-center">
@@ -822,7 +928,6 @@ export default function CustomOrders() {
             ))}
           </div>
 
-          {/* Step Labels */}
           <div className="flex justify-center gap-4 mb-8 text-xs text-gray-500">
             <span className={step >= 1 ? 'text-purple-600 font-medium' : ''}>
               المناسبة
@@ -841,11 +946,9 @@ export default function CustomOrders() {
             </span>
           </div>
 
-          {/* Main Card */}
           <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8">
             {renderStep()}
 
-            {/* Back Button */}
             {step > 1 && (
               <button
                 type="button"
@@ -858,7 +961,6 @@ export default function CustomOrders() {
             )}
           </div>
 
-          {/* Features */}
           <div className="mt-8 grid grid-cols-3 gap-3">
             <div className="bg-white/80 rounded-2xl p-4 text-center shadow-md">
               <span className="text-2xl block mb-1">🎨</span>
