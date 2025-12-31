@@ -14,26 +14,40 @@ import { Link } from 'react-router-dom';
 
 interface OccasionOption {
   id: string;
-  value: string;
-  label: string;
+  name: string;
+  nameAr: string;
   icon: string;
+  description?: string | null;
+  descriptionAr?: string | null;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt: string;
   sizes: SizeOption[];
 }
 
 interface SizeOption {
   id: string;
-  value: string;
-  label: string;
-  persons: string;
+  sizeId?: string;
+  name: string;
+  nameAr: string;
+  personsCount: string;
+  personsCountAr: string;
   price: number;
+  displayOrder: number;
+  isActive: boolean;
 }
 
 interface FlavorOption {
   id: string;
-  value: string;
-  label: string;
+  name: string;
+  nameAr: string;
   color: string;
+  description?: string | null;
+  descriptionAr?: string | null;
   additionalPrice: number;
+  displayOrder: number;
+  isActive: boolean;
+  createdAt: string;
 }
 
 interface PaymentMethodOption {
@@ -144,7 +158,7 @@ export default function CustomOrders() {
 
   const getSelectedSize = () => {
     const occasion = getSelectedOccasion();
-    return occasion?.sizes.find((s) => s.id === formData.sizeId);
+    return occasion?.sizes.find((s) => s.id === formData.sizeId || s.sizeId === formData.sizeId);
   };
 
   const getSelectedFlavor = () => {
@@ -276,19 +290,19 @@ export default function CustomOrders() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  {getSelectedOccasion()?.icon} {getSelectedOccasion()?.label}
+                  {getSelectedOccasion()?.icon} {getSelectedOccasion()?.nameAr}
                 </span>
                 <span className="font-medium">المناسبة</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  {getSelectedSize()?.label} ({getSelectedSize()?.persons})
+                  {getSelectedSize()?.nameAr} ({getSelectedSize()?.personsCountAr})
                 </span>
                 <span className="font-medium">الحجم</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  {getSelectedFlavor()?.label}
+                  {getSelectedFlavor()?.nameAr}
                 </span>
                 <span className="font-medium">النكهة</span>
               </div>
@@ -354,7 +368,7 @@ export default function CustomOrders() {
                   }`}
                 >
                   <span className="text-2xl block mb-1">{occasion.icon}</span>
-                  <span>{occasion.label}</span>
+                  <span>{occasion.nameAr}</span>
                 </button>
               ))}
             </div>
@@ -377,11 +391,11 @@ export default function CustomOrders() {
                   key={size.id}
                   type="button"
                   onClick={() => {
-                    setFormData({ ...formData, sizeId: size.id });
+                    setFormData({ ...formData, sizeId: size.id || size.sizeId || '' });
                     setStep(3);
                   }}
                   className={`w-full p-4 border-2 rounded-2xl transition-all hover:scale-[1.02] ${
-                    formData.sizeId === size.id
+                    formData.sizeId === size.id || formData.sizeId === size.sizeId
                       ? 'border-purple-500 bg-purple-50 shadow-lg'
                       : 'border-purple-200 hover:border-purple-400 hover:bg-purple-50'
                   }`}
@@ -394,10 +408,10 @@ export default function CustomOrders() {
                     </div>
                     <div className="text-right">
                       <span className="text-purple-900 font-bold block">
-                        {size.label}
+                        {size.nameAr}
                       </span>
                       <span className="text-gray-500 text-sm">
-                        يكفي {size.persons}
+                        يكفي {size.personsCountAr}
                       </span>
                     </div>
                   </div>
@@ -431,9 +445,12 @@ export default function CustomOrders() {
                       : 'border-purple-200 hover:border-purple-400 text-gray-700 hover:bg-purple-50'
                   }`}
                 >
-                  <div className={`w-8 h-8 rounded-full mx-auto mb-2 ${flavor.color}`} />
+                  <div 
+                    className="w-8 h-8 rounded-full mx-auto mb-2" 
+                    style={{ backgroundColor: flavor.color }}
+                  />
                   <div>
-                    <span className="block">{flavor.label}</span>
+                    <span className="block">{flavor.nameAr}</span>
                     {flavor.additionalPrice > 0 && (
                       <span className="text-xs text-purple-600">
                         +{flavor.additionalPrice} جنيه
@@ -691,15 +708,15 @@ export default function CustomOrders() {
               </h3>
               <div className="space-y-2 text-sm text-right">
                 <div className="flex justify-between">
-                  <span>{getSelectedOccasion()?.label}</span>
+                  <span>{getSelectedOccasion()?.nameAr}</span>
                   <span className="text-gray-500">المناسبة</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>{getSelectedSize()?.label}</span>
+                  <span>{getSelectedSize()?.nameAr}</span>
                   <span className="text-gray-500">الحجم</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>{getSelectedFlavor()?.label}</span>
+                  <span>{getSelectedFlavor()?.nameAr}</span>
                   <span className="text-gray-500">النكهة</span>
                 </div>
                 {formData.customText && (
@@ -748,7 +765,7 @@ export default function CustomOrders() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50">
+    <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50" dir="rtl">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           {/* Back Link */}
