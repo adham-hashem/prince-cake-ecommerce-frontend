@@ -64,7 +64,7 @@ interface CustomOrderForm {
   pickupDate: string;
   pickupTime: string;
   notes: string;
-  paymentMethod: 0 | 1 | 2; // Cash = 0, Vodafone Cash = 1, Instapay = 2
+  paymentMethod: 0 | 1 | 2;
 }
 
 export default function CustomOrders() {
@@ -94,12 +94,10 @@ export default function CustomOrders() {
     paymentMethod: 0,
   });
 
-  // Fetch cake options on component mount
   useEffect(() => {
     fetchCakeOptions();
   }, []);
 
-  // Calculate price when occasion, size, or flavor changes
   useEffect(() => {
     if (formData.occasionId && formData.sizeId && formData.flavorId) {
       calculatePrice();
@@ -109,16 +107,54 @@ export default function CustomOrders() {
   const fetchCakeOptions = async () => {
     try {
       setLoadingOptions(true);
+      console.log('🔄 Fetching cake options from API...');
+      console.log('API URL:', `${apiUrl}/api/CakeConfiguration/options`);
+      
       const response = await fetch(`${apiUrl}/api/CakeConfiguration/options`);
+      
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response ok:', response.ok);
       
       if (!response.ok) {
         throw new Error('فشل في تحميل الخيارات');
       }
 
       const data = await response.json();
+      
+      // Log the entire response
+      console.log('✅ Full API Response:', data);
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
+      // Log occasions
+      console.log('🎉 Occasions:', data.occasions);
+      if (data.occasions && data.occasions.length > 0) {
+        console.log('First Occasion:', data.occasions[0]);
+        console.log('First Occasion nameAr:', data.occasions[0].nameAr);
+        console.log('First Occasion name:', data.occasions[0].name);
+        console.log('First Occasion sizes:', data.occasions[0].sizes);
+      }
+      
+      // Log flavors
+      console.log('🍰 Flavors:', data.flavors);
+      if (data.flavors && data.flavors.length > 0) {
+        console.log('First Flavor:', data.flavors[0]);
+        console.log('First Flavor nameAr:', data.flavors[0].nameAr);
+        console.log('First Flavor name:', data.flavors[0].name);
+      }
+      
+      // Log payment methods
+      console.log('💳 Payment Methods:', data.paymentMethods);
+      if (data.paymentMethods && data.paymentMethods.length > 0) {
+        console.log('First Payment Method:', data.paymentMethods[0]);
+        console.log('First Payment Method nameAr:', data.paymentMethods[0].nameAr);
+        console.log('First Payment Method name:', data.paymentMethods[0].name);
+      }
+      
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      
       setCakeOptions(data);
     } catch (error) {
-      console.error('Error fetching cake options:', error);
+      console.error('❌ Error fetching cake options:', error);
       alert('حدث خطأ أثناء تحميل الخيارات. يرجى إعادة المحاولة.');
     } finally {
       setLoadingOptions(false);
@@ -127,6 +163,7 @@ export default function CustomOrders() {
 
   const calculatePrice = async () => {
     try {
+      console.log('💰 Calculating price...');
       const response = await fetch(
         `${apiUrl}/api/CakeConfiguration/price?occasionId=${formData.occasionId}&sizeId=${formData.sizeId}&flavorId=${formData.flavorId}`
       );
@@ -136,23 +173,30 @@ export default function CustomOrders() {
       }
 
       const data = await response.json();
+      console.log('💰 Price Response:', data);
       setEstimatedPrice(data.price);
     } catch (error) {
-      console.error('Error calculating price:', error);
+      console.error('❌ Error calculating price:', error);
     }
   };
 
   const getSelectedOccasion = () => {
-    return cakeOptions?.occasions.find((o) => o.id === formData.occasionId);
+    const occasion = cakeOptions?.occasions.find((o) => o.id === formData.occasionId);
+    console.log('📌 Selected Occasion:', occasion);
+    return occasion;
   };
 
   const getSelectedSize = () => {
     const occasion = getSelectedOccasion();
-    return occasion?.sizes.find((s) => s.id === formData.sizeId);
+    const size = occasion?.sizes.find((s) => s.id === formData.sizeId);
+    console.log('📌 Selected Size:', size);
+    return size;
   };
 
   const getSelectedFlavor = () => {
-    return cakeOptions?.flavors.find((f) => f.id === formData.flavorId);
+    const flavor = cakeOptions?.flavors.find((f) => f.id === formData.flavorId);
+    console.log('📌 Selected Flavor:', flavor);
+    return flavor;
   };
 
   const handleFileUpload = (file: File | null) => {
@@ -182,7 +226,6 @@ export default function CustomOrders() {
     setLoading(true);
 
     try {
-      // Create FormData for multipart/form-data
       const formDataToSend = new FormData();
       formDataToSend.append('CustomerName', formData.customerName);
       formDataToSend.append('CustomerPhone', formData.customerPhone);
@@ -195,13 +238,13 @@ export default function CustomOrders() {
         formDataToSend.append('DesignImage', formData.designImage);
       }
 
-      // Combine date and time for pickup
       const pickupDateTime = new Date(`${formData.pickupDate}T${formData.pickupTime}`);
       formDataToSend.append('PickupDate', pickupDateTime.toISOString());
       formDataToSend.append('PickupTime', formData.pickupTime);
       formDataToSend.append('Notes', formData.notes || '');
       formDataToSend.append('PaymentMethod', formData.paymentMethod.toString());
 
+      console.log('📤 Submitting order...');
       const response = await fetch(`${apiUrl}/api/CustomOrders`, {
         method: 'POST',
         body: formDataToSend,
@@ -213,16 +256,22 @@ export default function CustomOrders() {
       }
 
       const result = await response.json();
+      console.log('✅ Order created:', result);
       setOrderId(result.id);
       setOrderNumber(result.orderNumber);
       setOrderComplete(true);
     } catch (error) {
-      console.error('Error creating custom order:', error);
+      console.error('❌ Error creating custom order:', error);
       alert(error instanceof Error ? error.message : 'حدث خطأ أثناء إنشاء الطلب. حاول مرة أخرى.');
     } finally {
       setLoading(false);
     }
   };
+
+  // Log whenever cakeOptions changes
+  useEffect(() => {
+    console.log('🔄 cakeOptions state updated:', cakeOptions);
+  }, [cakeOptions]);
 
   if (loadingOptions) {
     return (
@@ -251,7 +300,6 @@ export default function CustomOrders() {
     );
   }
 
-  // Order Complete Screen
   if (orderComplete) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50 flex items-center justify-center p-4">
@@ -280,19 +328,19 @@ export default function CustomOrders() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  {getSelectedOccasion()?.icon} {getSelectedOccasion()?.nameAr}
+                  {getSelectedOccasion()?.icon} {getSelectedOccasion()?.nameAr || getSelectedOccasion()?.name}
                 </span>
                 <span className="font-medium">المناسبة</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  {getSelectedSize()?.nameAr} ({getSelectedSize()?.persons})
+                  {getSelectedSize()?.nameAr || getSelectedSize()?.name} ({getSelectedSize()?.persons})
                 </span>
                 <span className="font-medium">الحجم</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">
-                  {getSelectedFlavor()?.nameAr}
+                  {getSelectedFlavor()?.nameAr || getSelectedFlavor()?.name}
                 </span>
                 <span className="font-medium">النكهة</span>
               </div>
@@ -332,6 +380,7 @@ export default function CustomOrders() {
   const renderStep = () => {
     switch (step) {
       case 1:
+        console.log('🎯 Rendering Step 1 - Occasions');
         return (
           <div className="space-y-4">
             <div className="text-center mb-6">
@@ -343,29 +392,34 @@ export default function CustomOrders() {
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              {cakeOptions.occasions.map((occasion) => (
-                <button
-                  key={occasion.id}
-                  type="button"
-                  onClick={() => {
-                    setFormData({ ...formData, occasionId: occasion.id, sizeId: '', flavorId: '' });
-                    setStep(2);
-                  }}
-                  className={`p-4 border-2 rounded-2xl font-medium transition-all hover:scale-105 ${
-                    formData.occasionId === occasion.id
-                      ? 'border-purple-500 bg-purple-50 text-purple-900 shadow-lg'
-                      : 'border-purple-200 hover:border-purple-400 text-gray-700 hover:bg-purple-50'
-                  }`}
-                >
-                  <span className="text-2xl block mb-1">{occasion.icon}</span>
-                  <span>{occasion.nameAr}</span>
-                </button>
-              ))}
+              {cakeOptions.occasions.map((occasion) => {
+                console.log('Rendering occasion:', occasion.id, 'nameAr:', occasion.nameAr, 'name:', occasion.name);
+                return (
+                  <button
+                    key={occasion.id}
+                    type="button"
+                    onClick={() => {
+                      console.log('Selected occasion:', occasion);
+                      setFormData({ ...formData, occasionId: occasion.id, sizeId: '', flavorId: '' });
+                      setStep(2);
+                    }}
+                    className={`p-4 border-2 rounded-2xl font-medium transition-all hover:scale-105 ${
+                      formData.occasionId === occasion.id
+                        ? 'border-purple-500 bg-purple-50 text-purple-900 shadow-lg'
+                        : 'border-purple-200 hover:border-purple-400 text-gray-700 hover:bg-purple-50'
+                    }`}
+                  >
+                    <span className="text-2xl block mb-1">{occasion.icon}</span>
+                    <span>{occasion.nameAr || occasion.name || 'No name'}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         );
 
       case 2:
+        console.log('🎯 Rendering Step 2 - Sizes');
         const selectedOccasion = getSelectedOccasion();
         return (
           <div className="space-y-4">
@@ -376,42 +430,47 @@ export default function CustomOrders() {
               <p className="text-gray-600 text-sm">كم عدد الضيوف المتوقع؟</p>
             </div>
             <div className="space-y-3">
-              {selectedOccasion?.sizes.map((size) => (
-                <button
-                  key={size.id}
-                  type="button"
-                  onClick={() => {
-                    setFormData({ ...formData, sizeId: size.id });
-                    setStep(3);
-                  }}
-                  className={`w-full p-4 border-2 rounded-2xl transition-all hover:scale-[1.02] ${
-                    formData.sizeId === size.id
-                      ? 'border-purple-500 bg-purple-50 shadow-lg'
-                      : 'border-purple-200 hover:border-purple-400 hover:bg-purple-50'
-                  }`}
-                >
-                  <div className="flex justify-between items-center">
-                    <div className="bg-amber-100 px-3 py-1 rounded-full">
-                      <span className="text-amber-600 font-bold">
-                        {size.price.toFixed(2)} جنيه
-                      </span>
+              {selectedOccasion?.sizes.map((size) => {
+                console.log('Rendering size:', size.id, 'nameAr:', size.nameAr, 'name:', size.name);
+                return (
+                  <button
+                    key={size.id}
+                    type="button"
+                    onClick={() => {
+                      console.log('Selected size:', size);
+                      setFormData({ ...formData, sizeId: size.id });
+                      setStep(3);
+                    }}
+                    className={`w-full p-4 border-2 rounded-2xl transition-all hover:scale-[1.02] ${
+                      formData.sizeId === size.id
+                        ? 'border-purple-500 bg-purple-50 shadow-lg'
+                        : 'border-purple-200 hover:border-purple-400 hover:bg-purple-50'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div className="bg-amber-100 px-3 py-1 rounded-full">
+                        <span className="text-amber-600 font-bold">
+                          {size.price.toFixed(2)} جنيه
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-purple-900 font-bold block">
+                          {size.nameAr || size.name || 'No name'}
+                        </span>
+                        <span className="text-gray-500 text-sm">
+                          يكفي {size.persons}
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <span className="text-purple-900 font-bold block">
-                        {size.nameAr}
-                      </span>
-                      <span className="text-gray-500 text-sm">
-                        يكفي {size.persons}
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           </div>
         );
 
       case 3:
+        console.log('🎯 Rendering Step 3 - Flavors');
         return (
           <div className="space-y-4">
             <div className="text-center mb-6">
@@ -421,31 +480,35 @@ export default function CustomOrders() {
               <p className="text-gray-600 text-sm">ما هي نكهتك المفضلة؟</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              {cakeOptions.flavors.map((flavor) => (
-                <button
-                  key={flavor.id}
-                  type="button"
-                  onClick={() => {
-                    setFormData({ ...formData, flavorId: flavor.id });
-                    setStep(4);
-                  }}
-                  className={`p-4 border-2 rounded-2xl font-medium transition-all hover:scale-105 ${
-                    formData.flavorId === flavor.id
-                      ? 'border-purple-500 bg-purple-50 text-purple-900 shadow-lg'
-                      : 'border-purple-200 hover:border-purple-400 text-gray-700 hover:bg-purple-50'
-                  }`}
-                >
-                  <div className={`w-8 h-8 rounded-full mx-auto mb-2 ${flavor.color}`} />
-                  <div>
-                    <span className="block">{flavor.nameAr}</span>
-                    {flavor.additionalPrice > 0 && (
-                      <span className="text-xs text-purple-600">
-                        +{flavor.additionalPrice} جنيه
-                      </span>
-                    )}
-                  </div>
-                </button>
-              ))}
+              {cakeOptions.flavors.map((flavor) => {
+                console.log('Rendering flavor:', flavor.id, 'nameAr:', flavor.nameAr, 'name:', flavor.name);
+                return (
+                  <button
+                    key={flavor.id}
+                    type="button"
+                    onClick={() => {
+                      console.log('Selected flavor:', flavor);
+                      setFormData({ ...formData, flavorId: flavor.id });
+                      setStep(4);
+                    }}
+                    className={`p-4 border-2 rounded-2xl font-medium transition-all hover:scale-105 ${
+                      formData.flavorId === flavor.id
+                        ? 'border-purple-500 bg-purple-50 text-purple-900 shadow-lg'
+                        : 'border-purple-200 hover:border-purple-400 text-gray-700 hover:bg-purple-50'
+                    }`}
+                  >
+                    <div className={`w-8 h-8 rounded-full mx-auto mb-2 ${flavor.color}`} />
+                    <div>
+                      <span className="block">{flavor.nameAr || flavor.name || 'No name'}</span>
+                      {flavor.additionalPrice > 0 && (
+                        <span className="text-xs text-purple-600">
+                          +{flavor.additionalPrice} جنيه
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         );
@@ -656,38 +719,40 @@ export default function CustomOrders() {
                 طريقة الدفع *
               </label>
               <div className="space-y-2">
-                {cakeOptions.paymentMethods.map((method, index) => (
-                  <label
-                    key={method.value}
-                    className={`flex items-center justify-end gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                      formData.paymentMethod === index
-                        ? 'border-purple-500 bg-purple-50'
-                        : 'border-purple-200 hover:border-purple-400 hover:bg-purple-50'
-                    }`}
-                  >
-                    <span className="text-gray-700 font-medium flex items-center gap-2">
-                      <span>{method.icon}</span>
-                      <span>{method.nameAr}</span>
-                    </span>
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value={index}
-                      checked={formData.paymentMethod === index}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          paymentMethod: parseInt(e.target.value) as 0 | 1 | 2,
-                        })
-                      }
-                      className="w-5 h-5 text-purple-600"
-                    />
-                  </label>
-                ))}
+                {cakeOptions.paymentMethods.map((method, index) => {
+                  console.log('Rendering payment method:', index, 'nameAr:', method.nameAr, 'name:', method.name);
+                  return (
+                    <label
+                      key={method.value}
+                      className={`flex items-center justify-end gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                        formData.paymentMethod === index
+                          ? 'border-purple-500 bg-purple-50'
+                          : 'border-purple-200 hover:border-purple-400 hover:bg-purple-50'
+                      }`}
+                    >
+                      <span className="text-gray-700 font-medium flex items-center gap-2">
+                        <span>{method.icon}</span>
+                        <span>{method.nameAr || method.name || 'No name'}</span>
+                      </span>
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value={index}
+                        checked={formData.paymentMethod === index}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            paymentMethod: parseInt(e.target.value) as 0 | 1 | 2,
+                          })
+                        }
+                        className="w-5 h-5 text-purple-600"
+                      />
+                    </label>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Order Summary */}
             <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4">
               <h3 className="font-bold text-purple-900 mb-3 text-right flex items-center justify-end gap-2">
                 <span>ملخص الطلب</span>
@@ -695,15 +760,15 @@ export default function CustomOrders() {
               </h3>
               <div className="space-y-2 text-sm text-right">
                 <div className="flex justify-between">
-                  <span>{getSelectedOccasion()?.nameAr}</span>
+                  <span>{getSelectedOccasion()?.nameAr || getSelectedOccasion()?.name}</span>
                   <span className="text-gray-500">المناسبة</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>{getSelectedSize()?.nameAr}</span>
+                  <span>{getSelectedSize()?.nameAr || getSelectedSize()?.name}</span>
                   <span className="text-gray-500">الحجم</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>{getSelectedFlavor()?.nameAr}</span>
+                  <span>{getSelectedFlavor()?.nameAr || getSelectedFlavor()?.name}</span>
                   <span className="text-gray-500">النكهة</span>
                 </div>
                 {formData.customText && (
@@ -755,7 +820,6 @@ export default function CustomOrders() {
     <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-          {/* Back Link */}
           <Link
             to="/"
             className="inline-flex items-center space-x-reverse space-x-2 text-gray-600 hover:text-purple-600 mb-6 transition-colors"
@@ -764,7 +828,6 @@ export default function CustomOrders() {
             <span>العودة للرئيسية</span>
           </Link>
 
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="relative inline-block mb-4">
               <div className="absolute -top-2 -right-2 text-pink-400 animate-pulse">
@@ -783,7 +846,6 @@ export default function CustomOrders() {
             <p className="text-gray-600">صمم تورتتك المثالية خطوة بخطوة ✨</p>
           </div>
 
-          {/* Progress Bar */}
           <div className="flex justify-center items-center gap-2 mb-8">
             {[1, 2, 3, 4, 5].map((s) => (
               <div key={s} className="flex items-center">
@@ -809,7 +871,6 @@ export default function CustomOrders() {
             ))}
           </div>
 
-          {/* Step Labels */}
           <div className="flex justify-center gap-4 mb-8 text-xs text-gray-500">
             <span className={step >= 1 ? 'text-purple-600 font-medium' : ''}>
               المناسبة
@@ -828,11 +889,9 @@ export default function CustomOrders() {
             </span>
           </div>
 
-          {/* Main Card */}
           <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8">
             {renderStep()}
 
-            {/* Back Button */}
             {step > 1 && (
               <button
                 type="button"
@@ -845,7 +904,6 @@ export default function CustomOrders() {
             )}
           </div>
 
-          {/* Features */}
           <div className="mt-8 grid grid-cols-3 gap-3">
             <div className="bg-white/80 rounded-2xl p-4 text-center shadow-md">
               <span className="text-2xl block mb-1">🎨</span>
