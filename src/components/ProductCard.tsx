@@ -139,23 +139,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <Eye size={18} />
             <span>عرض التفاصيل</span>
           </button>
-
-          <button
-            data-action="add-to-cart"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddToCart(product);
-            }}
-            className={`px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-2xl transition-all ${
-              product.inStock
-                ? 'bg-purple-600 text-white hover:bg-purple-700 hover:scale-110'
-                : 'bg-gray-400 text-white cursor-not-allowed'
-            }`}
-            disabled={!product.inStock}
-          >
-            <ShoppingCart size={18} />
-            <span>{product.inStock ? 'أضف للسلة' : 'غير متوفر'}</span>
-          </button>
         </div>
       </div>
 
