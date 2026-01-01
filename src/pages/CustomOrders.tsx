@@ -70,6 +70,14 @@ interface PaymentMethodOption {
   icon: string;
 }
 
+// Generic paginated response interface
+interface PaginatedResult<T> {
+  items: T[];
+  totalItems: number;
+  pageNumber: number;
+  pageSize: number;
+}
+
 interface CakeOptions {
   occasions: OccasionOption[];
   sizes: SizeMasterOption[];
@@ -81,7 +89,7 @@ interface CustomOrderForm {
   customerName: string;
   customerPhone: string;
   occasionId: string;
-  sizeId: string; // real SizeId (from /sizes)
+  sizeId: string;
   flavorId: string;
   customText: string;
   designImage: File | null;
@@ -89,12 +97,11 @@ interface CustomOrderForm {
   pickupDate: string;
   pickupTime: string;
   notes: string;
-  paymentMethod: 0 | 1 | 2; // Cash = 0, Vodafone Cash = 1, Instapay = 2
+  paymentMethod: 0 | 1 | 2;
 }
 
 const EMPTY_GUID = '00000000-0000-0000-0000-000000000000';
 
-// Converts Arabic-Indic digits (٠١٢٣٤٥٦٧٨٩) and Eastern Arabic-Indic (۰۱۲۳۴۵۶۷۸۹) to English digits
 const normalizeDigitsToEnglish = (value: string) => {
   const ar = '٠١٢٣٤٥٦٧٨٩';
   const fa = '۰۱۲۳۴۵۶۷۸۹';
@@ -165,26 +172,31 @@ export default function CustomOrders() {
     try {
       setLoadingOptions(true);
 
+      // Fetch with large page size to get all items (suitable for dropdowns)
+      const pageSize = 1000;
+
       const [occRes, sizesRes, flavorsRes] = await Promise.all([
-        fetch(`${apiUrl}/api/CakeConfiguration/occasions?includeInactive=false`),
-        fetch(`${apiUrl}/api/CakeConfiguration/sizes?includeInactive=false`),
-        fetch(`${apiUrl}/api/CakeConfiguration/flavors?includeInactive=false`),
+        fetch(`${apiUrl}/api/CakeConfiguration/occasions?pageNumber=1&pageSize=${pageSize}&includeInactive=false`),
+        fetch(`${apiUrl}/api/CakeConfiguration/sizes?pageNumber=1&pageSize=${pageSize}&includeInactive=false`),
+        fetch(`${apiUrl}/api/CakeConfiguration/flavors?pageNumber=1&pageSize=${pageSize}&includeInactive=false`),
       ]);
 
       if (!occRes.ok) throw new Error('فشل في تحميل المناسبات');
       if (!sizesRes.ok) throw new Error('فشل في تحميل الأحجام');
       if (!flavorsRes.ok) throw new Error('فشل في تحميل النكهات');
 
-      const occasions = (await occRes.json()) as OccasionOption[];
-      const sizes = (await sizesRes.json()) as SizeMasterOption[];
-      const flavors = (await flavorsRes.json()) as FlavorOption[];
+      // Parse paginated responses
+      const occasionsData = (await occRes.json()) as PaginatedResult<OccasionOption>;
+      const sizesData = (await sizesRes.json()) as PaginatedResult<SizeMasterOption>;
+      const flavorsData = (await flavorsRes.json()) as PaginatedResult<FlavorOption>;
 
-      const byOrder = <T extends { displayOrder: number; nameAr?: string }>(
-        a: T,
-        b: T
-      ) =>
-        (a.displayOrder ?? 0) - (b.displayOrder ?? 0) ||
-        (a.nameAr || '').localeCompare(b.nameAr || '');
+      // Extract items from paginated response
+      const occasions = occasionsData.items;
+      const sizes = sizesData.items;
+      const flavors = flavorsData.items;
+
+      const byOrder = <T extends { displayOrder: number; nameAr?: string }>(a: T, b: T) =>
+        (a.displayOrder ?? 0) - (b.displayOrder ?? 0) || (a.nameAr || '').localeCompare(b.nameAr || '');
 
       setCakeOptions({
         occasions: [...occasions].sort(byOrder),
@@ -229,9 +241,7 @@ export default function CustomOrders() {
 
     const occasion = getSelectedOccasion();
 
-    const rel = occasion?.sizes?.find(
-      (s) => getOccasionSizeRealId(s) === formData.sizeId
-    );
+    const rel = occasion?.sizes?.find((s) => getOccasionSizeRealId(s) === formData.sizeId);
 
     const master = cakeOptions.sizes.find((m) => m.id === formData.sizeId);
 
@@ -274,7 +284,6 @@ export default function CustomOrders() {
     setLoading(true);
 
     try {
-      // Normalize phone before validation + send
       const normalizedPhone = normalizePhone(formData.customerPhone);
 
       if (!isValidEgyptPhone(normalizedPhone)) {
@@ -301,8 +310,17 @@ export default function CustomOrders() {
       formDataToSend.append('Notes', formData.notes || '');
       formDataToSend.append('PaymentMethod', formData.paymentMethod.toString());
 
+      // Get auth token if user is logged in
+      const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+      
+      const headers: HeadersInit = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const response = await fetch(`${apiUrl}/api/CustomOrders`, {
         method: 'POST',
+        headers,
         body: formDataToSend,
       });
 
@@ -507,9 +525,7 @@ export default function CustomOrders() {
                     </div>
                     <div className="text-right">
                       <span className="text-purple-900 font-bold block">{size.nameAr}</span>
-                      {size.personsCountAr && (
-                        <span className="text-gray-500 text-sm">يكفي {size.personsCountAr}</span>
-                      )}
+                      {size.personsCountAr && <span className="text-gray-500 text-sm">يكفي {size.personsCountAr}</span>}
                     </div>
                   </div>
                 </button>
@@ -583,7 +599,9 @@ export default function CustomOrders() {
               </label>
               <div
                 className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
-                  formData.imagePreview ? 'border-green-400 bg-green-50' : 'border-purple-300 hover:border-purple-500 hover:bg-purple-50'
+                  formData.imagePreview
+                    ? 'border-green-400 bg-green-50'
+                    : 'border-purple-300 hover:border-purple-500 hover:bg-purple-50'
                 }`}
               >
                 <input
@@ -670,9 +688,7 @@ export default function CustomOrders() {
                   className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl text-right focus:border-purple-500 focus:outline-none"
                   placeholder="01xxxxxxxxx"
                 />
-                <p className="text-xs text-gray-400 text-right mt-1">
-                  مثال: 01012345678
-                </p>
+                <p className="text-xs text-gray-400 text-right mt-1">مثال: 01012345678</p>
               </div>
             </div>
 
@@ -859,7 +875,11 @@ export default function CustomOrders() {
                   {s < step ? '✓' : s}
                 </div>
                 {s < 5 && (
-                  <div className={`w-8 h-1 rounded-full mx-1 transition-colors ${s < step ? 'bg-green-500' : 'bg-purple-200'}`} />
+                  <div
+                    className={`w-8 h-1 rounded-full mx-1 transition-colors ${
+                      s < step ? 'bg-green-500' : 'bg-purple-200'
+                    }`}
+                  />
                 )}
               </div>
             ))}
