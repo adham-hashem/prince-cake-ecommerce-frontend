@@ -161,7 +161,7 @@ export default function CustomOrders() {
 
   // Get auth token helper function
   const getAuthToken = () => {
-    return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    return localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
   };
 
   useEffect(() => {
