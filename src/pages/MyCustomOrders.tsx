@@ -355,15 +355,6 @@ export default function MyCustomOrders() {
                         </p>
                       </div>
                     )}
-
-                    {/* Action Button */}
-                    <button
-                      onClick={() => setSelectedOrder(order)}
-                      className="w-full mt-4 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 py-3 rounded-xl font-bold hover:from-purple-200 hover:to-pink-200 transition-all flex items-center justify-center gap-2"
-                    >
-                      <FileText className="h-5 w-5" />
-                      <span>عرض التفاصيل الكاملة</span>
-                    </button>
                   </div>
 
                   {/* Order Date Footer */}
