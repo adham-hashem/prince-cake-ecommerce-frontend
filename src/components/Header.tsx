@@ -115,7 +115,9 @@ const Header: React.FC = () => {
     { path: '/', label: 'الرئيسية' },
     { path: '/menu', label: 'المنيو' },
     { path: '/instant', label: 'المتاح فوري' },
-    { path: '/custom', label: 'طلب خاص' },
+    { path: '/my-orders', label: 'طلباتي' },
+    { path: '/custom', label: 'طلب خاص جديد' },
+    { path: '/my-custom-orders', label: 'طلباتي الخاصة' },
     { path: '/cart', label: 'السلة' },
   ];
 

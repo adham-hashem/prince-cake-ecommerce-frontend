@@ -37,6 +37,7 @@ import ProfilePage from './pages/ProfilePage';
 import CustomOrders from './pages/CustomOrders';
 import CakeConfigurationManagement from './pages/admin/CakeConfigurationManagement';
 import CustomOrdersManagement from './pages/admin/CustomOrdersManagement';
+import MyCustomOrders from './pages/MyCustomOrders';
 
 function AppContent() {
   // Handle foreground notifications
@@ -131,6 +132,14 @@ function AppContent() {
               element={
                 <ProtectedRoute>
                   <MyOrders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-custom-orders"
+              element={
+                <ProtectedRoute>
+                  <MyCustomOrders />
                 </ProtectedRoute>
               }
             />
