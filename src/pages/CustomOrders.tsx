@@ -1,3 +1,5 @@
+// src/pages/CustomOrders.tsx
+
 import { useState, useEffect, useMemo } from 'react';
 import {
   Upload,
@@ -157,6 +159,11 @@ export default function CustomOrders() {
     paymentMethod: 0,
   });
 
+  // Get auth token helper function
+  const getAuthToken = () => {
+    return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+  };
+
   useEffect(() => {
     fetchCakeOptions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -174,7 +181,6 @@ export default function CustomOrders() {
       setLoadingOptions(true);
       setFetchError(null);
 
-      // Use large page size to get all items for dropdowns
       const pageSize = 1000;
 
       const [occRes, sizesRes, flavorsRes] = await Promise.all([
@@ -189,7 +195,6 @@ export default function CustomOrders() {
         ),
       ]);
 
-      // Check response status
       if (!occRes.ok) {
         const errorText = await occRes.text();
         console.error('Occasions API error:', occRes.status, errorText);
@@ -206,7 +211,6 @@ export default function CustomOrders() {
         throw new Error(`فشل في تحميل النكهات (${flavorsRes.status})`);
       }
 
-      // Parse JSON responses
       const occasionsData = await occRes.json();
       const sizesData = await sizesRes.json();
       const flavorsData = await flavorsRes.json();
@@ -217,12 +221,10 @@ export default function CustomOrders() {
         flavors: flavorsData,
       });
 
-      // Extract items from paginated response
       const occasions = (occasionsData as PaginatedResult<OccasionOption>).items || [];
       const sizes = (sizesData as PaginatedResult<SizeMasterOption>).items || [];
       const flavors = (flavorsData as PaginatedResult<FlavorOption>).items || [];
 
-      // Validate arrays
       if (!Array.isArray(occasions)) {
         console.error('Invalid occasions format:', occasionsData);
         throw new Error('تنسيق بيانات المناسبات غير صحيح');
@@ -236,7 +238,6 @@ export default function CustomOrders() {
         throw new Error('تنسيق بيانات النكهات غير صحيح');
       }
 
-      // Check if we have data
       if (occasions.length === 0) {
         console.warn('No occasions found');
       }
@@ -247,7 +248,6 @@ export default function CustomOrders() {
         console.warn('No flavors found');
       }
 
-      // Sort by display order
       const byOrder = <T extends { displayOrder: number; nameAr?: string }>(a: T, b: T) =>
         (a.displayOrder ?? 0) - (b.displayOrder ?? 0) || (a.nameAr || '').localeCompare(b.nameAr || '');
 
@@ -374,17 +374,20 @@ export default function CustomOrders() {
       formDataToSend.append('Notes', formData.notes || '');
       formDataToSend.append('PaymentMethod', formData.paymentMethod.toString());
 
-      // Get auth token if user is logged in
-      const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+      // Get auth token - REQUIRED for authenticated endpoint
+      const token = getAuthToken();
 
-      const headers: HeadersInit = {};
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      if (!token) {
+        alert('يجب تسجيل الدخول أولاً');
+        setLoading(false);
+        return;
       }
 
       const response = await fetch(`${apiUrl}/api/CustomOrders`, {
         method: 'POST',
-        headers,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formDataToSend,
       });
 
