@@ -322,7 +322,7 @@ export default function MyCustomOrders() {
                     {order.designImagePath && (
                       <div className="mb-4">
                         <img
-                          src={`${apiUrl}${order.designImagePath}`}
+                          src={`${apiUrl}/${order.designImagePath}`}
                           alt="Design"
                           className="w-32 h-32 object-cover rounded-xl border-2 border-purple-200"
                         />
