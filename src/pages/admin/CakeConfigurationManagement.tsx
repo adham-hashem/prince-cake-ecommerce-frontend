@@ -62,8 +62,8 @@ const CakeConfigurationManagement: React.FC = () => {
   const { isAuthenticated, userRole } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>('occasions');
-  
-  // Occasions state
+
+  // Occasions state - FIXED: Initialize as empty array
   const [occasions, setOccasions] = useState<CakeOccasion[]>([]);
   const [editingOccasion, setEditingOccasion] = useState<CakeOccasion | null>(null);
   const [occasionForm, setOccasionForm] = useState({
@@ -73,7 +73,7 @@ const CakeConfigurationManagement: React.FC = () => {
     isActive: true,
   });
 
-  // Sizes state
+  // Sizes state - FIXED: Initialize as empty array
   const [sizes, setSizes] = useState<CakeSize[]>([]);
   const [editingSize, setEditingSize] = useState<CakeSize | null>(null);
   const [sizeForm, setSizeForm] = useState({
@@ -84,7 +84,7 @@ const CakeConfigurationManagement: React.FC = () => {
     isActive: true,
   });
 
-  // Flavors state
+  // Flavors state - FIXED: Initialize as empty array
   const [flavors, setFlavors] = useState<CakeFlavor[]>([]);
   const [editingFlavor, setEditingFlavor] = useState<CakeFlavor | null>(null);
   const [flavorForm, setFlavorForm] = useState({
@@ -95,7 +95,7 @@ const CakeConfigurationManagement: React.FC = () => {
     isActive: true,
   });
 
-  // Pricing state
+  // Pricing state - FIXED: Initialize as empty array
   const [selectedOccasionForPricing, setSelectedOccasionForPricing] = useState('');
   const [occasionSizes, setOccasionSizes] = useState<OccasionSize[]>([]);
   const [pricingForm, setPricingForm] = useState<{ [key: string]: { price: string; isActive: boolean } }>({});
@@ -162,9 +162,23 @@ const CakeConfigurationManagement: React.FC = () => {
 
       if (!response.ok) throw new Error('فشل في جلب المناسبات');
       const data = await response.json();
-      setOccasions(data);
+
+      // FIXED: Validate response is an array
+      console.log('Occasions API Response:', data);
+      if (Array.isArray(data)) {
+        setOccasions(data);
+      } else if (data && Array.isArray(data.data)) {
+        setOccasions(data.data);
+      } else if (data && Array.isArray(data.occasions)) {
+        setOccasions(data.occasions);
+      } else {
+        console.error('Invalid occasions data format:', data);
+        setOccasions([]);
+        setError('تنسيق البيانات غير صحيح');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'فشل في جلب المناسبات');
+      setOccasions([]); // FIXED: Set empty array on error
     } finally {
       setIsLoading(false);
     }
@@ -181,7 +195,7 @@ const CakeConfigurationManagement: React.FC = () => {
       const url = editingOccasion
         ? `${apiUrl}/api/CakeConfiguration/occasions/${editingOccasion.id}`
         : `${apiUrl}/api/CakeConfiguration/occasions`;
-      
+
       const response = await fetch(url, {
         method: editingOccasion ? 'PUT' : 'POST',
         headers: getAuthHeaders(),
@@ -194,7 +208,7 @@ const CakeConfigurationManagement: React.FC = () => {
       });
 
       if (!response.ok) throw new Error('فشل في حفظ المناسبة');
-      
+
       await fetchOccasions();
       resetOccasionForm();
       alert(editingOccasion ? 'تم تحديث المناسبة بنجاح!' : 'تم إضافة المناسبة بنجاح!');
@@ -216,7 +230,7 @@ const CakeConfigurationManagement: React.FC = () => {
       );
 
       if (!response.ok) throw new Error('فشل في حذف المناسبة');
-      
+
       await fetchOccasions();
       alert('تم حذف المناسبة بنجاح!');
     } catch (error) {
@@ -243,9 +257,23 @@ const CakeConfigurationManagement: React.FC = () => {
 
       if (!response.ok) throw new Error('فشل في جلب الأحجام');
       const data = await response.json();
-      setSizes(data);
+
+      // FIXED: Validate response is an array
+      console.log('Sizes API Response:', data);
+      if (Array.isArray(data)) {
+        setSizes(data);
+      } else if (data && Array.isArray(data.data)) {
+        setSizes(data.data);
+      } else if (data && Array.isArray(data.sizes)) {
+        setSizes(data.sizes);
+      } else {
+        console.error('Invalid sizes data format:', data);
+        setSizes([]);
+        setError('تنسيق البيانات غير صحيح');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'فشل في جلب الأحجام');
+      setSizes([]); // FIXED: Set empty array on error
     } finally {
       setIsLoading(false);
     }
@@ -262,7 +290,7 @@ const CakeConfigurationManagement: React.FC = () => {
       const url = editingSize
         ? `${apiUrl}/api/CakeConfiguration/sizes/${editingSize.id}`
         : `${apiUrl}/api/CakeConfiguration/sizes`;
-      
+
       const response = await fetch(url, {
         method: editingSize ? 'PUT' : 'POST',
         headers: getAuthHeaders(),
@@ -276,7 +304,7 @@ const CakeConfigurationManagement: React.FC = () => {
       });
 
       if (!response.ok) throw new Error('فشل في حفظ الحجم');
-      
+
       await fetchSizes();
       resetSizeForm();
       alert(editingSize ? 'تم تحديث الحجم بنجاح!' : 'تم إضافة الحجم بنجاح!');
@@ -298,7 +326,7 @@ const CakeConfigurationManagement: React.FC = () => {
       );
 
       if (!response.ok) throw new Error('فشل في حذف الحجم');
-      
+
       await fetchSizes();
       alert('تم حذف الحجم بنجاح!');
     } catch (error) {
@@ -325,9 +353,23 @@ const CakeConfigurationManagement: React.FC = () => {
 
       if (!response.ok) throw new Error('فشل في جلب النكهات');
       const data = await response.json();
-      setFlavors(data);
+
+      // FIXED: Validate response is an array
+      console.log('Flavors API Response:', data);
+      if (Array.isArray(data)) {
+        setFlavors(data);
+      } else if (data && Array.isArray(data.data)) {
+        setFlavors(data.data);
+      } else if (data && Array.isArray(data.flavors)) {
+        setFlavors(data.flavors);
+      } else {
+        console.error('Invalid flavors data format:', data);
+        setFlavors([]);
+        setError('تنسيق البيانات غير صحيح');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'فشل في جلب النكهات');
+      setFlavors([]); // FIXED: Set empty array on error
     } finally {
       setIsLoading(false);
     }
@@ -344,7 +386,7 @@ const CakeConfigurationManagement: React.FC = () => {
       const url = editingFlavor
         ? `${apiUrl}/api/CakeConfiguration/flavors/${editingFlavor.id}`
         : `${apiUrl}/api/CakeConfiguration/flavors`;
-      
+
       const body = {
         nameAr: flavorForm.nameAr,
         name: flavorForm.name,
@@ -360,7 +402,7 @@ const CakeConfigurationManagement: React.FC = () => {
       });
 
       if (!response.ok) throw new Error('فشل في حفظ النكهة');
-      
+
       await fetchFlavors();
       resetFlavorForm();
       alert(editingFlavor ? 'تم تحديث النكهة بنجاح!' : 'تم إضافة النكهة بنجاح!');
@@ -382,7 +424,7 @@ const CakeConfigurationManagement: React.FC = () => {
       );
 
       if (!response.ok) throw new Error('فشل في حذف النكهة');
-      
+
       await fetchFlavors();
       alert('تم حذف النكهة بنجاح!');
     } catch (error) {
@@ -408,12 +450,16 @@ const CakeConfigurationManagement: React.FC = () => {
 
       if (!response.ok) throw new Error('فشل في جلب الأسعار');
       const data = await response.json();
-      setOccasionSizes(data);
-      
+
+      // FIXED: Validate response is an array
+      console.log('Occasion Sizes API Response:', data);
+      const sizesData = Array.isArray(data) ? data : (data?.data || data?.sizes || []);
+      setOccasionSizes(sizesData);
+
       // Initialize pricing form
       const initialPrices: { [key: string]: { price: string; isActive: boolean } } = {};
       sizes.forEach((size) => {
-        const existingSize = data.find((os: OccasionSize) => os.sizeId === size.id);
+        const existingSize = sizesData.find((os: OccasionSize) => os.sizeId === size.id);
         initialPrices[size.id] = {
           price: existingSize ? existingSize.price.toString() : '',
           isActive: existingSize ? existingSize.isActive : true,
@@ -422,6 +468,7 @@ const CakeConfigurationManagement: React.FC = () => {
       setPricingForm(initialPrices);
     } catch (error) {
       console.error('Error fetching occasion sizes:', error);
+      setOccasionSizes([]); // FIXED: Set empty array on error
     } finally {
       setIsLoading(false);
     }
@@ -451,7 +498,7 @@ const CakeConfigurationManagement: React.FC = () => {
       );
 
       if (!response.ok) throw new Error('فشل في حفظ الأسعار');
-      
+
       await fetchOccasionSizes(selectedOccasionForPricing);
       alert('تم حفظ الأسعار بنجاح!');
     } catch (error) {
@@ -578,7 +625,6 @@ const CakeConfigurationManagement: React.FC = () => {
           </label>
         </div>
       )}
-
       {/* OCCASIONS TAB */}
       {activeTab === 'occasions' && (
         <>
@@ -683,7 +729,8 @@ const CakeConfigurationManagement: React.FC = () => {
               <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
               المناسبات المتاحة ({occasions.length})
             </h4>
-            {occasions.length === 0 ? (
+            {/* FIXED: Added Array.isArray check */}
+            {!Array.isArray(occasions) || occasions.length === 0 ? (
               <p className="text-center text-gray-500 py-6 sm:py-8 text-sm sm:text-base">لا توجد مناسبات</p>
             ) : (
               <div className="space-y-2 sm:space-y-3">
@@ -846,7 +893,8 @@ const CakeConfigurationManagement: React.FC = () => {
               <Ruler className="h-4 w-4 sm:h-5 sm:w-5" />
               الأحجام المتاحة ({sizes.length})
             </h4>
-            {sizes.length === 0 ? (
+            {/* FIXED: Added Array.isArray check */}
+            {!Array.isArray(sizes) || sizes.length === 0 ? (
               <p className="text-center text-gray-500 py-6 sm:py-8 text-sm sm:text-base">لا توجد أحجام</p>
             ) : (
               <div className="space-y-2 sm:space-y-3">
@@ -906,7 +954,6 @@ const CakeConfigurationManagement: React.FC = () => {
           </div>
         </>
       )}
-
       {/* FLAVORS TAB */}
       {activeTab === 'flavors' && (
         <>
@@ -944,34 +991,24 @@ const CakeConfigurationManagement: React.FC = () => {
               </div>
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">اللون</label>
-                <div className="flex gap-2">
-                  <input
-                    type="color"
-                    value={flavorForm.color}
-                    onChange={(e) => setFlavorForm({ ...flavorForm, color: e.target.value })}
-                    className="w-12 sm:w-16 h-10 sm:h-12 border-2 border-purple-200 rounded-lg sm:rounded-xl cursor-pointer"
-                  />
-                  <input
-                    type="text"
-                    value={flavorForm.color}
-                    onChange={(e) => setFlavorForm({ ...flavorForm, color: e.target.value })}
-                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base"
-                    placeholder="#FCD34D"
-                  />
-                </div>
+                <input
+                  type="color"
+                  value={flavorForm.color}
+                  onChange={(e) => setFlavorForm({ ...flavorForm, color: e.target.value })}
+                  className="w-full h-10 sm:h-12 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
               </div>
               <div>
-                <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
-                  سعر إضافي (جنيه)
-                </label>
+                <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">السعر الإضافي</label>
                 <input
                   type="number"
-                  step="0.01"
                   value={flavorForm.additionalPrice}
                   onChange={(e) => setFlavorForm({ ...flavorForm, additionalPrice: e.target.value })}
                   className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right text-sm sm:text-base"
                   dir="rtl"
                   placeholder="0"
+                  min="0"
+                  step="0.01"
                 />
               </div>
               <div>
@@ -1015,29 +1052,25 @@ const CakeConfigurationManagement: React.FC = () => {
               <Cookie className="h-4 w-4 sm:h-5 sm:w-5" />
               النكهات المتاحة ({flavors.length})
             </h4>
-            {flavors.length === 0 ? (
+            {/* FIXED: Added Array.isArray check */}
+            {!Array.isArray(flavors) || flavors.length === 0 ? (
               <p className="text-center text-gray-500 py-6 sm:py-8 text-sm sm:text-base">لا توجد نكهات</p>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
+              <div className="space-y-2 sm:space-y-3">
                 {flavors.map((flavor) => (
                   <div
                     key={flavor.id}
                     className="flex items-center justify-between p-3 sm:p-4 border-2 border-purple-100 rounded-lg sm:rounded-xl bg-gradient-to-r from-white to-purple-50 hover:shadow-md transition-all"
                   >
-                    <div className="flex items-center gap-2 sm:gap-3 flex-1">
+                    <div className="flex items-center gap-2 sm:gap-4 flex-1">
                       <div
-                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-purple-200 flex-shrink-0"
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-gray-300"
                         style={{ backgroundColor: flavor.color }}
                       />
                       <div className="flex-1">
                         <p className="font-bold text-purple-900 text-sm sm:text-base">{flavor.nameAr}</p>
                         <p className="text-xs sm:text-sm text-gray-600">{flavor.name}</p>
-                        {flavor.additionalPrice > 0 && (
-                          <p className="text-xs text-amber-600 font-semibold mt-1">
-                            +{flavor.additionalPrice} جنيه
-                          </p>
-                        )}
-                        <div className="flex items-center gap-1 sm:gap-2 mt-1">
+                        <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
                           <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold ${
                             flavor.isActive
                               ? 'bg-green-100 text-green-800 border border-green-200'
@@ -1045,6 +1078,12 @@ const CakeConfigurationManagement: React.FC = () => {
                           }`}>
                             {flavor.isActive ? 'مفعّل' : 'غير مفعّل'}
                           </span>
+                          {flavor.additionalPrice > 0 && (
+                            <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-amber-100 text-amber-800 rounded-full text-[10px] sm:text-xs font-bold border border-amber-200">
+                              +{flavor.additionalPrice} جنيه
+                            </span>
+                          )}
+                          <span className="text-[10px] sm:text-xs text-gray-500 hidden sm:inline">{formatDate(flavor.createdAt)}</span>
                         </div>
                       </div>
                     </div>
@@ -1087,125 +1126,102 @@ const CakeConfigurationManagement: React.FC = () => {
 
       {/* PRICING TAB */}
       {activeTab === 'pricing' && (
-        <>
-          <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-gradient-to-br from-white to-purple-50 rounded-xl sm:rounded-2xl shadow-xl border-2 border-purple-100">
-            <h3 className="text-base sm:text-lg md:text-xl font-bold text-purple-900 mb-4 sm:mb-6 flex items-center gap-2">
-              <LinkIcon className="h-4 w-4 sm:h-5 sm:w-5" />
-              ربط الأسعار بالمناسبات
-            </h3>
-            
-            <div className="mb-4 sm:mb-6">
-              <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
-                اختر المناسبة <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={selectedOccasionForPricing}
-                onChange={(e) => {
-                  setSelectedOccasionForPricing(e.target.value);
-                  if (e.target.value) {
-                    fetchOccasionSizes(e.target.value);
-                  } else {
-                    setOccasionSizes([]);
-                    setPricingForm({});
-                  }
-                }}
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right font-medium text-sm sm:text-base"
-                dir="rtl"
-              >
-                <option value="">اختر مناسبة...</option>
-                {occasions.filter(o => o.isActive).map((occasion) => (
-                  <option key={occasion.id} value={occasion.id}>
-                    {occasion.icon} {occasion.nameAr}
-                  </option>
-                ))}
-              </select>
-            </div>
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border-2 border-purple-100">
+          <h3 className="text-base sm:text-lg font-bold text-purple-900 mb-4 sm:mb-6 flex items-center gap-2">
+            <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
+            إدارة الأسعار
+          </h3>
 
-            {selectedOccasionForPricing && (
-              <>
-                <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-                  <p className="text-xs sm:text-sm font-bold text-purple-900 mb-2 sm:mb-3">أسعار الأحجام المختلفة:</p>
-                  {sizes.filter(s => s.isActive).map((size) => (
-                    <div key={size.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border-2 border-purple-100 rounded-lg sm:rounded-xl bg-white gap-2 sm:gap-0">
-                      <div className="flex-1">
-                        <p className="font-bold text-purple-900 text-sm sm:text-base">{size.nameAr}</p>
-                        <p className="text-xs sm:text-sm text-gray-600">{size.personsCountAr}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={pricingForm[size.id]?.price || ''}
-                          onChange={(e) => setPricingForm({ 
-                            ...pricingForm, 
-                            [size.id]: { 
-                              price: e.target.value,
-                              isActive: pricingForm[size.id]?.isActive ?? true 
-                            } 
-                          })}
-                          className="w-24 sm:w-32 px-3 sm:px-4 py-2 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right text-sm sm:text-base"
-                          dir="rtl"
-                          placeholder="0"
-                        />
-                        <span className="text-gray-600 font-medium text-sm sm:text-base">جنيه</span>
-                        <label className="flex items-center gap-1 mr-1 sm:mr-2">
-                          <input
-                            type="checkbox"
-                            checked={pricingForm[size.id]?.isActive ?? true}
-                            onChange={(e) => setPricingForm({ 
-                              ...pricingForm, 
-                              [size.id]: { 
-                                price: pricingForm[size.id]?.price || '',
-                                isActive: e.target.checked 
-                              } 
-                            })}
-                            className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500"
-                          />
-                          <span className="text-xs sm:text-sm text-gray-700">مفعّل</span>
-                        </label>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <button
-                  onClick={handleSavePricing}
-                  disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-semibold shadow-md flex items-center justify-center gap-2 disabled:opacity-50 text-sm sm:text-base"
-                >
-                  <Save className="h-4 w-4" />
-                  حفظ الأسعار
-                </button>
-              </>
-            )}
+          <div className="mb-4 sm:mb-6">
+            <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
+              اختر المناسبة <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={selectedOccasionForPricing}
+              onChange={(e) => {
+                setSelectedOccasionForPricing(e.target.value);
+                if (e.target.value) {
+                  fetchOccasionSizes(e.target.value);
+                }
+              }}
+              className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right font-medium text-sm sm:text-base"
+              dir="rtl"
+            >
+              <option value="">-- اختر المناسبة --</option>
+              {/* FIXED: Added Array.isArray check */}
+              {Array.isArray(occasions) && occasions.filter(o => o.isActive).map((occasion) => (
+                <option key={occasion.id} value={occasion.id}>
+                  {occasion.icon} {occasion.nameAr}
+                </option>
+              ))}
+            </select>
           </div>
 
-          {selectedOccasionForPricing && occasionSizes.length > 0 && (
-            <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border-2 border-purple-100">
-              <h4 className="text-base sm:text-lg font-bold text-purple-900 mb-3 sm:mb-4 flex items-center gap-2">
-                <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
-                الأسعار الحالية
-              </h4>
-              <div className="space-y-2">
-                {occasionSizes.map((os) => (
-                  <div key={os.sizeId} className="flex items-center justify-between p-2.5 sm:p-3 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-lg sm:rounded-xl">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-purple-900 text-sm sm:text-base">{os.sizeName}</span>
-                      <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold ${
-                        os.isActive
-                          ? 'bg-green-100 text-green-800 border border-green-200'
-                          : 'bg-gray-100 text-gray-800 border border-gray-200'
-                      }`}>
-                        {os.isActive ? 'مفعّل' : 'غير مفعّل'}
-                      </span>
+          {selectedOccasionForPricing && (
+            <>
+              <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+                {/* FIXED: Added Array.isArray check */}
+                {Array.isArray(sizes) && sizes.filter(s => s.isActive).map((size) => (
+                  <div key={size.id} className="p-3 sm:p-4 border-2 border-purple-100 rounded-lg sm:rounded-xl bg-gradient-to-r from-white to-purple-50">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <p className="font-bold text-purple-900 text-sm sm:text-base">{size.nameAr}</p>
+                        <p className="text-xs sm:text-sm text-gray-600">{size.name} - يكفي {size.personsCountAr}</p>
+                      </div>
+                      <label className="flex items-center gap-1.5 sm:gap-2">
+                        <span className="text-xs sm:text-sm font-medium text-purple-900">مفعّل</span>
+                        <input
+                          type="checkbox"
+                          checked={pricingForm[size.id]?.isActive ?? true}
+                          onChange={(e) =>
+                            setPricingForm({
+                              ...pricingForm,
+                              [size.id]: {
+                                ...pricingForm[size.id],
+                                isActive: e.target.checked,
+                              },
+                            })
+                          }
+                          className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500"
+                        />
+                      </label>
                     </div>
-                    <span className="text-base sm:text-xl font-bold text-amber-600">{os.price} جنيه</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        value={pricingForm[size.id]?.price || ''}
+                        onChange={(e) =>
+                          setPricingForm({
+                            ...pricingForm,
+                            [size.id]: {
+                              ...pricingForm[size.id],
+                              price: e.target.value,
+                            },
+                          })
+                        }
+                        className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right text-sm sm:text-base"
+                        dir="rtl"
+                        placeholder="السعر"
+                        min="0"
+                        step="0.01"
+                      />
+                      <span className="text-purple-900 font-bold text-sm sm:text-base">جنيه</span>
+                    </div>
                   </div>
                 ))}
               </div>
-            </div>
+
+              <button
+                onClick={handleSavePricing}
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-semibold shadow-md flex items-center justify-center gap-2 disabled:opacity-50 text-sm sm:text-base"
+              >
+                <Save className="h-4 w-4" />
+                حفظ الأسعار
+              </button>
+            </>
           )}
-        </>
+        </div>
       )}
     </div>
   );
