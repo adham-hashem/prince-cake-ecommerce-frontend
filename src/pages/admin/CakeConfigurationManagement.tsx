@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Edit,
@@ -14,7 +14,6 @@ import {
   DollarSign,
   Save,
   X,
-  Link as LinkIcon,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -58,13 +57,49 @@ interface OccasionSize {
 
 type TabType = 'occasions' | 'sizes' | 'flavors' | 'pricing';
 
+type PricingFormState = Record<string, { price: string; isActive: boolean }>;
+
+function normalizeArrayResponse<T>(
+  payload: unknown,
+  keysToTry: string[] = ['data', 'items', 'result']
+): T[] {
+  if (Array.isArray(payload)) return payload as T[];
+
+  if (payload && typeof payload === 'object') {
+    const obj = payload as Record<string, unknown>;
+
+    for (const k of keysToTry) {
+      const v = obj[k];
+      if (Array.isArray(v)) return v as T[];
+    }
+
+    // Sometimes API returns { data: { items: [...] } } etc.
+    const data = obj['data'];
+    if (data && typeof data === 'object') {
+      const dataObj = data as Record<string, unknown>;
+      for (const k of keysToTry) {
+        const v = dataObj[k];
+        if (Array.isArray(v)) return v as T[];
+      }
+    }
+  }
+
+  return [];
+}
+
 const CakeConfigurationManagement: React.FC = () => {
   const { isAuthenticated, userRole } = useAuth();
   const navigate = useNavigate();
+
   const [activeTab, setActiveTab] = useState<TabType>('occasions');
 
-  // Occasions state - FIXED: Initialize as empty array
+  // Lists (must always be arrays)
   const [occasions, setOccasions] = useState<CakeOccasion[]>([]);
+  const [sizes, setSizes] = useState<CakeSize[]>([]);
+  const [flavors, setFlavors] = useState<CakeFlavor[]>([]);
+  const [occasionSizes, setOccasionSizes] = useState<OccasionSize[]>([]);
+
+  // Forms/editing
   const [editingOccasion, setEditingOccasion] = useState<CakeOccasion | null>(null);
   const [occasionForm, setOccasionForm] = useState({
     nameAr: '',
@@ -73,8 +108,6 @@ const CakeConfigurationManagement: React.FC = () => {
     isActive: true,
   });
 
-  // Sizes state - FIXED: Initialize as empty array
-  const [sizes, setSizes] = useState<CakeSize[]>([]);
   const [editingSize, setEditingSize] = useState<CakeSize | null>(null);
   const [sizeForm, setSizeForm] = useState({
     nameAr: '',
@@ -84,8 +117,6 @@ const CakeConfigurationManagement: React.FC = () => {
     isActive: true,
   });
 
-  // Flavors state - FIXED: Initialize as empty array
-  const [flavors, setFlavors] = useState<CakeFlavor[]>([]);
   const [editingFlavor, setEditingFlavor] = useState<CakeFlavor | null>(null);
   const [flavorForm, setFlavorForm] = useState({
     nameAr: '',
@@ -95,30 +126,58 @@ const CakeConfigurationManagement: React.FC = () => {
     isActive: true,
   });
 
-  // Pricing state - FIXED: Initialize as empty array
+  // Pricing
   const [selectedOccasionForPricing, setSelectedOccasionForPricing] = useState('');
-  const [occasionSizes, setOccasionSizes] = useState<OccasionSize[]>([]);
-  const [pricingForm, setPricingForm] = useState<{ [key: string]: { price: string; isActive: boolean } }>({});
+  const [pricingForm, setPricingForm] = useState<PricingFormState>({});
 
+  // UI state
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [includeInactive, setIncludeInactive] = useState(false);
 
-  const apiUrl = import.meta.env.VITE_API_BASE_URL;
+  const apiUrl = import.meta.env.VITE_API_BASE_URL as string;
+
+  const iconOptions = useMemo(
+    () => ['🎂', '💒', '💍', '🎓', '👶', '🏆', '❤️', '🎉', '🎈', '🎁', '⭐', '✨'],
+    []
+  );
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
       return;
     }
-
     if (userRole !== 'admin') {
       navigate('/');
       return;
     }
-
-    fetchData();
+    void fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, userRole, navigate, activeTab, includeInactive]);
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      navigate('/login');
+      throw new Error('لا يوجد رمز مصادقة. يرجى تسجيل الدخول مرة أخرى.');
+    }
+    return {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    };
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch {
+      return dateString;
+    }
+  };
 
   const fetchData = async () => {
     switch (activeTab) {
@@ -138,50 +197,35 @@ const CakeConfigurationManagement: React.FC = () => {
     }
   };
 
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      navigate('/login');
-      throw new Error('لا يوجد رمز مصادقة. يرجى تسجيل الدخول مرة أخرى.');
-    }
-    return {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    };
-  };
-
   // ========== OCCASIONS ==========
   const fetchOccasions = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(
+      const res = await fetch(
         `${apiUrl}/api/CakeConfiguration/occasions?includeInactive=${includeInactive}`,
         { headers: getAuthHeaders() }
       );
+      if (!res.ok) throw new Error('فشل في جلب المناسبات');
 
-      if (!response.ok) throw new Error('فشل في جلب المناسبات');
-      const data = await response.json();
-
-      // FIXED: Validate response is an array
-      console.log('Occasions API Response:', data);
-      if (Array.isArray(data)) {
-        setOccasions(data);
-      } else if (data && Array.isArray(data.data)) {
-        setOccasions(data.data);
-      } else if (data && Array.isArray(data.occasions)) {
-        setOccasions(data.occasions);
-      } else {
-        console.error('Invalid occasions data format:', data);
-        setOccasions([]);
-        setError('تنسيق البيانات غير صحيح');
+      const payload = await res.json();
+      const list = normalizeArrayResponse<CakeOccasion>(payload, ['data', 'occasions', 'items', 'result']);
+      setOccasions(list);
+      if (list.length === 0 && !Array.isArray(payload)) {
+        // Keep an error message only if response shape is unexpected
+        // (Optional) setError('تنسيق البيانات غير صحيح');
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'فشل في جلب المناسبات');
-      setOccasions([]); // FIXED: Set empty array on error
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'فشل في جلب المناسبات');
+      setOccasions([]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const resetOccasionForm = () => {
+    setEditingOccasion(null);
+    setOccasionForm({ nameAr: '', name: '', icon: '', isActive: true });
   };
 
   const handleSaveOccasion = async () => {
@@ -196,7 +240,7 @@ const CakeConfigurationManagement: React.FC = () => {
         ? `${apiUrl}/api/CakeConfiguration/occasions/${editingOccasion.id}`
         : `${apiUrl}/api/CakeConfiguration/occasions`;
 
-      const response = await fetch(url, {
+      const res = await fetch(url, {
         method: editingOccasion ? 'PUT' : 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -207,13 +251,12 @@ const CakeConfigurationManagement: React.FC = () => {
         }),
       });
 
-      if (!response.ok) throw new Error('فشل في حفظ المناسبة');
-
+      if (!res.ok) throw new Error('فشل في حفظ المناسبة');
       await fetchOccasions();
       resetOccasionForm();
       alert(editingOccasion ? 'تم تحديث المناسبة بنجاح!' : 'تم إضافة المناسبة بنجاح!');
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'حدث خطأ أثناء حفظ المناسبة');
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'حدث خطأ أثناء حفظ المناسبة');
     } finally {
       setIsLoading(false);
     }
@@ -224,25 +267,19 @@ const CakeConfigurationManagement: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `${apiUrl}/api/CakeConfiguration/occasions/${id}`,
-        { method: 'DELETE', headers: getAuthHeaders() }
-      );
-
-      if (!response.ok) throw new Error('فشل في حذف المناسبة');
+      const res = await fetch(`${apiUrl}/api/CakeConfiguration/occasions/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('فشل في حذف المناسبة');
 
       await fetchOccasions();
       alert('تم حذف المناسبة بنجاح!');
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'حدث خطأ أثناء حذف المناسبة');
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'حدث خطأ أثناء حذف المناسبة');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const resetOccasionForm = () => {
-    setEditingOccasion(null);
-    setOccasionForm({ nameAr: '', name: '', icon: '', isActive: true });
   };
 
   // ========== SIZES ==========
@@ -250,33 +287,32 @@ const CakeConfigurationManagement: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(
+      const res = await fetch(
         `${apiUrl}/api/CakeConfiguration/sizes?includeInactive=${includeInactive}`,
         { headers: getAuthHeaders() }
       );
+      if (!res.ok) throw new Error('فشل في جلب الأحجام');
 
-      if (!response.ok) throw new Error('فشل في جلب الأحجام');
-      const data = await response.json();
-
-      // FIXED: Validate response is an array
-      console.log('Sizes API Response:', data);
-      if (Array.isArray(data)) {
-        setSizes(data);
-      } else if (data && Array.isArray(data.data)) {
-        setSizes(data.data);
-      } else if (data && Array.isArray(data.sizes)) {
-        setSizes(data.sizes);
-      } else {
-        console.error('Invalid sizes data format:', data);
-        setSizes([]);
-        setError('تنسيق البيانات غير صحيح');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'فشل في جلب الأحجام');
-      setSizes([]); // FIXED: Set empty array on error
+      const payload = await res.json();
+      const list = normalizeArrayResponse<CakeSize>(payload, ['data', 'sizes', 'items', 'result']);
+      setSizes(list);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'فشل في جلب الأحجام');
+      setSizes([]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const resetSizeForm = () => {
+    setEditingSize(null);
+    setSizeForm({
+      nameAr: '',
+      name: '',
+      personsCount: '',
+      personsCountAr: '',
+      isActive: true,
+    });
   };
 
   const handleSaveSize = async () => {
@@ -291,7 +327,7 @@ const CakeConfigurationManagement: React.FC = () => {
         ? `${apiUrl}/api/CakeConfiguration/sizes/${editingSize.id}`
         : `${apiUrl}/api/CakeConfiguration/sizes`;
 
-      const response = await fetch(url, {
+      const res = await fetch(url, {
         method: editingSize ? 'PUT' : 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify({
@@ -303,13 +339,12 @@ const CakeConfigurationManagement: React.FC = () => {
         }),
       });
 
-      if (!response.ok) throw new Error('فشل في حفظ الحجم');
-
+      if (!res.ok) throw new Error('فشل في حفظ الحجم');
       await fetchSizes();
       resetSizeForm();
       alert(editingSize ? 'تم تحديث الحجم بنجاح!' : 'تم إضافة الحجم بنجاح!');
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'حدث خطأ أثناء حفظ الحجم');
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'حدث خطأ أثناء حفظ الحجم');
     } finally {
       setIsLoading(false);
     }
@@ -320,25 +355,19 @@ const CakeConfigurationManagement: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `${apiUrl}/api/CakeConfiguration/sizes/${id}`,
-        { method: 'DELETE', headers: getAuthHeaders() }
-      );
-
-      if (!response.ok) throw new Error('فشل في حذف الحجم');
+      const res = await fetch(`${apiUrl}/api/CakeConfiguration/sizes/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('فشل في حذف الحجم');
 
       await fetchSizes();
       alert('تم حذف الحجم بنجاح!');
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'حدث خطأ أثناء حذف الحجم');
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'حدث خطأ أثناء حذف الحجم');
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const resetSizeForm = () => {
-    setEditingSize(null);
-    setSizeForm({ nameAr: '', name: '', personsCount: '', personsCountAr: '', isActive: true });
   };
 
   // ========== FLAVORS ==========
@@ -346,33 +375,32 @@ const CakeConfigurationManagement: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(
+      const res = await fetch(
         `${apiUrl}/api/CakeConfiguration/flavors?includeInactive=${includeInactive}`,
         { headers: getAuthHeaders() }
       );
+      if (!res.ok) throw new Error('فشل في جلب النكهات');
 
-      if (!response.ok) throw new Error('فشل في جلب النكهات');
-      const data = await response.json();
-
-      // FIXED: Validate response is an array
-      console.log('Flavors API Response:', data);
-      if (Array.isArray(data)) {
-        setFlavors(data);
-      } else if (data && Array.isArray(data.data)) {
-        setFlavors(data.data);
-      } else if (data && Array.isArray(data.flavors)) {
-        setFlavors(data.flavors);
-      } else {
-        console.error('Invalid flavors data format:', data);
-        setFlavors([]);
-        setError('تنسيق البيانات غير صحيح');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'فشل في جلب النكهات');
-      setFlavors([]); // FIXED: Set empty array on error
+      const payload = await res.json();
+      const list = normalizeArrayResponse<CakeFlavor>(payload, ['data', 'flavors', 'items', 'result']);
+      setFlavors(list);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'فشل في جلب النكهات');
+      setFlavors([]);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const resetFlavorForm = () => {
+    setEditingFlavor(null);
+    setFlavorForm({
+      nameAr: '',
+      name: '',
+      color: '#FCD34D',
+      additionalPrice: '',
+      isActive: true,
+    });
   };
 
   const handleSaveFlavor = async () => {
@@ -395,19 +423,18 @@ const CakeConfigurationManagement: React.FC = () => {
         isActive: flavorForm.isActive,
       };
 
-      const response = await fetch(url, {
+      const res = await fetch(url, {
         method: editingFlavor ? 'PUT' : 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(body),
       });
 
-      if (!response.ok) throw new Error('فشل في حفظ النكهة');
-
+      if (!res.ok) throw new Error('فشل في حفظ النكهة');
       await fetchFlavors();
       resetFlavorForm();
       alert(editingFlavor ? 'تم تحديث النكهة بنجاح!' : 'تم إضافة النكهة بنجاح!');
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'حدث خطأ أثناء حفظ النكهة');
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'حدث خطأ أثناء حفظ النكهة');
     } finally {
       setIsLoading(false);
     }
@@ -418,57 +445,49 @@ const CakeConfigurationManagement: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `${apiUrl}/api/CakeConfiguration/flavors/${id}`,
-        { method: 'DELETE', headers: getAuthHeaders() }
-      );
-
-      if (!response.ok) throw new Error('فشل في حذف النكهة');
+      const res = await fetch(`${apiUrl}/api/CakeConfiguration/flavors/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('فشل في حذف النكهة');
 
       await fetchFlavors();
       alert('تم حذف النكهة بنجاح!');
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'حدث خطأ أثناء حذف النكهة');
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'حدث خطأ أثناء حذف النكهة');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const resetFlavorForm = () => {
-    setEditingFlavor(null);
-    setFlavorForm({ nameAr: '', name: '', color: '#FCD34D', additionalPrice: '', isActive: true });
-  };
-
   // ========== PRICING ==========
   const fetchOccasionSizes = async (occasionId: string) => {
     setIsLoading(true);
+    setError(null);
     try {
-      const response = await fetch(
-        `${apiUrl}/api/CakeConfiguration/occasions/${occasionId}/sizes`,
-        { headers: getAuthHeaders() }
-      );
+      const res = await fetch(`${apiUrl}/api/CakeConfiguration/occasions/${occasionId}/sizes`, {
+        headers: getAuthHeaders(),
+      });
+      if (!res.ok) throw new Error('فشل في جلب الأسعار');
 
-      if (!response.ok) throw new Error('فشل في جلب الأسعار');
-      const data = await response.json();
+      const payload = await res.json();
+      const list = normalizeArrayResponse<OccasionSize>(payload, ['data', 'sizes', 'items', 'result']);
+      setOccasionSizes(list);
 
-      // FIXED: Validate response is an array
-      console.log('Occasion Sizes API Response:', data);
-      const sizesData = Array.isArray(data) ? data : (data?.data || data?.sizes || []);
-      setOccasionSizes(sizesData);
-
-      // Initialize pricing form
-      const initialPrices: { [key: string]: { price: string; isActive: boolean } } = {};
-      sizes.forEach((size) => {
-        const existingSize = sizesData.find((os: OccasionSize) => os.sizeId === size.id);
-        initialPrices[size.id] = {
-          price: existingSize ? existingSize.price.toString() : '',
-          isActive: existingSize ? existingSize.isActive : true,
+      // Initialize pricing form from sizes list + existing pricing list
+      const initial: PricingFormState = {};
+      (Array.isArray(sizes) ? sizes : []).forEach((s) => {
+        const existing = list.find((os) => os.sizeId === s.id);
+        initial[s.id] = {
+          price: existing ? String(existing.price) : '',
+          isActive: existing ? existing.isActive : true,
         };
       });
-      setPricingForm(initialPrices);
-    } catch (error) {
-      console.error('Error fetching occasion sizes:', error);
-      setOccasionSizes([]); // FIXED: Set empty array on error
+      setPricingForm(initial);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'فشل في جلب الأسعار');
+      setOccasionSizes([]);
+      setPricingForm({});
     } finally {
       setIsLoading(false);
     }
@@ -482,42 +501,34 @@ const CakeConfigurationManagement: React.FC = () => {
 
     setIsLoading(true);
     try {
-      const sizesData = sizes.map(size => ({
-        sizeId: size.id,
-        price: parseFloat(pricingForm[size.id]?.price || '0'),
-        isActive: pricingForm[size.id]?.isActive ?? true,
-      })).filter(item => item.price > 0);
+      const payload = (Array.isArray(sizes) ? sizes : [])
+        .map((s) => ({
+          sizeId: s.id,
+          price: parseFloat(pricingForm[s.id]?.price || '0'),
+          isActive: pricingForm[s.id]?.isActive ?? true,
+        }))
+        .filter((x) => x.price > 0);
 
-      const response = await fetch(
+      const res = await fetch(
         `${apiUrl}/api/CakeConfiguration/occasions/${selectedOccasionForPricing}/sizes`,
         {
           method: 'POST',
           headers: getAuthHeaders(),
-          body: JSON.stringify(sizesData),
+          body: JSON.stringify(payload),
         }
       );
 
-      if (!response.ok) throw new Error('فشل في حفظ الأسعار');
-
+      if (!res.ok) throw new Error('فشل في حفظ الأسعار');
       await fetchOccasionSizes(selectedOccasionForPricing);
       alert('تم حفظ الأسعار بنجاح!');
-    } catch (error) {
-      alert(error instanceof Error ? error.message : 'حدث خطأ أثناء حفظ الأسعار');
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'حدث خطأ أثناء حفظ الأسعار');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ar-EG', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  const iconOptions = ['🎂', '💒', '💍', '🎓', '👶', '🏆', '❤️', '🎉', '🎈', '🎁', '⭐', '✨'];
-
+  // ================= RENDER =================
   return (
     <div className="p-3 sm:p-4 md:p-6 bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50 min-h-screen">
       {/* Header */}
@@ -528,7 +539,9 @@ const CakeConfigurationManagement: React.FC = () => {
           </div>
           <div>
             <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-purple-900">إعدادات التورتات</h2>
-            <p className="text-xs sm:text-sm text-purple-600 hidden sm:block">إدارة المناسبات والأحجام والنكهات والأسعار</p>
+            <p className="text-xs sm:text-sm text-purple-600 hidden sm:block">
+              إدارة المناسبات والأحجام والنكهات والأسعار
+            </p>
           </div>
         </div>
         <Sparkles className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-amber-500 animate-pulse" />
@@ -540,8 +553,8 @@ const CakeConfigurationManagement: React.FC = () => {
           <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-600 ml-2 flex-shrink-0 mt-0.5 sm:mt-0" />
           <span className="text-sm sm:text-base text-red-800 font-medium flex-1">{error}</span>
           <button
-            onClick={fetchData}
-            className="mr-auto bg-red-100 hover:bg-red-200 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm text-red-800 flex items-center font-semibold transition-all"
+            onClick={() => void fetchData()}
+            className="mr-auto bg-red-100 hover:bg-red-200 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-xs sm:text-sm text-red-800 flex items-center font-semibold transition-all disabled:opacity-60"
             disabled={isLoading}
           >
             <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 ml-1" />
@@ -551,7 +564,7 @@ const CakeConfigurationManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Tabs - Mobile Optimized */}
+      {/* Tabs */}
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-1 sm:p-2 mb-4 sm:mb-6 border-2 border-purple-100">
         <div className="grid grid-cols-2 sm:flex gap-1 sm:gap-2">
           <button
@@ -566,6 +579,7 @@ const CakeConfigurationManagement: React.FC = () => {
             <span className="hidden sm:inline">المناسبات</span>
             <span className="sm:hidden">مناسبات</span>
           </button>
+
           <button
             onClick={() => setActiveTab('sizes')}
             className={`py-2 sm:py-3 px-2 sm:px-4 rounded-lg sm:rounded-xl font-bold transition-all flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base ${
@@ -578,6 +592,7 @@ const CakeConfigurationManagement: React.FC = () => {
             <span className="hidden sm:inline">الأحجام</span>
             <span className="sm:hidden">أحجام</span>
           </button>
+
           <button
             onClick={() => setActiveTab('flavors')}
             className={`py-2 sm:py-3 px-2 sm:px-4 rounded-lg sm:rounded-xl font-bold transition-all flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base ${
@@ -590,6 +605,7 @@ const CakeConfigurationManagement: React.FC = () => {
             <span className="hidden sm:inline">النكهات</span>
             <span className="sm:hidden">نكهات</span>
           </button>
+
           <button
             onClick={() => setActiveTab('pricing')}
             className={`py-2 sm:py-3 px-2 sm:px-4 rounded-lg sm:rounded-xl font-bold transition-all flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base ${
@@ -605,35 +621,39 @@ const CakeConfigurationManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Include Inactive Toggle */}
+      {/* Include inactive toggle (not for pricing) */}
       {activeTab !== 'pricing' && (
         <div className="mb-4 sm:mb-6 flex items-center justify-end gap-2">
           <label className="flex items-center gap-1.5 sm:gap-2 cursor-pointer">
             <span className="text-xs sm:text-sm font-medium text-purple-900">عرض المحذوفات</span>
             <button
-              onClick={() => setIncludeInactive(!includeInactive)}
+              type="button"
+              onClick={() => setIncludeInactive((v) => !v)}
               className={`relative w-10 h-5 sm:w-12 sm:h-6 rounded-full transition-colors ${
                 includeInactive ? 'bg-purple-600' : 'bg-gray-300'
               }`}
             >
               <span
-                className={`absolute top-0.5 sm:top-1 left-0.5 sm:left-1 w-4 h-4 sm:w-4 sm:h-4 bg-white rounded-full transition-transform ${
-                  includeInactive ? 'transform translate-x-5 sm:translate-x-6' : ''
+                className={`absolute top-0.5 sm:top-1 left-0.5 sm:left-1 w-4 h-4 bg-white rounded-full transition-transform ${
+                  includeInactive ? 'translate-x-5 sm:translate-x-6' : ''
                 }`}
               />
             </button>
           </label>
         </div>
       )}
+
       {/* OCCASIONS TAB */}
       {activeTab === 'occasions' && (
         <>
-          {/* Add/Edit Form */}
           <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-gradient-to-br from-white to-purple-50 rounded-xl sm:rounded-2xl shadow-xl border-2 border-purple-100">
             <h3 className="text-base sm:text-lg md:text-xl font-bold text-purple-900 mb-4 sm:mb-6 flex items-center gap-2">
               {editingOccasion ? <Edit className="h-4 w-4 sm:h-5 sm:w-5" /> : <Plus className="h-4 w-4 sm:h-5 sm:w-5" />}
-              <span className="text-sm sm:text-base md:text-xl">{editingOccasion ? 'تعديل المناسبة' : 'إضافة مناسبة جديدة'}</span>
+              <span className="text-sm sm:text-base md:text-xl">
+                {editingOccasion ? 'تعديل المناسبة' : 'إضافة مناسبة جديدة'}
+              </span>
             </h3>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
@@ -648,6 +668,7 @@ const CakeConfigurationManagement: React.FC = () => {
                   placeholder="مثال: عيد ميلاد"
                 />
               </div>
+
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                   Name in English <span className="text-red-500">*</span>
@@ -660,6 +681,7 @@ const CakeConfigurationManagement: React.FC = () => {
                   placeholder="e.g., Birthday"
                 />
               </div>
+
               <div className="sm:col-span-2">
                 <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                   الأيقونة <span className="text-red-500">*</span>
@@ -688,6 +710,7 @@ const CakeConfigurationManagement: React.FC = () => {
                   placeholder="🎂"
                 />
               </div>
+
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">الحالة</label>
                 <select
@@ -701,15 +724,17 @@ const CakeConfigurationManagement: React.FC = () => {
                 </select>
               </div>
             </div>
+
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4 sm:mt-6">
               <button
-                onClick={handleSaveOccasion}
+                onClick={() => void handleSaveOccasion()}
                 disabled={isLoading}
                 className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-semibold shadow-md flex items-center justify-center gap-2 disabled:opacity-50 text-sm sm:text-base"
               >
                 <Save className="h-4 w-4" />
                 {editingOccasion ? 'تحديث' : 'إضافة'}
               </button>
+
               {(editingOccasion || occasionForm.nameAr || occasionForm.name || occasionForm.icon) && (
                 <button
                   onClick={resetOccasionForm}
@@ -723,48 +748,52 @@ const CakeConfigurationManagement: React.FC = () => {
             </div>
           </div>
 
-          {/* List */}
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border-2 border-purple-100">
             <h4 className="text-base sm:text-lg font-bold text-purple-900 mb-3 sm:mb-4 flex items-center gap-2">
               <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
-              المناسبات المتاحة ({occasions.length})
+              المناسبات المتاحة ({Array.isArray(occasions) ? occasions.length : 0})
             </h4>
-            {/* FIXED: Added Array.isArray check */}
+
             {!Array.isArray(occasions) || occasions.length === 0 ? (
               <p className="text-center text-gray-500 py-6 sm:py-8 text-sm sm:text-base">لا توجد مناسبات</p>
             ) : (
               <div className="space-y-2 sm:space-y-3">
-                {occasions.map((occasion) => (
+                {occasions.map((o) => (
                   <div
-                    key={occasion.id}
+                    key={o.id}
                     className="flex items-center justify-between p-3 sm:p-4 border-2 border-purple-100 rounded-lg sm:rounded-xl bg-gradient-to-r from-white to-purple-50 hover:shadow-md transition-all"
                   >
                     <div className="flex items-center gap-2 sm:gap-4 flex-1">
-                      <span className="text-2xl sm:text-3xl">{occasion.icon}</span>
+                      <span className="text-2xl sm:text-3xl">{o.icon}</span>
                       <div className="flex-1">
-                        <p className="font-bold text-purple-900 text-sm sm:text-base">{occasion.nameAr}</p>
-                        <p className="text-xs sm:text-sm text-gray-600">{occasion.name}</p>
+                        <p className="font-bold text-purple-900 text-sm sm:text-base">{o.nameAr}</p>
+                        <p className="text-xs sm:text-sm text-gray-600">{o.name}</p>
                         <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
-                          <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold ${
-                            occasion.isActive
-                              ? 'bg-green-100 text-green-800 border border-green-200'
-                              : 'bg-gray-100 text-gray-800 border border-gray-200'
-                          }`}>
-                            {occasion.isActive ? 'مفعّل' : 'غير مفعّل'}
+                          <span
+                            className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold ${
+                              o.isActive
+                                ? 'bg-green-100 text-green-800 border border-green-200'
+                                : 'bg-gray-100 text-gray-800 border border-gray-200'
+                            }`}
+                          >
+                            {o.isActive ? 'مفعّل' : 'غير مفعّل'}
                           </span>
-                          <span className="text-[10px] sm:text-xs text-gray-500 hidden sm:inline">{formatDate(occasion.createdAt)}</span>
+                          <span className="text-[10px] sm:text-xs text-gray-500 hidden sm:inline">
+                            {formatDate(o.createdAt)}
+                          </span>
                         </div>
                       </div>
                     </div>
+
                     <div className="flex items-center gap-1 sm:gap-2">
                       <button
                         onClick={() => {
-                          setEditingOccasion(occasion);
+                          setEditingOccasion(o);
                           setOccasionForm({
-                            nameAr: occasion.nameAr,
-                            name: occasion.name,
-                            icon: occasion.icon,
-                            isActive: occasion.isActive,
+                            nameAr: o.nameAr,
+                            name: o.name,
+                            icon: o.icon,
+                            isActive: o.isActive,
                           });
                         }}
                         className="text-blue-600 hover:text-blue-700 p-1.5 sm:p-2 hover:bg-blue-50 rounded-lg sm:rounded-xl transition-colors"
@@ -775,7 +804,7 @@ const CakeConfigurationManagement: React.FC = () => {
                         <Edit size={18} className="hidden sm:block" />
                       </button>
                       <button
-                        onClick={() => handleDeleteOccasion(occasion.id)}
+                        onClick={() => void handleDeleteOccasion(o.id)}
                         className="text-red-600 hover:text-red-700 p-1.5 sm:p-2 hover:bg-red-50 rounded-lg sm:rounded-xl transition-colors"
                         title="حذف"
                         disabled={isLoading}
@@ -795,12 +824,12 @@ const CakeConfigurationManagement: React.FC = () => {
       {/* SIZES TAB */}
       {activeTab === 'sizes' && (
         <>
-          {/* Add/Edit Form */}
           <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-gradient-to-br from-white to-purple-50 rounded-xl sm:rounded-2xl shadow-xl border-2 border-purple-100">
             <h3 className="text-base sm:text-lg md:text-xl font-bold text-purple-900 mb-4 sm:mb-6 flex items-center gap-2">
               {editingSize ? <Edit className="h-4 w-4 sm:h-5 sm:w-5" /> : <Plus className="h-4 w-4 sm:h-5 sm:w-5" />}
               <span className="text-sm sm:text-base md:text-xl">{editingSize ? 'تعديل الحجم' : 'إضافة حجم جديد'}</span>
             </h3>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
@@ -815,6 +844,7 @@ const CakeConfigurationManagement: React.FC = () => {
                   placeholder="مثال: صغير"
                 />
               </div>
+
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                   Name in English <span className="text-red-500">*</span>
@@ -827,6 +857,7 @@ const CakeConfigurationManagement: React.FC = () => {
                   placeholder="e.g., Small"
                 />
               </div>
+
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                   عدد الأشخاص (عربي) <span className="text-red-500">*</span>
@@ -840,6 +871,7 @@ const CakeConfigurationManagement: React.FC = () => {
                   placeholder="مثال: 2-4 أشخاص"
                 />
               </div>
+
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                   Servings (English) <span className="text-red-500">*</span>
@@ -852,6 +884,7 @@ const CakeConfigurationManagement: React.FC = () => {
                   placeholder="e.g., 2-4 persons"
                 />
               </div>
+
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">الحالة</label>
                 <select
@@ -865,16 +898,22 @@ const CakeConfigurationManagement: React.FC = () => {
                 </select>
               </div>
             </div>
+
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4 sm:mt-6">
               <button
-                onClick={handleSaveSize}
+                onClick={() => void handleSaveSize()}
                 disabled={isLoading}
                 className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-semibold shadow-md flex items-center justify-center gap-2 disabled:opacity-50 text-sm sm:text-base"
               >
                 <Save className="h-4 w-4" />
                 {editingSize ? 'تحديث' : 'إضافة'}
               </button>
-              {(editingSize || sizeForm.nameAr || sizeForm.name || sizeForm.personsCount || sizeForm.personsCountAr) && (
+
+              {(editingSize ||
+                sizeForm.nameAr ||
+                sizeForm.name ||
+                sizeForm.personsCount ||
+                sizeForm.personsCountAr) && (
                 <button
                   onClick={resetSizeForm}
                   disabled={isLoading}
@@ -887,47 +926,51 @@ const CakeConfigurationManagement: React.FC = () => {
             </div>
           </div>
 
-          {/* List */}
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border-2 border-purple-100">
             <h4 className="text-base sm:text-lg font-bold text-purple-900 mb-3 sm:mb-4 flex items-center gap-2">
               <Ruler className="h-4 w-4 sm:h-5 sm:w-5" />
-              الأحجام المتاحة ({sizes.length})
+              الأحجام المتاحة ({Array.isArray(sizes) ? sizes.length : 0})
             </h4>
-            {/* FIXED: Added Array.isArray check */}
+
             {!Array.isArray(sizes) || sizes.length === 0 ? (
               <p className="text-center text-gray-500 py-6 sm:py-8 text-sm sm:text-base">لا توجد أحجام</p>
             ) : (
               <div className="space-y-2 sm:space-y-3">
-                {sizes.map((size) => (
+                {sizes.map((s) => (
                   <div
-                    key={size.id}
+                    key={s.id}
                     className="flex items-center justify-between p-3 sm:p-4 border-2 border-purple-100 rounded-lg sm:rounded-xl bg-gradient-to-r from-white to-purple-50 hover:shadow-md transition-all"
                   >
                     <div className="flex-1">
-                      <p className="font-bold text-purple-900 text-sm sm:text-base">{size.nameAr}</p>
-                      <p className="text-xs sm:text-sm text-gray-600">{size.name}</p>
-                      <p className="text-xs sm:text-sm text-purple-600 mt-1">يكفي {size.personsCountAr}</p>
+                      <p className="font-bold text-purple-900 text-sm sm:text-base">{s.nameAr}</p>
+                      <p className="text-xs sm:text-sm text-gray-600">{s.name}</p>
+                      <p className="text-xs sm:text-sm text-purple-600 mt-1">يكفي {s.personsCountAr}</p>
                       <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
-                        <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold ${
-                          size.isActive
-                            ? 'bg-green-100 text-green-800 border border-green-200'
-                            : 'bg-gray-100 text-gray-800 border border-gray-200'
-                        }`}>
-                          {size.isActive ? 'مفعّل' : 'غير مفعّل'}
+                        <span
+                          className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold ${
+                            s.isActive
+                              ? 'bg-green-100 text-green-800 border border-green-200'
+                              : 'bg-gray-100 text-gray-800 border border-gray-200'
+                          }`}
+                        >
+                          {s.isActive ? 'مفعّل' : 'غير مفعّل'}
                         </span>
-                        <span className="text-[10px] sm:text-xs text-gray-500 hidden sm:inline">{formatDate(size.createdAt)}</span>
+                        <span className="text-[10px] sm:text-xs text-gray-500 hidden sm:inline">
+                          {formatDate(s.createdAt)}
+                        </span>
                       </div>
                     </div>
+
                     <div className="flex items-center gap-1 sm:gap-2">
                       <button
                         onClick={() => {
-                          setEditingSize(size);
+                          setEditingSize(s);
                           setSizeForm({
-                            nameAr: size.nameAr,
-                            name: size.name,
-                            personsCount: size.personsCount,
-                            personsCountAr: size.personsCountAr,
-                            isActive: size.isActive,
+                            nameAr: s.nameAr,
+                            name: s.name,
+                            personsCount: s.personsCount,
+                            personsCountAr: s.personsCountAr,
+                            isActive: s.isActive,
                           });
                         }}
                         className="text-blue-600 hover:text-blue-700 p-1.5 sm:p-2 hover:bg-blue-50 rounded-lg sm:rounded-xl transition-colors"
@@ -938,7 +981,7 @@ const CakeConfigurationManagement: React.FC = () => {
                         <Edit size={18} className="hidden sm:block" />
                       </button>
                       <button
-                        onClick={() => handleDeleteSize(size.id)}
+                        onClick={() => void handleDeleteSize(s.id)}
                         className="text-red-600 hover:text-red-700 p-1.5 sm:p-2 hover:bg-red-50 rounded-lg sm:rounded-xl transition-colors"
                         title="حذف"
                         disabled={isLoading}
@@ -954,15 +997,16 @@ const CakeConfigurationManagement: React.FC = () => {
           </div>
         </>
       )}
+
       {/* FLAVORS TAB */}
       {activeTab === 'flavors' && (
         <>
-          {/* Add/Edit Form */}
           <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-gradient-to-br from-white to-purple-50 rounded-xl sm:rounded-2xl shadow-xl border-2 border-purple-100">
             <h3 className="text-base sm:text-lg md:text-xl font-bold text-purple-900 mb-4 sm:mb-6 flex items-center gap-2">
               {editingFlavor ? <Edit className="h-4 w-4 sm:h-5 sm:w-5" /> : <Plus className="h-4 w-4 sm:h-5 sm:w-5" />}
               <span className="text-sm sm:text-base md:text-xl">{editingFlavor ? 'تعديل النكهة' : 'إضافة نكهة جديدة'}</span>
             </h3>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
@@ -977,6 +1021,7 @@ const CakeConfigurationManagement: React.FC = () => {
                   placeholder="مثال: فانيليا"
                 />
               </div>
+
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
                   Name in English <span className="text-red-500">*</span>
@@ -989,15 +1034,26 @@ const CakeConfigurationManagement: React.FC = () => {
                   placeholder="e.g., Vanilla"
                 />
               </div>
+
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">اللون</label>
-                <input
-                  type="color"
-                  value={flavorForm.color}
-                  onChange={(e) => setFlavorForm({ ...flavorForm, color: e.target.value })}
-                  className="w-full h-10 sm:h-12 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="color"
+                    value={flavorForm.color}
+                    onChange={(e) => setFlavorForm({ ...flavorForm, color: e.target.value })}
+                    className="w-12 sm:w-16 h-10 sm:h-12 border-2 border-purple-200 rounded-lg sm:rounded-xl cursor-pointer"
+                  />
+                  <input
+                    type="text"
+                    value={flavorForm.color}
+                    onChange={(e) => setFlavorForm({ ...flavorForm, color: e.target.value })}
+                    className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base"
+                    placeholder="#FCD34D"
+                  />
+                </div>
               </div>
+
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">السعر الإضافي</label>
                 <input
@@ -1011,6 +1067,7 @@ const CakeConfigurationManagement: React.FC = () => {
                   step="0.01"
                 />
               </div>
+
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">الحالة</label>
                 <select
@@ -1024,15 +1081,17 @@ const CakeConfigurationManagement: React.FC = () => {
                 </select>
               </div>
             </div>
+
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4 sm:mt-6">
               <button
-                onClick={handleSaveFlavor}
+                onClick={() => void handleSaveFlavor()}
                 disabled={isLoading}
                 className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-semibold shadow-md flex items-center justify-center gap-2 disabled:opacity-50 text-sm sm:text-base"
               >
                 <Save className="h-4 w-4" />
                 {editingFlavor ? 'تحديث' : 'إضافة'}
               </button>
+
               {(editingFlavor || flavorForm.nameAr || flavorForm.name) && (
                 <button
                   onClick={resetFlavorForm}
@@ -1046,57 +1105,63 @@ const CakeConfigurationManagement: React.FC = () => {
             </div>
           </div>
 
-          {/* List */}
           <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border-2 border-purple-100">
             <h4 className="text-base sm:text-lg font-bold text-purple-900 mb-3 sm:mb-4 flex items-center gap-2">
               <Cookie className="h-4 w-4 sm:h-5 sm:w-5" />
-              النكهات المتاحة ({flavors.length})
+              النكهات المتاحة ({Array.isArray(flavors) ? flavors.length : 0})
             </h4>
-            {/* FIXED: Added Array.isArray check */}
+
             {!Array.isArray(flavors) || flavors.length === 0 ? (
               <p className="text-center text-gray-500 py-6 sm:py-8 text-sm sm:text-base">لا توجد نكهات</p>
             ) : (
               <div className="space-y-2 sm:space-y-3">
-                {flavors.map((flavor) => (
+                {flavors.map((f) => (
                   <div
-                    key={flavor.id}
+                    key={f.id}
                     className="flex items-center justify-between p-3 sm:p-4 border-2 border-purple-100 rounded-lg sm:rounded-xl bg-gradient-to-r from-white to-purple-50 hover:shadow-md transition-all"
                   >
                     <div className="flex items-center gap-2 sm:gap-4 flex-1">
                       <div
                         className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-gray-300"
-                        style={{ backgroundColor: flavor.color }}
+                        style={{ backgroundColor: f.color }}
                       />
                       <div className="flex-1">
-                        <p className="font-bold text-purple-900 text-sm sm:text-base">{flavor.nameAr}</p>
-                        <p className="text-xs sm:text-sm text-gray-600">{flavor.name}</p>
+                        <p className="font-bold text-purple-900 text-sm sm:text-base">{f.nameAr}</p>
+                        <p className="text-xs sm:text-sm text-gray-600">{f.name}</p>
                         <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
-                          <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold ${
-                            flavor.isActive
-                              ? 'bg-green-100 text-green-800 border border-green-200'
-                              : 'bg-gray-100 text-gray-800 border border-gray-200'
-                          }`}>
-                            {flavor.isActive ? 'مفعّل' : 'غير مفعّل'}
+                          <span
+                            className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold ${
+                              f.isActive
+                                ? 'bg-green-100 text-green-800 border border-green-200'
+                                : 'bg-gray-100 text-gray-800 border border-gray-200'
+                            }`}
+                          >
+                            {f.isActive ? 'مفعّل' : 'غير مفعّل'}
                           </span>
-                          {flavor.additionalPrice > 0 && (
+
+                          {f.additionalPrice > 0 && (
                             <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-amber-100 text-amber-800 rounded-full text-[10px] sm:text-xs font-bold border border-amber-200">
-                              +{flavor.additionalPrice} جنيه
+                              +{f.additionalPrice} جنيه
                             </span>
                           )}
-                          <span className="text-[10px] sm:text-xs text-gray-500 hidden sm:inline">{formatDate(flavor.createdAt)}</span>
+
+                          <span className="text-[10px] sm:text-xs text-gray-500 hidden sm:inline">
+                            {formatDate(f.createdAt)}
+                          </span>
                         </div>
                       </div>
                     </div>
+
                     <div className="flex items-center gap-1 sm:gap-2">
                       <button
                         onClick={() => {
-                          setEditingFlavor(flavor);
+                          setEditingFlavor(f);
                           setFlavorForm({
-                            nameAr: flavor.nameAr,
-                            name: flavor.name,
-                            color: flavor.color,
-                            additionalPrice: flavor.additionalPrice.toString(),
-                            isActive: flavor.isActive,
+                            nameAr: f.nameAr,
+                            name: f.name,
+                            color: f.color,
+                            additionalPrice: String(f.additionalPrice ?? 0),
+                            isActive: f.isActive,
                           });
                         }}
                         className="text-blue-600 hover:text-blue-700 p-1.5 sm:p-2 hover:bg-blue-50 rounded-lg sm:rounded-xl transition-colors"
@@ -1106,8 +1171,9 @@ const CakeConfigurationManagement: React.FC = () => {
                         <Edit size={16} className="sm:hidden" />
                         <Edit size={18} className="hidden sm:block" />
                       </button>
+
                       <button
-                        onClick={() => handleDeleteFlavor(flavor.id)}
+                        onClick={() => void handleDeleteFlavor(f.id)}
                         className="text-red-600 hover:text-red-700 p-1.5 sm:p-2 hover:bg-red-50 rounded-lg sm:rounded-xl transition-colors"
                         title="حذف"
                         disabled={isLoading}
@@ -1129,96 +1195,141 @@ const CakeConfigurationManagement: React.FC = () => {
         <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border-2 border-purple-100">
           <h3 className="text-base sm:text-lg font-bold text-purple-900 mb-4 sm:mb-6 flex items-center gap-2">
             <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
-            إدارة الأسعار
+            الأسعار
           </h3>
 
           <div className="mb-4 sm:mb-6">
             <label className="block text-xs sm:text-sm font-bold text-purple-900 mb-2">
-              اختر المناسبة <span className="text-red-500">*</span>
+              المناسبة <span className="text-red-500">*</span>
             </label>
             <select
               value={selectedOccasionForPricing}
               onChange={(e) => {
-                setSelectedOccasionForPricing(e.target.value);
-                if (e.target.value) {
-                  fetchOccasionSizes(e.target.value);
+                const id = e.target.value;
+                setSelectedOccasionForPricing(id);
+                if (id) {
+                  void fetchOccasionSizes(id);
+                } else {
+                  setOccasionSizes([]);
+                  setPricingForm({});
                 }
               }}
               className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right font-medium text-sm sm:text-base"
               dir="rtl"
             >
-              <option value="">-- اختر المناسبة --</option>
-              {/* FIXED: Added Array.isArray check */}
-              {Array.isArray(occasions) && occasions.filter(o => o.isActive).map((occasion) => (
-                <option key={occasion.id} value={occasion.id}>
-                  {occasion.icon} {occasion.nameAr}
-                </option>
-              ))}
+              <option value="">-- اختر مناسبة --</option>
+              {(Array.isArray(occasions) ? occasions : [])
+                .filter((o) => o.isActive)
+                .map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.icon} {o.nameAr}
+                  </option>
+                ))}
             </select>
           </div>
 
           {selectedOccasionForPricing && (
             <>
               <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
-                {/* FIXED: Added Array.isArray check */}
-                {Array.isArray(sizes) && sizes.filter(s => s.isActive).map((size) => (
-                  <div key={size.id} className="p-3 sm:p-4 border-2 border-purple-100 rounded-lg sm:rounded-xl bg-gradient-to-r from-white to-purple-50">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <p className="font-bold text-purple-900 text-sm sm:text-base">{size.nameAr}</p>
-                        <p className="text-xs sm:text-sm text-gray-600">{size.name} - يكفي {size.personsCountAr}</p>
+                {(Array.isArray(sizes) ? sizes : [])
+                  .filter((s) => s.isActive)
+                  .map((s) => (
+                    <div
+                      key={s.id}
+                      className="p-3 sm:p-4 border-2 border-purple-100 rounded-lg sm:rounded-xl bg-gradient-to-r from-white to-purple-50"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <p className="font-bold text-purple-900 text-sm sm:text-base">{s.nameAr}</p>
+                          <p className="text-xs sm:text-sm text-gray-600">
+                            {s.name} - {s.personsCountAr}
+                          </p>
+                        </div>
+
+                        <label className="flex items-center gap-1.5 sm:gap-2">
+                          <span className="text-xs sm:text-sm font-medium text-purple-900">مفعّل</span>
+                          <input
+                            type="checkbox"
+                            checked={pricingForm[s.id]?.isActive ?? true}
+                            onChange={(e) =>
+                              setPricingForm((prev) => ({
+                                ...prev,
+                                [s.id]: {
+                                  price: prev[s.id]?.price ?? '',
+                                  isActive: e.target.checked,
+                                },
+                              }))
+                            }
+                            className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500"
+                          />
+                        </label>
                       </div>
-                      <label className="flex items-center gap-1.5 sm:gap-2">
-                        <span className="text-xs sm:text-sm font-medium text-purple-900">مفعّل</span>
+
+                      <div className="flex items-center gap-2">
                         <input
-                          type="checkbox"
-                          checked={pricingForm[size.id]?.isActive ?? true}
+                          type="number"
+                          value={pricingForm[s.id]?.price ?? ''}
                           onChange={(e) =>
-                            setPricingForm({
-                              ...pricingForm,
-                              [size.id]: {
-                                ...pricingForm[size.id],
-                                isActive: e.target.checked,
+                            setPricingForm((prev) => ({
+                              ...prev,
+                              [s.id]: {
+                                price: e.target.value,
+                                isActive: prev[s.id]?.isActive ?? true,
                               },
-                            })
+                            }))
                           }
-                          className="w-4 h-4 text-purple-600 border-purple-300 rounded focus:ring-purple-500"
+                          className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right text-sm sm:text-base"
+                          dir="rtl"
+                          placeholder="0"
+                          min="0"
+                          step="0.01"
                         />
-                      </label>
+                        <span className="text-purple-900 font-bold text-sm sm:text-base">جنيه</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        value={pricingForm[size.id]?.price || ''}
-                        onChange={(e) =>
-                          setPricingForm({
-                            ...pricingForm,
-                            [size.id]: {
-                              ...pricingForm[size.id],
-                              price: e.target.value,
-                            },
-                          })
-                        }
-                        className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-right text-sm sm:text-base"
-                        dir="rtl"
-                        placeholder="السعر"
-                        min="0"
-                        step="0.01"
-                      />
-                      <span className="text-purple-900 font-bold text-sm sm:text-base">جنيه</span>
-                    </div>
-                  </div>
-                ))}
+                  ))}
               </div>
 
               <button
-                onClick={handleSavePricing}
+                onClick={() => void handleSavePricing()}
                 disabled={isLoading}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all font-semibold shadow-md flex items-center justify-center gap-2 disabled:opacity-50 text-sm sm:text-base"
               >
                 <Save className="h-4 w-4" />
                 حفظ الأسعار
               </button>
+
+              {Array.isArray(occasionSizes) && occasionSizes.length > 0 && (
+                <div className="mt-6 bg-white rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 border-2 border-purple-100">
+                  <h4 className="text-base sm:text-lg font-bold text-purple-900 mb-3 sm:mb-4 flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 sm:h-5 sm:w-5" />
+                    الأسعار الحالية
+                  </h4>
+
+                  <div className="space-y-2">
+                    {occasionSizes.map((os) => (
+                      <div
+                        key={os.sizeId}
+                        className="flex items-center justify-between p-2.5 sm:p-3 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-lg sm:rounded-xl"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-purple-900 text-sm sm:text-base">{os.sizeName}</span>
+                          <span
+                            className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold ${
+                              os.isActive
+                                ? 'bg-green-100 text-green-800 border border-green-200'
+                                : 'bg-gray-100 text-gray-800 border border-gray-200'
+                            }`}
+                          >
+                            {os.isActive ? 'مفعّل' : 'غير مفعّل'}
+                          </span>
+                        </div>
+                        <span className="text-base sm:text-xl font-bold text-amber-600">{os.price} جنيه</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
