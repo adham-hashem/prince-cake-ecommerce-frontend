@@ -226,13 +226,24 @@ const HomePage: React.FC = () => {
             >
               تصفح المنيو
             </button>
+
+            <button
+              onClick={() => navigate('/instant')}
+              className="w-full bg-gradient-to-r from-green-600 to-emerald-500 text-white py-4 rounded-2xl text-lg font-bold hover:from-green-700 hover:to-emerald-600 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              المتاح فوري
+            </button>
+
             <button
               onClick={() => navigate('/custom')}
               className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-4 rounded-2xl text-lg font-bold hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               اطلب تورتة خاصة
             </button>
+
+
           </div>
+
 
           <div className="mt-12 text-gray-600 text-sm">
             <p>كل لحظة سعيدة تبدأ بقطعة حلوى من برنس كيك</p>
