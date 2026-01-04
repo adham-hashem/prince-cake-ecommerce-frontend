@@ -238,7 +238,7 @@ const HomePage: React.FC = () => {
               onClick={() => navigate('/custom')}
               className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white py-4 rounded-2xl text-lg font-bold hover:from-amber-600 hover:to-orange-600 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
             >
-              اطلب تورتة خاصة
+              اطلب مقاسات خاصة
             </button>
 
 
