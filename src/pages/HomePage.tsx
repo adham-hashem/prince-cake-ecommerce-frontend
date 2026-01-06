@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import ProductCard from '../components/ProductCard';
 import { Product } from '../types';
-import { ShoppingCart } from 'lucide-react';
 
 interface ApiResponse {
   items: Product[];
@@ -179,184 +178,140 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50" dir="rtl">
-      {/* Main Content */}
-      <main className="pt-16 sm:pt-20">
-        {/* Hero Section with Background Image */}
-        <div className="relative min-h-[calc(100vh-4rem)] sm:min-h-[calc(100vh-5rem)] flex items-center justify-center overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: 'url(/الصورة_الرئسية_.jpeg)',
-              imageRendering: 'crisp-edges'
-            }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/30"></div>
-          </div>
-
-          <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 py-12 sm:py-16 max-w-4xl mx-auto space-y-8 sm:space-y-10 lg:space-y-12">
-            <div className="space-y-4 sm:space-y-6">
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-relaxed drop-shadow-2xl" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-                👑 برنس الكيك في مصر
-              </h1>
-              <p className="text-xl sm:text-2xl lg:text-3xl text-purple-100 font-medium leading-relaxed drop-shadow-lg">
-                أهلاً بيك نورتنا في برنس كيك 💜
-              </p>
-              <p className="text-base sm:text-lg lg:text-xl text-white leading-relaxed drop-shadow-lg">
-                إحنا مصنع حلويات دليفري فقط داخل إسكندرية
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
-              <button
-                onClick={() => navigate('/menu')}
-                className="group bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-6 sm:px-8 py-4 sm:py-5 rounded-2xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-2xl transform hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-3 drop-shadow-lg"
-              >
-                <span className="text-2xl">🍰</span>
-                <span>المنيو</span>
-              </button>
-
-              <button
-                onClick={() => navigate('/custom')}
-                className="group bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white px-6 sm:px-8 py-4 sm:py-5 rounded-2xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-2xl transform hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-3 drop-shadow-lg"
-              >
-                <span className="text-2xl">🎂</span>
-                <span>اطلب تورتك الخاصة</span>
-              </button>
-
-              <button
-                onClick={() => navigate('/instant')}
-                className="group bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 sm:px-8 py-4 sm:py-5 rounded-2xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-2xl transform hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-3 drop-shadow-lg"
-              >
-                <span className="text-2xl">⚡</span>
-                <span>المتاح فوري</span>
-              </button>
-
-              <button
-                onClick={() => navigate('/breakfast')}
-                className="group bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 text-white px-6 sm:px-8 py-4 sm:py-5 rounded-2xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-2xl transform hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-3 drop-shadow-lg"
-              >
-                <span className="text-2xl">🎁</span>
-                <span>بوكسات الفطار</span>
-              </button>
-            </div>
-          </div>
+      {/* Hero Section with Background Image */}
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/الصورة_الرئسية_.jpeg)',
+            imageRendering: 'crisp-edges'
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/30"></div>
         </div>
 
-        {/* Products Section */}
-        <div className="container mx-auto px-4 py-12">
-          {loading && products.length === 0 ? (
-            <div className="text-center py-20">
-              <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-600 mb-4"></div>
-              <p className="text-xl text-gray-600 font-semibold">جار التحميل...</p>
-            </div>
-          ) : error ? (
-            <div className="text-center py-20 max-w-2xl mx-auto">
-              <div className="text-6xl mb-6">⚠️</div>
-              <p className="text-2xl text-red-600 font-bold mb-4">{error}</p>
-              <p className="text-gray-600 mb-8 text-lg">
-                حدث خطأ أثناء جلب المنتجات. يرجى التأكد من اتصالك أو معاودة المحاولة.
-              </p>
-              <button
-                onClick={() => window.location.reload()}
-                className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-8 py-3 rounded-full hover:from-purple-700 hover:to-pink-600 transition-colors font-semibold shadow-md"
-              >
-                إعادة المحاولة
-              </button>
-            </div>
-          ) : (
-            <>
-              {/* Products Grid */}
-              {products.length > 0 && (
-                <>
-                  <div className="flex flex-col items-center mb-12">
-                    <h2 className="text-2xl md:text-3xl font-bold text-purple-900 mb-4">
-                      استكشف التورتات
-                    </h2>
-                  </div>
+        <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 py-12 sm:py-16 max-w-4xl mx-auto space-y-8 sm:space-y-10 lg:space-y-12">
+          <div className="space-y-4 sm:space-y-6">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-relaxed drop-shadow-2xl" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+              👑 برنس الكيك في مصر
+            </h1>
+            <p className="text-xl sm:text-2xl lg:text-3xl text-purple-100 font-medium leading-relaxed drop-shadow-lg">
+              أهلاً بيك نورتنا في برنس كيك 💜
+            </p>
+            <p className="text-base sm:text-lg lg:text-xl text-white leading-relaxed drop-shadow-lg">
+              إحنا مصنع حلويات دليفري فقط داخل إسكندرية
+            </p>
+          </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto mb-12">
-                    {products.map((product) => (
-                      <div
-                        key={product.id}
-                        className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2"
-                      >
-                        <ProductCard
-                          product={product}
-                          onViewProduct={handleViewProduct}
-                          onAddToCart={handleAddToCart}
-                        />
-                      </div>
-                    ))}
-                  </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
+            <button
+              onClick={() => navigate('/menu')}
+              className="group bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-6 sm:px-8 py-4 sm:py-5 rounded-2xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-2xl transform hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-3 drop-shadow-lg"
+            >
+              <span className="text-2xl">🍰</span>
+              <span>المنيو</span>
+            </button>
 
-                  {/* View All Button */}
-                  <div className="text-center mb-20">
-                    <button
-                      onClick={() => navigate('/menu')}
-                      className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-12 py-4 rounded-2xl hover:from-purple-700 hover:to-pink-600 transition-all duration-300 font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 text-lg"
-                    >
-                      عرض كل التورتات
-                    </button>
-                  </div>
-                </>
-              )}
+            <button
+              onClick={() => navigate('/custom')}
+              className="group bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white px-6 sm:px-8 py-4 sm:py-5 rounded-2xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-2xl transform hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-3 drop-shadow-lg"
+            >
+              <span className="text-2xl">🎂</span>
+              <span>اطلب تورتك الخاصة</span>
+            </button>
 
-              {/* No Products Found */}
-              {products.length === 0 && !loading && !error && (
-                <div className="text-center py-20">
-                  <div className="text-7xl mb-6">📦</div>
-                  <p className="text-2xl text-purple-900 font-bold mb-3">
-                    لا توجد منتجات للعرض حالياً
-                  </p>
-                  <p className="text-gray-500 text-lg">
-                    نحن نعمل على إضافة مجموعة جديدة ومميزة من التورتات قريباً!
-                  </p>
+            <button
+              onClick={() => navigate('/instant')}
+              className="group bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 sm:px-8 py-4 sm:py-5 rounded-2xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-2xl transform hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-3 drop-shadow-lg"
+            >
+              <span className="text-2xl">⚡</span>
+              <span>المتاح فوري</span>
+            </button>
+
+            <button
+              onClick={() => navigate('/breakfast')}
+              className="group bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 text-white px-6 sm:px-8 py-4 sm:py-5 rounded-2xl font-semibold text-base sm:text-lg shadow-lg hover:shadow-2xl transform hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-3 drop-shadow-lg"
+            >
+              <span className="text-2xl">🎁</span>
+              <span>بوكسات الفطار</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Products Section */}
+      <div className="container mx-auto px-4 py-12">
+        {loading && products.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-600 mb-4"></div>
+            <p className="text-xl text-gray-600 font-semibold">جار التحميل...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20 max-w-2xl mx-auto">
+            <div className="text-6xl mb-6">⚠️</div>
+            <p className="text-2xl text-red-600 font-bold mb-4">{error}</p>
+            <p className="text-gray-600 mb-8 text-lg">
+              حدث خطأ أثناء جلب المنتجات. يرجى التأكد من اتصالك أو معاودة المحاولة.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-8 py-3 rounded-full hover:from-purple-700 hover:to-pink-600 transition-colors font-semibold shadow-md"
+            >
+              إعادة المحاولة
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Products Grid */}
+            {products.length > 0 && (
+              <>
+                <div className="flex flex-col items-center mb-12">
+                  <h2 className="text-2xl md:text-3xl font-bold text-purple-900 mb-4">
+                    استكشف التورتات
+                  </h2>
                 </div>
-              )}
-            </>
-          )}
-        </div>
-      </main>
 
-      {/* Mobile Bottom Navigation */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
-        <div className="grid grid-cols-5 gap-1 p-2">
-          <button
-            onClick={() => navigate('/')}
-            className="flex flex-col items-center justify-center py-2 px-1 text-purple-600 text-xs font-medium"
-          >
-            <span className="text-xl mb-1">🏠</span>
-            <span>الرئيسية</span>
-          </button>
-          <button
-            onClick={() => navigate('/menu')}
-            className="flex flex-col items-center justify-center py-2 px-1 text-gray-600 hover:text-purple-600 text-xs font-medium transition-colors"
-          >
-            <span className="text-xl mb-1">🍰</span>
-            <span>المنيو</span>
-          </button>
-          <button
-            onClick={() => navigate('/custom')}
-            className="flex flex-col items-center justify-center py-2 px-1 text-gray-600 hover:text-purple-600 text-xs font-medium transition-colors"
-          >
-            <span className="text-xl mb-1">🎂</span>
-            <span>اطلب</span>
-          </button>
-          <button
-            onClick={() => navigate('/instant')}
-            className="flex flex-col items-center justify-center py-2 px-1 text-gray-600 hover:text-purple-600 text-xs font-medium transition-colors"
-          >
-            <span className="text-xl mb-1">⚡</span>
-            <span>فوري</span>
-          </button>
-          <button
-            onClick={() => navigate('/breakfast')}
-            className="flex flex-col items-center justify-center py-2 px-1 text-gray-600 hover:text-purple-600 text-xs font-medium transition-colors"
-          >
-            <span className="text-xl mb-1">🎁</span>
-            <span>فطار</span>
-          </button>
-        </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto mb-12">
+                  {products.map((product) => (
+                    <div
+                      key={product.id}
+                      className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-2"
+                    >
+                      <ProductCard
+                        product={product}
+                        onViewProduct={handleViewProduct}
+                        onAddToCart={handleAddToCart}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* View All Button */}
+                <div className="text-center mb-20">
+                  <button
+                    onClick={() => navigate('/menu')}
+                    className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-12 py-4 rounded-2xl hover:from-purple-700 hover:to-pink-600 transition-all duration-300 font-bold shadow-xl hover:shadow-2xl transform hover:scale-105 text-lg"
+                  >
+                    عرض كل التورتات
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* No Products Found */}
+            {products.length === 0 && !loading && !error && (
+              <div className="text-center py-20">
+                <div className="text-7xl mb-6">📦</div>
+                <p className="text-2xl text-purple-900 font-bold mb-3">
+                  لا توجد منتجات للعرض حالياً
+                </p>
+                <p className="text-gray-500 text-lg">
+                  نحن نعمل على إضافة مجموعة جديدة ومميزة من التورتات قريباً!
+                </p>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
