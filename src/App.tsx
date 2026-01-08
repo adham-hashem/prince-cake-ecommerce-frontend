@@ -38,6 +38,7 @@ import CustomOrders from './pages/CustomOrders';
 import CakeConfigurationManagement from './pages/admin/CakeConfigurationManagement';
 import CustomOrdersManagement from './pages/admin/CustomOrdersManagement';
 import MyCustomOrders from './pages/MyCustomOrders';
+import BreakfastBoxesPage from './pages/BreakfastBoxesPage';
 
 function AppContent() {
   // Handle foreground notifications
@@ -83,6 +84,7 @@ function AppContent() {
             <Route path="/" element={<HomePage />} />
             <Route path="/menu" element={<MenuPage />} />
             <Route path="/instant" element={<InstantPage />} />
+            <Route path="/breakfast" element={<BreakfastBoxesPage />} />
             
             {/* Protected Routes - Require Authentication */}
             <Route
