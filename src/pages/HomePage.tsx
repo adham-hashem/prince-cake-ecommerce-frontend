@@ -171,68 +171,6 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50" dir="rtl">
-      {/* Fixed Header */}
-      <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm shadow-md z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 sm:h-20">
-            <button
-              onClick={() => navigate('/')}
-              className="flex-shrink-0 hover:opacity-80 transition-opacity"
-            >
-              <img
-                src="/logoo.jpeg"
-                alt="Prince Cake Logo"
-                className="h-12 w-12 sm:h-14 sm:w-14 object-cover rounded-lg"
-              />
-            </button>
-
-            <nav className="hidden md:flex items-center gap-6 lg:gap-8">
-              <button
-                onClick={() => navigate('/')}
-                className="text-purple-900 hover:text-purple-600 font-medium transition-colors text-sm lg:text-base"
-              >
-                الرئيسية
-              </button>
-              <button
-                onClick={() => navigate('/menu')}
-                className="text-purple-900 hover:text-purple-600 font-medium transition-colors text-sm lg:text-base"
-              >
-                المنيو
-              </button>
-              <button
-                onClick={() => navigate('/custom')}
-                className="text-purple-900 hover:text-purple-600 font-medium transition-colors text-sm lg:text-base"
-              >
-                اطلب تورتك
-              </button>
-              <button
-                onClick={() => navigate('/instant')}
-                className="text-purple-900 hover:text-purple-600 font-medium transition-colors text-sm lg:text-base"
-              >
-                المتاح فوري
-              </button>
-              <button
-                onClick={() => navigate('/breakfast')}
-                className="text-purple-900 hover:text-purple-600 font-medium transition-colors text-sm lg:text-base"
-              >
-                بوكسات الفطار
-              </button>
-            </nav>
-
-            <button
-              onClick={() => navigate('/cart')}
-              className="p-2 sm:p-3 hover:bg-purple-50 rounded-full transition-colors relative"
-              aria-label="Shopping Cart"
-            >
-              <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-purple-900" />
-              <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                0
-              </span>
-            </button>
-          </div>
-        </div>
-      </header>
-
       <main className="">
         {/* Animation styles */}
         <style>{`
