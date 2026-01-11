@@ -45,7 +45,7 @@ const BreakfastBoxesPage: React.FC = () => {
       const token = localStorage.getItem('jwt_token') || 'jwt_token';
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
       const response = await fetch(
-        `${apiUrl}/api/products/breakfastboxes?pageNumber=${page}&pageSize=10`,
+        `${apiUrl}/api/products/breakfast?pageNumber=${page}&pageSize=10`,
         {
           method: 'GET',
           headers: {
@@ -94,6 +94,7 @@ const BreakfastBoxesPage: React.FC = () => {
         isHidden: item.isHidden !== undefined ? item.isHidden : false,
         isAvailable: item.isAvailable !== undefined ? item.isAvailable : true,
         isInstant: item.isInstant !== undefined ? item.isInstant : false,
+        isBreakfast: item.isBreakfast !== undefined ? item.isBreakfast : false,
         isFeatured: item.isFeatured !== undefined ? item.isFeatured : false,
         
         // Computed fields
@@ -126,7 +127,7 @@ const BreakfastBoxesPage: React.FC = () => {
     }
   };
 
-  // Initial load + state restoration
+  // تحميل أولي + استرجاع حالة
   useEffect(() => {
     const state = location.state?.fromBreakfastPage as
       | BreakfastRestoreState
@@ -142,7 +143,7 @@ const BreakfastBoxesPage: React.FC = () => {
     }
   }, []);
 
-  // Restore scroll position after data loads
+  // استرجاع موضع السكرول بعد تحميل البيانات
   useEffect(() => {
     if (restoreScroll !== null && !loading && products.length > 0) {
       const timer = setTimeout(() => {
@@ -304,7 +305,7 @@ const BreakfastBoxesPage: React.FC = () => {
           <span>العودة للرئيسية</span>
         </Link>
 
-        {/* Header with breakfast boxes theme */}
+        {/* هيدر بطابع بوكسات الفطار */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 mb-4">
             <Gift className="h-8 w-8 text-rose-500" />
