@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Edit, Trash2, Upload, Menu, X, ChevronLeft, ChevronRight, EyeOff, Eye, Package, Zap } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, Menu, X, ChevronLeft, ChevronRight, EyeOff, Eye, Package, Zap, Coffee } from 'lucide-react';
 
 // Assuming you have a file at this path
 import { useAuth } from '../../contexts/AuthContext';
@@ -11,7 +11,7 @@ interface ProductImage {
   isMain: boolean;
 }
 
-// Updated Product interface - removed category, sizes, colors, season
+// Updated Product interface - added isBreakfast
 interface Product {
   id: string;
   code: string;
@@ -24,6 +24,7 @@ interface Product {
   isHidden: boolean;
   isAvailable: boolean;
   isInstant?: boolean;
+  isBreakfast?: boolean;
   isFeatured?: boolean;
   rating?: number;
   salesCount?: number;
@@ -48,7 +49,7 @@ const ProductsManagement: React.FC = () => {
   const [showEditProduct, setShowEditProduct] = useState(false);
   const [showSidebar, setShowSidebar] = useState(false);
 
-  // Updated newProduct state - changed to empty strings
+  // Updated newProduct state - added isBreakfast
   const [newProduct, setNewProduct] = useState({
     code: '',
     name: '',
@@ -57,13 +58,14 @@ const ProductsManagement: React.FC = () => {
     description: '',
     sizes: [''],
     colors: [''],
-    category: '',  // Changed to empty string
+    category: '',
     images: [''],
     isHidden: false,
     isAvailable: true,
-    season: '',  // Changed to empty string
+    season: '',
     type: 0,
     isInstant: false,
+    isBreakfast: false,
     isFeatured: false,
   });
 
@@ -137,6 +139,7 @@ const ProductsManagement: React.FC = () => {
             isHidden: item.isHidden ?? false,
             isAvailable: item.isAvailable ?? false,
             isInstant: item.isInstant ?? false,
+            isBreakfast: item.isBreakfast ?? false,
             isFeatured: item.isFeatured ?? false,
             rating: item.rating ?? 0,
             salesCount: item.salesCount ?? 0,
@@ -194,6 +197,7 @@ const ProductsManagement: React.FC = () => {
       formData.append('isHidden', newProduct.isHidden.toString());
       formData.append('isAvailable', newProduct.isAvailable.toString());
       formData.append('isInstant', newProduct.isInstant.toString());
+      formData.append('isBreakfast', newProduct.isBreakfast.toString());
       formData.append('isFeatured', newProduct.isFeatured.toString());
       formData.append('type', newProduct.type.toString());
 
@@ -268,7 +272,6 @@ const ProductsManagement: React.FC = () => {
       setShowAddProduct(false);
       resetProductForm();
       alert('تم إضافة المنتج بنجاح!');
-
     } catch (error: any) {
       console.error('Error adding product:', error);
       alert(error.message || 'حدث خطأ أثناء إضافة المنتج');
@@ -296,6 +299,7 @@ const ProductsManagement: React.FC = () => {
       formData.append('isHidden', newProduct.isHidden.toString());
       formData.append('isAvailable', newProduct.isAvailable.toString());
       formData.append('isInstant', newProduct.isInstant.toString());
+      formData.append('isBreakfast', newProduct.isBreakfast.toString());
       formData.append('isFeatured', newProduct.isFeatured.toString());
       formData.append('type', newProduct.type.toString());
 
@@ -391,7 +395,7 @@ const ProductsManagement: React.FC = () => {
     }
   };
 
-  // Updated resetProductForm with empty strings
+  // Updated resetProductForm with isBreakfast
   const resetProductForm = () => {
     setNewProduct({
       code: '',
@@ -401,18 +405,19 @@ const ProductsManagement: React.FC = () => {
       description: '',
       sizes: [''],
       colors: [''],
-      category: '',  // Changed to empty string
+      category: '',
       images: [''],
       isHidden: false,
       isAvailable: true,
-      season: '',  // Changed to empty string
+      season: '',
       type: 0,
       isInstant: false,
+      isBreakfast: false,
       isFeatured: false,
     });
   };
 
-  // Updated handleEditProduct - reset to empty strings
+  // Updated handleEditProduct with isBreakfast
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
     setNewProduct({
@@ -422,14 +427,15 @@ const ProductsManagement: React.FC = () => {
       originalPrice: product.originalPrice?.toString() || '',
       description: product.description,
       images: product.images.map(img => img.imagePath),
-      sizes: [''],  // Reset to empty
-      colors: [''],  // Reset to empty
-      category: '',  // Reset to empty
+      sizes: [''],
+      colors: [''],
+      category: '',
       isHidden: product.isHidden,
       isAvailable: product.isAvailable,
-      season: '',  // Reset to empty
+      season: '',
       type: 0,
       isInstant: product.isInstant || false,
+      isBreakfast: product.isBreakfast || false,
       isFeatured: product.isFeatured || false,
     });
     setShowEditProduct(true);
@@ -438,7 +444,7 @@ const ProductsManagement: React.FC = () => {
 
   const handleDeleteProduct = async (productId: string) => {
     const productToDelete = products.find(p => p.id === productId);
-    if (!confirm(`هل أنت متأكد من حذف المنتج "${productToDelete?.name}"؟\n\nتحذير: إذا كان المنتج موجود في عربات التسوق أو الطلبات، فلن يمكن حذفه.`)) {
+    if (!confirm(`هل أنت متأكد من حذف المنتج "${productToDelete?.name}"?\n\nتحذير: إذا كان المنتج موجود في عربات التسوق أو الطلبات، فلن يمكن حذفه.`)) {
       return;
     }
 
@@ -771,7 +777,7 @@ const ProductsManagement: React.FC = () => {
                               </div>
                             </div>
 
-                            {/* Toggles for isHidden, isAvailable, isInstant, isFeatured */}
+                            {/* Toggles for isHidden, isAvailable, isInstant, isBreakfast, isFeatured */}
                             <div className="flex flex-wrap gap-6 pt-2">
                               <label className="flex items-center space-x-reverse space-x-3">
                                 <input
@@ -799,6 +805,24 @@ const ProductsManagement: React.FC = () => {
                                   className="w-5 h-5 text-purple-600 rounded"
                                 />
                                 <span className="text-sm font-medium text-gray-700">منتج فوري</span>
+                              </label>
+                              <label className="flex items-center space-x-reverse space-x-3">
+                                <input
+                                  type="checkbox"
+                                  checked={newProduct.isBreakfast}
+                                  onChange={(e) => setNewProduct(prev => ({ ...prev, isBreakfast: e.target.checked }))}
+                                  className="w-5 h-5 text-orange-600 rounded"
+                                />
+                                <span className="text-sm font-medium text-gray-700">بوكس فطار</span>
+                              </label>
+                              <label className="flex items-center space-x-reverse space-x-3">
+                                <input
+                                  type="checkbox"
+                                  checked={newProduct.isFeatured}
+                                  onChange={(e) => setNewProduct(prev => ({ ...prev, isFeatured: e.target.checked }))}
+                                  className="w-5 h-5 text-yellow-600 rounded"
+                                />
+                                <span className="text-sm font-medium text-gray-700">منتج مميز</span>
                               </label>
                             </div>
 
@@ -919,7 +943,7 @@ const ProductsManagement: React.FC = () => {
                                         <h3 className="font-semibold text-lg text-gray-800">{product.name}</h3>
                                         <p className="text-sm text-gray-600">الكود: {product.code}</p>
                                       </div>
-                                      <div className="flex items-center gap-2">
+                                      <div className="flex items-center gap-2 flex-wrap">
                                         {!product.isAvailable && (
                                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                             <EyeOff size={12} className="ml-1" />
@@ -936,6 +960,12 @@ const ProductsManagement: React.FC = () => {
                                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                             <Zap size={12} className="ml-1" />
                                             فوري
+                                          </span>
+                                        )}
+                                        {product.isBreakfast && (
+                                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                            <Coffee size={12} className="ml-1" />
+                                            فطار
                                           </span>
                                         )}
                                         {product.isFeatured && (
