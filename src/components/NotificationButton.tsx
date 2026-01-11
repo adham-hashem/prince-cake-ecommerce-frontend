@@ -68,12 +68,13 @@ const NotificationButton: React.FC = () => {
   };
 
   return (
-    <button
-      onClick={handleEnableNotifications}
-      className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors font-semibold shadow-sm"
-    >
-      تفعيل الإشعارات
-    </button>
+    <></>
+    // <button
+    //   onClick={handleEnableNotifications}
+    //   className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors font-semibold shadow-sm"
+    // >
+    //   تفعيل الإشعارات
+    // </button>
   );
 };
 
