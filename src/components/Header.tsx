@@ -139,7 +139,7 @@ const Header: React.FC = () => {
             className="flex items-center gap-3"
           >
             <img
-              src="/logoo.jpeg"
+              src="/logoooo.jpeg"
               alt="Prince Cake"
               className="h-12 w-12 rounded-full object-cover"
             />
