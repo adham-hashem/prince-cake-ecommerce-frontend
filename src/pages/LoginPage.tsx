@@ -450,111 +450,6 @@ const LoginPage: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-6">
-                {/* Email/Password Login Form */}
-                <form onSubmit={handleEmailLogin} className="space-y-4">
-                  {/* Email Field */}
-                  <div>
-                    <label htmlFor="email" className="block text-right text-sm font-medium text-gray-700 mb-2">
-                      البريد الإلكتروني
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="email"
-                        id="email"
-                        value={email}
-                        onChange={(e) => {
-                          setEmail(e.target.value);
-                          setFieldErrors(prev => ({ ...prev, email: undefined }));
-                        }}
-                        className={`w-full px-4 py-3 pr-12 border-2 rounded-xl text-right focus:outline-none transition-colors ${
-                          fieldErrors.email
-                            ? 'border-red-300 focus:border-red-500'
-                            : 'border-purple-200 focus:border-purple-500'
-                        }`}
-                        placeholder="example@email.com"
-                        dir="ltr"
-                      />
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                    </div>
-                    {fieldErrors.email && (
-                      <p className="text-red-500 text-xs mt-1 text-right">{fieldErrors.email}</p>
-                    )}
-                  </div>
-
-                  {/* Password Field */}
-                  <div>
-                    <label htmlFor="password" className="block text-right text-sm font-medium text-gray-700 mb-2">
-                      كلمة المرور
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        id="password"
-                        value={password}
-                        onChange={(e) => {
-                          setPassword(e.target.value);
-                          setFieldErrors(prev => ({ ...prev, password: undefined }));
-                        }}
-                        className={`w-full px-4 py-3 pr-12 pl-12 border-2 rounded-xl text-right focus:outline-none transition-colors ${
-                          fieldErrors.password
-                            ? 'border-red-300 focus:border-red-500'
-                            : 'border-purple-200 focus:border-purple-500'
-                        }`}
-                        placeholder="••••••••"
-                      />
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-5 w-5" />
-                        ) : (
-                          <Eye className="h-5 w-5" />
-                        )}
-                      </button>
-                    </div>
-                    {fieldErrors.password && (
-                      <p className="text-red-500 text-xs mt-1 text-right">{fieldErrors.password}</p>
-                    )}
-                  </div>
-
-                  {/* Forgot Password Link */}
-                  <div className="text-right">
-                    <Link
-                      to="/forgot-password"
-                      className="text-sm text-purple-600 hover:text-purple-700 hover:underline"
-                    >
-                      نسيت كلمة المرور؟
-                    </Link>
-                  </div>
-
-                  {/* Error Message */}
-                  {error && (
-                    <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-center animate-shake">
-                      <p className="text-red-600 text-sm font-medium">
-                        ⚠️ {error}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-4 rounded-xl font-bold hover:from-purple-700 hover:to-pink-600 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                  >
-                    تسجيل الدخول
-                  </button>
-                </form>
-
-                {/* Divider */}
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-purple-200 to-transparent"></div>
-                  <span className="text-gray-400 text-sm">أو</span>
-                  <div className="flex-1 h-px bg-gradient-to-r from-transparent via-pink-200 to-transparent"></div>
-                </div>
-
                 {/* Google Login */}
                 <div className="flex justify-center">
                   <div className="transform hover:scale-105 transition-transform duration-200">
@@ -570,19 +465,6 @@ const LoginPage: React.FC = () => {
                       useOneTap
                     />
                   </div>
-                </div>
-
-                {/* Sign Up Link */}
-                <div className="text-center pt-4 border-t border-gray-100">
-                  <p className="text-gray-600 text-sm">
-                    ليس لديك حساب؟{' '}
-                    <Link
-                      to="/register"
-                      className="text-purple-600 font-bold hover:text-purple-700 hover:underline"
-                    >
-                      سجل الآن
-                    </Link>
-                  </p>
                 </div>
 
                 {/* Terms */}
