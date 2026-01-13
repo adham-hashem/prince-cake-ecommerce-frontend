@@ -25,7 +25,7 @@ const Footer: React.FC = () => {
         <div className="flex flex-col items-center gap-6 mb-10">
           <div className="flex items-center gap-3">
             <img
-              src="/logo_with_slogan.jpg"
+              src="/logoooo.jpeg"
               alt="Prince Cake"
               className="h-16 w-16 rounded-full object-cover shadow-lg border-4 border-white"
             />
