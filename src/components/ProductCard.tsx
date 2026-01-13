@@ -252,7 +252,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         )}
 
         {/* Quick Info Footer */}
-        <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-purple-200 sm:border-t-2">
+        {/* <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-purple-200 sm:border-t-2">
           <div className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-pink-600 font-medium">
             <Heart size={12} className="sm:hidden text-pink-500 fill-pink-200" />
             <Heart size={14} className="hidden sm:block text-pink-500 fill-pink-200" />
@@ -263,7 +263,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <Sparkles size={14} className="hidden sm:block text-amber-500" />
             <span>جودة عالية</span>
           </div>
-        </div>
+        </div> */}
 
         {/* Mobile Action Buttons */}
         <div className="md:hidden flex gap-2 pt-2">
