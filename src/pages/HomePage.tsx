@@ -234,7 +234,7 @@ const HomePage: React.FC = () => {
                   className="group bg-gradient-to-b from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-200 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2"
                 >
                   <span className="text-lg sm:text-xl">🎂</span>
-                  <span>اطلب تورتك</span>
+                  <span>تورت مقاسات خاصة</span>
                 </button>
 
                 <button
@@ -242,7 +242,7 @@ const HomePage: React.FC = () => {
                   className="group bg-gradient-to-b from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-200 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2"
                 >
                   <span className="text-lg sm:text-xl">⚡</span>
-                  <span>فوري</span>
+                  <span>المتاح فوري</span>
                 </button>
 
                 <button
@@ -250,7 +250,7 @@ const HomePage: React.FC = () => {
                   className="group bg-gradient-to-b from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold text-xs sm:text-sm shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 transition-all duration-200 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2"
                 >
                   <span className="text-lg sm:text-xl">🎁</span>
-                  <span>فطار</span>
+                  <span>بوكسات الفطار</span>
                 </button>
               </div>
 
