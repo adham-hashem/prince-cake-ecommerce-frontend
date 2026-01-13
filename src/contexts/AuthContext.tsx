@@ -1,7 +1,9 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { jwtDecode } from 'jwt-decode';
 
+
 // --- TYPE DEFINITIONS ---
+
 
 interface User {
   id: string;
@@ -12,8 +14,8 @@ interface User {
   governorate?: string;
   role: 'user' | 'admin';
   createdAt: string;
-  isProfileComplete?: boolean;
 }
+
 
 interface DecodedToken {
   sub: string;
@@ -22,6 +24,7 @@ interface DecodedToken {
   "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string | string[];
   [key: string]: any;
 }
+
 
 interface AuthContextType {
   user: User | null;
@@ -38,9 +41,12 @@ interface AuthContextType {
   sendEmailVerification: (email: string) => Promise<void>;
 }
 
+
 // --- CONTEXT CREATION ---
 
+
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -50,40 +56,28 @@ export const useAuth = () => {
   return context;
 };
 
+
 // --- PROVIDER COMPONENT ---
+
 
 interface AuthProviderProps {
   children: ReactNode;
 }
+
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
+
   /**
    * Centralized function to handle successful authentication.
-   * It decodes the token, fetches profile status, sets the user state,
-   * and determines the correct redirect path.
+   * It decodes the token, sets the user state, and determines the correct redirect path.
    */
   const handleAuthSuccess = async (accessToken: string, emailForFallback?: string) => {
     localStorage.setItem('accessToken', accessToken);
     const decoded = jwtDecode<DecodedToken>(accessToken);
-
-    // 🚀 CRITICAL PERFORMANCE RECOMMENDATION FOR YOUR BACKEND TEAM 🚀
-    // The API call below to `/api/users/profile-status` is what makes your login feel slow.
-    // To fix this, your backend should return `isProfileComplete` and `roles` DIRECTLY
-    // in the response from the `/api/auth/login` and `/api/auth/google-login` endpoints.
-    // This would eliminate an entire network request and make the login feel instant.
-    // Example ideal response: { accessToken, refreshToken, roles, isProfileComplete }
-    const profileResponse = await fetch(`${apiUrl}/api/users/profile-status`, {
-      headers: { 'Authorization': `Bearer ${accessToken}` },
-    });
-    
-    if (!profileResponse.ok) {
-        throw new Error('فشل في التحقق من حالة الملف الشخصي.');
-    }
-    const { isProfileComplete } = await profileResponse.json();
 
     const roleClaim = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
     const roles = Array.isArray(roleClaim) ? roleClaim : [roleClaim || 'Customer'];
@@ -95,12 +89,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       email: decoded.email || emailForFallback || '',
       role: isAdmin ? 'admin' : 'user',
       createdAt: new Date().toISOString(),
-      isProfileComplete: isProfileComplete || false,
     };
 
     setUser(userData);
-    return isProfileComplete ? (isAdmin ? '/admin/notifications' : '/') : '/complete-profile';
+    return isAdmin ? '/admin/notifications' : '/';
   };
+
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -123,6 +117,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     initializeAuth();
   }, []);
 
+
   const login = async (email: string, password: string): Promise<{ redirectTo: string }> => {
     setLoading(true);
     try {
@@ -132,10 +127,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         body: JSON.stringify({ Email: email, Password: password }),
       });
 
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.Message || 'فشل تسجيل الدخول. تحقق من بريدك الإلكتروني وكلمة المرور.');
       }
+
 
       const data = await response.json();
       if (!data.accessToken) throw new Error('accessToken is missing in the response');
@@ -150,6 +147,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+
   const googleLogin = async (idToken: string): Promise<{ redirectTo: string }> => {
     setLoading(true);
     try {
@@ -159,10 +157,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         body: JSON.stringify({ Token: idToken }),
       });
 
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.errorMessage || 'فشل تسجيل الدخول باستخدام جوجل');
       }
+
 
       const data = await response.json();
       if (!data.accessToken) throw new Error('accessToken is missing in the response');
@@ -177,6 +177,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+
   const register = async (fullName: string, email: string, phoneNumber: string, address: string, governorate: string, password: string): Promise<void> => {
     setLoading(true);
     try {
@@ -185,6 +186,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ FullName: fullName, Email: email, PhoneNumber: phoneNumber, Address: address, Governorate: governorate, Password: password }),
       });
+
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -198,11 +200,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+
   const logout = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     setUser(null);
   };
+
 
   const updateUserProfile = (data: Partial<User>) => {
     setUser(prevUser => (prevUser ? { ...prevUser, ...data } : null));
@@ -217,6 +221,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         body: JSON.stringify({ Email: email }),
       });
 
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.Message || 'فشل إرسال رابط إعادة تعيين كلمة المرور');
@@ -229,6 +234,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+
   const resetPassword = async (email: string, token: string, newPassword: string): Promise<void> => {
     setLoading(true);
     try {
@@ -237,6 +243,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ Email: email, Token: token, NewPassword: newPassword }),
       });
+
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -250,6 +257,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+
   const sendEmailVerification = async (email: string): Promise<void> => {
     setLoading(true);
     try {
@@ -258,6 +266,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ Email: email }),
       });
+
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -274,6 +283,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Derive state from the user object for reliability
   const isAuthenticated = !!user;
   const userRole = user?.role ?? null;
+
 
   return (
     <AuthContext.Provider
