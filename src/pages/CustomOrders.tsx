@@ -11,6 +11,7 @@ import {
   Cake,
   Heart,
   ArrowRight,
+  X,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -90,9 +91,11 @@ interface CakeOptions {
 interface CustomOrderForm {
   customerName: string;
   customerPhone: string;
+  additionalPhone: string;
+  address: string;
   occasionId: string;
   sizeId: string;
-  flavorId: string;
+  flavorIds: string[];
   customText: string;
   designImage: File | null;
   imagePreview: string | null;
@@ -103,6 +106,7 @@ interface CustomOrderForm {
 }
 
 const EMPTY_GUID = '00000000-0000-0000-0000-000000000000';
+const IMAGE_UPLOAD_COST = 100; // Cost for uploading design image
 
 const normalizeDigitsToEnglish = (value: string) => {
   const ar = '٠١٢٣٤٥٦٧٨٩';
@@ -147,9 +151,11 @@ export default function CustomOrders() {
   const [formData, setFormData] = useState<CustomOrderForm>({
     customerName: '',
     customerPhone: '',
+    additionalPhone: '',
+    address: '',
     occasionId: '',
     sizeId: '',
-    flavorId: '',
+    flavorIds: [],
     customText: '',
     designImage: null,
     imagePreview: null,
@@ -159,7 +165,6 @@ export default function CustomOrders() {
     paymentMethod: 0,
   });
 
-  // Get auth token helper function
   const getAuthToken = () => {
     return localStorage.getItem('accessToken') || sessionStorage.getItem('accessToken');
   };
@@ -170,11 +175,11 @@ export default function CustomOrders() {
   }, []);
 
   useEffect(() => {
-    if (formData.occasionId && formData.sizeId && formData.flavorId) {
+    if (formData.occasionId && formData.sizeId && formData.flavorIds.length > 0) {
       calculatePrice();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.occasionId, formData.sizeId, formData.flavorId]);
+  }, [formData.occasionId, formData.sizeId, formData.flavorIds, formData.designImage]);
 
   const fetchCakeOptions = async () => {
     try {
@@ -276,8 +281,10 @@ export default function CustomOrders() {
 
   const calculatePrice = async () => {
     try {
+      const flavorParams = formData.flavorIds.map(id => `flavorIds=${id}`).join('&');
+      
       const response = await fetch(
-        `${apiUrl}/api/CakeConfiguration/price?occasionId=${formData.occasionId}&sizeId=${formData.sizeId}&flavorId=${formData.flavorId}`
+        `${apiUrl}/api/CakeConfiguration/price?occasionId=${formData.occasionId}&sizeId=${formData.sizeId}&${flavorParams}`
       );
 
       if (!response.ok) {
@@ -286,7 +293,14 @@ export default function CustomOrders() {
       }
 
       const data = await response.json();
-      setEstimatedPrice(data.price || 0);
+      let calculatedPrice = data.price || 0;
+      
+      // Add image upload cost if image is present
+      if (formData.designImage) {
+        calculatedPrice += IMAGE_UPLOAD_COST;
+      }
+      
+      setEstimatedPrice(calculatedPrice);
     } catch (error) {
       console.error('Error calculating price:', error);
       setEstimatedPrice(0);
@@ -317,8 +331,26 @@ export default function CustomOrders() {
     };
   };
 
-  const getSelectedFlavor = () => {
-    return cakeOptions?.flavors.find((f) => f.id === formData.flavorId);
+  const getSelectedFlavors = () => {
+    return cakeOptions?.flavors.filter((f) => formData.flavorIds.includes(f.id)) || [];
+  };
+
+  const toggleFlavorSelection = (flavorId: string) => {
+    setFormData(prev => {
+      const isSelected = prev.flavorIds.includes(flavorId);
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          flavorIds: prev.flavorIds.filter(id => id !== flavorId)
+        };
+      } else {
+        return {
+          ...prev,
+          flavorIds: [...prev.flavorIds, flavorId]
+        };
+      }
+    });
   };
 
   const handleFileUpload = (file: File | null) => {
@@ -349,6 +381,9 @@ export default function CustomOrders() {
 
     try {
       const normalizedPhone = normalizePhone(formData.customerPhone);
+      const normalizedAdditionalPhone = formData.additionalPhone 
+        ? normalizePhone(formData.additionalPhone) 
+        : '';
 
       if (!isValidEgyptPhone(normalizedPhone)) {
         alert('من فضلك أدخل رقم موبايل مصري صحيح (11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015)');
@@ -356,12 +391,37 @@ export default function CustomOrders() {
         return;
       }
 
+      if (normalizedAdditionalPhone && !isValidEgyptPhone(normalizedAdditionalPhone)) {
+        alert('رقم الهاتف الإضافي غير صحيح');
+        setLoading(false);
+        return;
+      }
+
+      if (formData.flavorIds.length === 0) {
+        alert('من فضلك اختر نكهة واحدة على الأقل');
+        setLoading(false);
+        return;
+      }
+
       const formDataToSend = new FormData();
       formDataToSend.append('CustomerName', formData.customerName);
       formDataToSend.append('CustomerPhone', normalizedPhone);
+      
+      if (normalizedAdditionalPhone) {
+        formDataToSend.append('AdditionalPhone', normalizedAdditionalPhone);
+      }
+      
+      if (formData.address.trim()) {
+        formDataToSend.append('Address', formData.address.trim());
+      }
+
       formDataToSend.append('OccasionId', formData.occasionId);
       formDataToSend.append('SizeId', formData.sizeId);
-      formDataToSend.append('FlavorId', formData.flavorId);
+      
+      formData.flavorIds.forEach(flavorId => {
+        formDataToSend.append('FlavorIds', flavorId);
+      });
+
       formDataToSend.append('CustomText', formData.customText || '');
 
       if (formData.designImage) {
@@ -374,7 +434,6 @@ export default function CustomOrders() {
       formDataToSend.append('Notes', formData.notes || '');
       formDataToSend.append('PaymentMethod', formData.paymentMethod.toString());
 
-      // Get auth token - REQUIRED for authenticated endpoint
       const token = getAuthToken();
 
       if (!token) {
@@ -436,6 +495,8 @@ export default function CustomOrders() {
   }
 
   if (orderComplete) {
+    const selectedFlavors = getSelectedFlavors();
+    
     return (
       <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
@@ -471,8 +532,10 @@ export default function CustomOrders() {
                 <span className="font-medium">الحجم</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">{getSelectedFlavor()?.nameAr}</span>
-                <span className="font-medium">النكهة</span>
+                <span className="text-gray-600">
+                  {selectedFlavors.map(f => f.nameAr).join(' + ')}
+                </span>
+                <span className="font-medium">النكهات</span>
               </div>
               {formData.customText && (
                 <div className="flex justify-between">
@@ -526,7 +589,7 @@ export default function CustomOrders() {
                     key={occasion.id}
                     type="button"
                     onClick={() => {
-                      setFormData({ ...formData, occasionId: occasion.id, sizeId: '', flavorId: '' });
+                      setFormData({ ...formData, occasionId: occasion.id, sizeId: '', flavorIds: [] });
                       setStep(2);
                     }}
                     className={`p-4 border-2 rounded-2xl font-medium transition-all hover:scale-105 ${
@@ -620,12 +683,14 @@ export default function CustomOrders() {
         return (
           <div className="space-y-4">
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-purple-900 mb-2">اختر النكهة</h2>
+              <h2 className="text-2xl font-bold text-purple-900 mb-2">اختر النكهات</h2>
               <p className="text-gray-600 text-sm">
-                ما هي نكهتك المفضلة؟ (متاح طعم واحد & نص ونص & ٤ اجزاء & ٨ اجزاء)
+                اختر نكهة واحدة أو أكثر (طعم واحد / نص ونص / 4 أجزاء / 8 أجزاء)
+              </p>
+              <p className="text-purple-600 font-medium text-sm mt-2">
+                {formData.flavorIds.length} نكهة محددة
               </p>
             </div>
-
 
             {cakeOptions.flavors.length === 0 ? (
               <div className="text-center py-8">
@@ -633,31 +698,74 @@ export default function CustomOrders() {
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">
-                {cakeOptions.flavors.map((flavor) => (
-                  <button
-                    key={flavor.id}
-                    type="button"
-                    onClick={() => {
-                      setFormData({ ...formData, flavorId: flavor.id });
-                      setStep(4);
-                    }}
-                    className={`p-4 border-2 rounded-2xl font-medium transition-all hover:scale-105 ${
-                      formData.flavorId === flavor.id
-                        ? 'border-purple-500 bg-purple-50 text-purple-900 shadow-lg'
-                        : 'border-purple-200 hover:border-purple-400 text-gray-700 hover:bg-purple-50'
-                    }`}
-                  >
-                    <div className="w-8 h-8 rounded-full mx-auto mb-2" style={{ backgroundColor: flavor.color }} />
-                    <div>
-                      <span className="block">{flavor.nameAr}</span>
-                      {flavor.additionalPrice > 0 && (
-                        <span className="text-xs text-purple-600">+{flavor.additionalPrice} جنيه</span>
+                {cakeOptions.flavors.map((flavor) => {
+                  const isSelected = formData.flavorIds.includes(flavor.id);
+                  
+                  return (
+                    <button
+                      key={flavor.id}
+                      type="button"
+                      onClick={() => toggleFlavorSelection(flavor.id)}
+                      className={`relative p-4 border-2 rounded-2xl font-medium transition-all hover:scale-105 ${
+                        isSelected
+                          ? 'border-purple-500 bg-purple-50 text-purple-900 shadow-lg'
+                          : 'border-purple-200 hover:border-purple-400 text-gray-700 hover:bg-purple-50'
+                      }`}
+                    >
+                      {isSelected && (
+                        <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-1">
+                          <CheckCircle className="h-4 w-4" />
+                        </div>
                       )}
-                    </div>
-                  </button>
-                ))}
+                      
+                      <div className="w-8 h-8 rounded-full mx-auto mb-2" style={{ backgroundColor: flavor.color }} />
+                      <div>
+                        <span className="block">{flavor.nameAr}</span>
+                        {flavor.additionalPrice > 0 && (
+                          <span className="text-xs text-purple-600">+{flavor.additionalPrice} جنيه</span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
+
+            {formData.flavorIds.length > 0 && (
+              <div className="bg-purple-50 rounded-xl p-3">
+                <p className="text-sm text-purple-900 font-medium mb-2 text-right">النكهات المختارة:</p>
+                <div className="flex flex-wrap gap-2 justify-end">
+                  {getSelectedFlavors().map((flavor) => (
+                    <span
+                      key={flavor.id}
+                      className="inline-flex items-center gap-1 bg-white px-3 py-1 rounded-full text-sm border border-purple-200"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => toggleFlavorSelection(flavor.id)}
+                        className="hover:bg-red-100 rounded-full p-0.5 transition-colors"
+                      >
+                        <X className="h-3 w-3 text-red-500" />
+                      </button>
+                      <span>{flavor.nameAr}</span>
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: flavor.color }}
+                      />
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => formData.flavorIds.length > 0 ? setStep(4) : alert('اختر نكهة واحدة على الأقل')}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-4 rounded-xl text-lg font-bold hover:from-purple-700 hover:to-pink-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
+              disabled={formData.flavorIds.length === 0}
+            >
+              التالي ←
+            </button>
           </div>
         );
 
@@ -687,6 +795,14 @@ export default function CustomOrders() {
                 <Upload className="inline h-5 w-5 ml-2" />
                 صورة التصميم المطلوب (اختياري)
               </label>
+              
+              {/* Image upload cost notice */}
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-2 text-right">
+                <p className="text-sm text-amber-800">
+                  💡 <span className="font-medium">ملحوظة:</span> رفع صورة التصميم يضيف {IMAGE_UPLOAD_COST} جنيه للسعر التقديري
+                </p>
+              </div>
+              
               <div
                 className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
                   formData.imagePreview
@@ -707,7 +823,7 @@ export default function CustomOrders() {
                       alt="Preview"
                       className="w-32 h-32 object-cover rounded-xl mx-auto mb-2"
                     />
-                    <p className="text-green-600 font-medium text-sm">✓ تم رفع الصورة</p>
+                    <p className="text-green-600 font-medium text-sm">✓ تم رفع الصورة (+{IMAGE_UPLOAD_COST} جنيه)</p>
                     <button
                       type="button"
                       onClick={(e) => {
@@ -740,6 +856,8 @@ export default function CustomOrders() {
         );
 
       case 5:
+        const selectedFlavors = getSelectedFlavors();
+        
         return (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="text-center mb-6">
@@ -780,6 +898,40 @@ export default function CustomOrders() {
                 />
                 <p className="text-xs text-gray-400 text-right mt-1">مثال: 01012345678</p>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-right text-purple-900 font-medium mb-2">
+                رقم هاتف إضافي (اختياري)
+              </label>
+              <input
+                type="tel"
+                inputMode="numeric"
+                maxLength={11}
+                value={formData.additionalPhone}
+                onChange={(e) => {
+                  const v = normalizePhone(e.target.value);
+                  setFormData({ ...formData, additionalPhone: v });
+                }}
+                className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl text-right focus:border-purple-500 focus:outline-none"
+                placeholder="01xxxxxxxxx"
+              />
+              <p className="text-xs text-gray-400 text-right mt-1">رقم للتواصل في حالة عدم الرد على الرقم الأساسي</p>
+            </div>
+
+            <div>
+              <label className="block text-right text-purple-900 font-medium mb-2">
+                العنوان (اختياري)
+              </label>
+              <textarea
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                rows={2}
+                maxLength={500}
+                className="w-full px-4 py-3 border-2 border-purple-200 rounded-xl text-right focus:border-purple-500 focus:outline-none resize-none"
+                placeholder="المدينة، الشارع، رقم المنزل..."
+              />
+              <p className="text-xs text-gray-400 text-right mt-1">{formData.address.length}/500 حرف</p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -878,13 +1030,26 @@ export default function CustomOrders() {
                   <span className="text-gray-500">الحجم</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>{getSelectedFlavor()?.nameAr}</span>
-                  <span className="text-gray-500">النكهة</span>
+                  <span className="flex flex-wrap gap-1 justify-end">
+                    {selectedFlavors.map((flavor, index) => (
+                      <span key={flavor.id}>
+                        {flavor.nameAr}
+                        {index < selectedFlavors.length - 1 && ' + '}
+                      </span>
+                    ))}
+                  </span>
+                  <span className="text-gray-500">النكهات</span>
                 </div>
                 {formData.customText && (
                   <div className="flex justify-between">
                     <span>{formData.customText}</span>
                     <span className="text-gray-500">النص</span>
+                  </div>
+                )}
+                {formData.designImage && (
+                  <div className="flex justify-between text-amber-700">
+                    <span>+{IMAGE_UPLOAD_COST} جنيه</span>
+                    <span className="text-gray-500">صورة التصميم</span>
                   </div>
                 )}
               </div>
@@ -1009,7 +1174,7 @@ export default function CustomOrders() {
             </div>
             <div className="bg-white/80 rounded-2xl p-4 text-center shadow-md">
               <span className="text-2xl block mb-1">🚚</span>
-              <p className="text-xs text-gray-600">توصيل آمن</p>
+              <p className="text-xs text-gray-600">توصيل سريع</p>
             </div>
           </div>
         </div>
