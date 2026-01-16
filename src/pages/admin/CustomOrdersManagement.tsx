@@ -1,3 +1,5 @@
+// src/pages/admin/CustomOrdersManagement.tsx
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -19,6 +21,7 @@ import {
   Package,
   DollarSign,
   Image as ImageIcon,
+  MapPin,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -43,9 +46,11 @@ interface CustomOrder {
   orderNumber: string;
   customerName: string;
   customerPhone: string;
+  additionalPhone?: string;
+  address?: string;
   occasionName: string;
   sizeName: string;
-  flavorName: string;
+  flavorNames: string[];  // Changed from flavorName to flavorNames array
   customText?: string;
   designImageUrl?: string;
   pickupDate: string;
@@ -530,6 +535,12 @@ const CustomOrdersManagement: React.FC = () => {
                     <span className="text-gray-500">
                       {getPaymentMethodText(order.paymentMethod)}
                     </span>
+                    {/* Display multiple flavors */}
+                    {order.flavorNames && order.flavorNames.length > 0 && (
+                      <span className="text-purple-600 text-xs">
+                        {order.flavorNames.join(' + ')}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2 mt-3 sm:mt-0 sm:mr-3">
@@ -657,6 +668,28 @@ const CustomOrdersManagement: React.FC = () => {
                 </div>
               </div>
 
+              {/* Additional Phone */}
+              {selectedOrder.additionalPhone && (
+                <div>
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1">رقم هاتف إضافي</p>
+                  <p className="font-bold text-gray-900 text-sm sm:text-base flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-purple-600" />
+                    {selectedOrder.additionalPhone}
+                  </p>
+                </div>
+              )}
+
+              {/* Address */}
+              {selectedOrder.address && (
+                <div>
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1">العنوان</p>
+                  <p className="font-bold text-gray-900 text-sm sm:text-base flex items-start gap-2 bg-blue-50 p-3 rounded-xl">
+                    <MapPin className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                    <span>{selectedOrder.address}</span>
+                  </p>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
                   <p className="text-xs sm:text-sm text-gray-600 mb-1">المناسبة</p>
@@ -667,8 +700,12 @@ const CustomOrdersManagement: React.FC = () => {
                   <p className="font-bold text-gray-900 text-sm sm:text-base">{selectedOrder.sizeName}</p>
                 </div>
                 <div>
-                  <p className="text-xs sm:text-sm text-gray-600 mb-1">النكهة</p>
-                  <p className="font-bold text-gray-900 text-sm sm:text-base">{selectedOrder.flavorName}</p>
+                  <p className="text-xs sm:text-sm text-gray-600 mb-1">النكهات</p>
+                  <p className="font-bold text-gray-900 text-sm sm:text-base">
+                    {selectedOrder.flavorNames && selectedOrder.flavorNames.length > 0
+                      ? selectedOrder.flavorNames.join(' + ')
+                      : 'غير محدد'}
+                  </p>
                 </div>
               </div>
 
