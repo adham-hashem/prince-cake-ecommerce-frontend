@@ -3,6 +3,37 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Loader, UserCircle, MapPin, Phone, Home, Sparkles } from 'lucide-react';
 
+// All 27 Egyptian Governorates
+const GOVERNORATES = [
+  { value: "1", label: "القاهرة" },
+  { value: "2", label: "الإسكندرية" },
+  { value: "3", label: "بورسعيد" },
+  { value: "4", label: "السويس" },
+  { value: "5", label: "الإسماعيلية" },
+  { value: "6", label: "دمياط" },
+  { value: "7", label: "الدقهلية" },
+  { value: "8", label: "الشرقية" },
+  { value: "9", label: "القليوبية" },
+  { value: "10", label: "كفر الشيخ" },
+  { value: "11", label: "الغربية" },
+  { value: "12", label: "المنوفية" },
+  { value: "13", label: "البحيرة" },
+  { value: "14", label: "الجيزة" },
+  { value: "15", label: "بني سويف" },
+  { value: "16", label: "الفيوم" },
+  { value: "17", label: "المنيا" },
+  { value: "18", label: "أسيوط" },
+  { value: "19", label: "سوهاج" },
+  { value: "20", label: "قنا" },
+  { value: "21", label: "أسوان" },
+  { value: "22", label: "مطروح" },
+  { value: "23", label: "الوادي الجديد" },
+  { value: "24", label: "البحر الأحمر" },
+  { value: "25", label: "شمال سيناء" },
+  { value: "26", label: "جنوب سيناء" },
+  { value: "27", label: "الأقصر" }
+];
+
 const CompleteProfile = () => {
   const { user, updateUserProfile } = useAuth();
   const navigate = useNavigate();
@@ -185,33 +216,11 @@ const CompleteProfile = () => {
                 dir="rtl"
               >
                 <option value="0">اختر المحافظة...</option>
-                <option value="1">القاهرة</option>
-                <option value="2">الأسكندرية</option>
-                <option value="3">بورسعيد</option>
-                <option value="4">السويس</option>
-                <option value="5">الإسماعيلية</option>
-                <option value="6">دمياط</option>
-                <option value="7">الدقهلية</option>
-                <option value="8">الشرقية</option>
-                <option value="9">القليوبية</option>
-                <option value="10">كفر الشيخ</option>
-                <option value="11">الغربية</option>
-                <option value="12">المنوفية</option>
-                <option value="13">البحيرة</option>
-                <option value="14">الجيزة</option>
-                <option value="15">بنى سويف</option>
-                <option value="16">الفيوم</option>
-                <option value="17">المنيا</option>
-                <option value="18">أسيوط</option>
-                <option value="19">سوهاج</option>
-                <option value="20">قنا</option>
-                <option value="21">أسوان</option>
-                <option value="22">مطروح</option>
-                <option value="23">الوادى الجديد</option>
-                <option value="24">البحر الاحمر</option>
-                <option value="25">شمال سيناء</option>
-                <option value="26">جنوب سيناء</option>
-                <option value="27">الأقصر</option>
+                {GOVERNORATES.map((gov) => (
+                  <option key={gov.value} value={gov.value}>
+                    {gov.label}
+                  </option>
+                ))}
               </select>
             </div>
 
