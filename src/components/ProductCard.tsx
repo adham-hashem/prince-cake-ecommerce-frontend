@@ -267,7 +267,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
         {/* Mobile Action Buttons */}
         <div className="md:hidden flex gap-2 pt-2">
-          <button
+          {/* <button
             onClick={(e) => {
               e.stopPropagation();
               onViewProduct(product);
@@ -277,7 +277,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <Eye size={16} className="sm:hidden" />
             <Eye size={18} className="hidden sm:block" />
             <span>عرض</span>
-          </button>
+          </button> */}
 
           {/* <button
             data-action="add-to-cart"
