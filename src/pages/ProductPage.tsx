@@ -626,7 +626,7 @@ const ProductPage: React.FC = () => {
         <div className="mt-6 sm:mt-8 text-center">
           <p className="text-gray-600 mb-3 text-sm sm:text-base">هل لديك سؤال عن هذه التورتة؟</p>
           <a
-            href={`https://wa.me/201000070653?text=مرحباً، أريد الاستفسار عن: ${product.name}`}
+            href={`https://wa.me/201200253137?text=مرحباً، أريد الاستفسار عن: ${product.name}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 bg-green-500 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-medium hover:bg-green-600 transition-all shadow-lg hover:shadow-xl text-sm sm:text-base"

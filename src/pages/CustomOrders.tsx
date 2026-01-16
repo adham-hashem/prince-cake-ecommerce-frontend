@@ -621,8 +621,11 @@ export default function CustomOrders() {
           <div className="space-y-4">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-purple-900 mb-2">اختر النكهة</h2>
-              <p className="text-gray-600 text-sm">ما هي نكهتك المفضلة؟</p>
+              <p className="text-gray-600 text-sm">
+                ما هي نكهتك المفضلة؟ (متاح طعم واحد & نص ونص & ٤ اجزاء & ٨ اجزاء)
+              </p>
             </div>
+
 
             {cakeOptions.flavors.length === 0 ? (
               <div className="text-center py-8">
