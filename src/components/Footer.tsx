@@ -77,7 +77,7 @@ const Footer: React.FC = () => {
         <div className="border-t border-purple-100 pt-6">
           <div className="text-center space-y-3">
             <p className="text-gray-600 text-sm">
-              تم التصميم والتطوير بواسطة Adham&apos;s Team
+              Designed and developed by Adham Hashem Team
             </p>
 
             {/* WhatsApp Icons for Adham's Team */}
