@@ -1,6 +1,6 @@
 // src/App.tsx
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './contexts/AppContext';
 import { AuthProvider } from './contexts/AuthContext';
@@ -10,6 +10,11 @@ import Footer from './components/Footer';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { onForegroundMessage } from './services/firebase';
+import { Unsubscribe } from 'firebase/messaging';
+
+// ✅ NEW: Modal to guide FB/IG users to open in real browser
+import OpenInBrowserModal from './components/OpenInBrowserModal';
+import { isFacebookOrInstagramInAppBrowser } from './utils/inAppBrowser';
 
 // Public Pages
 import HomePage from './pages/HomePage';
@@ -30,7 +35,6 @@ import OrdersManagement from './pages/admin/OrdersManagement';
 import CustomersManagement from './pages/admin/CustomersManagement';
 import DiscountCodesManagement from './pages/admin/DiscountCodesManagement';
 import ShippingManagement from './pages/admin/ShippingManagement';
-import { Unsubscribe } from 'firebase/messaging';
 import OrderNotifications from './pages/admin/OrderNotifications';
 import CompleteProfile from './pages/CompleteProfile';
 import ProfilePage from './pages/ProfilePage';
@@ -41,6 +45,15 @@ import MyCustomOrders from './pages/MyCustomOrders';
 import BreakfastBoxesPage from './pages/BreakfastBoxesPage';
 
 function AppContent() {
+  // ✅ NEW: Show the "Open in Browser" modal globally
+  const [showOpenInBrowser, setShowOpenInBrowser] = useState(false);
+
+  useEffect(() => {
+    if (isFacebookOrInstagramInAppBrowser()) {
+      setShowOpenInBrowser(true);
+    }
+  }, []);
+
   // Handle foreground notifications
   useEffect(() => {
     let unsubscribe: Unsubscribe | undefined;
@@ -65,15 +78,20 @@ function AppContent() {
 
     // Cleanup subscription on component unmount
     return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
+      if (unsubscribe) unsubscribe();
     };
   }, []);
 
   return (
     <Router>
+      {/* ✅ Global modal */}
+      <OpenInBrowserModal
+        open={showOpenInBrowser}
+        onClose={() => setShowOpenInBrowser(false)}
+      />
+
       <div className="min-h-screen bg-gray-50 flex flex-col" dir="rtl">
+        {/* Header */}
         <Routes>
           <Route path="/admin/*" element={null} />
           <Route path="*" element={<Header />} />
@@ -81,11 +99,14 @@ function AppContent() {
 
         <main className="flex-grow">
           <Routes>
+            {/* Public */}
             <Route path="/" element={<HomePage />} />
             <Route path="/menu" element={<MenuPage />} />
             <Route path="/instant" element={<InstantPage />} />
             <Route path="/breakfast" element={<BreakfastBoxesPage />} />
-            
+            <Route path="/product/:id" element={<ProductPage />} />
+            <Route path="/login" element={<LoginPage />} />
+
             {/* Protected Routes - Require Authentication */}
             <Route
               path="/custom"
@@ -95,8 +116,6 @@ function AppContent() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/product/:id" element={<ProductPage />} />
-            <Route path="/login" element={<LoginPage />} />
             <Route
               path="/complete-profile"
               element={
@@ -170,14 +189,22 @@ function AppContent() {
               <Route path="customers" element={<CustomersManagement />} />
               <Route path="discounts" element={<DiscountCodesManagement />} />
               <Route path="shipping" element={<ShippingManagement />} />
-              <Route path="custom-orders-management" element={<CustomOrdersManagement />} />
-              <Route path="cake-configuration" element={<CakeConfigurationManagement />} />
+              <Route
+                path="custom-orders-management"
+                element={<CustomOrdersManagement />}
+              />
+              <Route
+                path="cake-configuration"
+                element={<CakeConfigurationManagement />}
+              />
             </Route>
 
+            {/* Fallback */}
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
 
+        {/* Footer */}
         <Routes>
           <Route path="/admin/*" element={null} />
           <Route path="*" element={<Footer />} />
