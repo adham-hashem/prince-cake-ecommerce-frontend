@@ -92,7 +92,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
 
     setUser(userData);
-    return isAdmin ? '/admin/orders' : '/';
+    return isAdmin ? '/admin/notifications' : '/';
   };
 
 

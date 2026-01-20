@@ -182,7 +182,7 @@ function AppContent() {
                 </ProtectedRoute>
               }
             >
-              <Route index element={<Navigate to="notifications" replace />} />
+              <Route index element={<Navigate to="orders" replace />} />
               <Route path="notifications" element={<OrderNotifications />} />
               <Route path="products" element={<ProductsManagement />} />
               <Route path="orders" element={<OrdersManagement />} />
