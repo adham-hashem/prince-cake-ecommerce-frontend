@@ -65,7 +65,7 @@ const Footer: React.FC = () => {
           </a>
 
           <button
-            onClick={() => openWhatsApp('201200253137')}
+            onClick={() => openWhatsApp('201271285135')}
             className="p-3 bg-green-500 text-white rounded-full hover:scale-110 transition-transform shadow-lg"
             aria-label="WhatsApp Prince Cake"
           >
