@@ -1,6 +1,7 @@
 // src/components/NotificationButton.tsx
 
 import React from 'react';
+import { Bell } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { requestNotificationPermission } from '../services/firebase';
 
@@ -40,8 +41,8 @@ const NotificationButton: React.FC = () => {
   const handleEnableNotifications = async (): Promise<void> => {
     // Check for browser support
     if (!('Notification' in window)) {
-        toast.error('هذا المتصفح لا يدعم الإشعارات.');
-        return;
+      toast.error('هذا المتصفح لا يدعم الإشعارات.');
+      return;
     }
 
     if (Notification.permission === 'granted') {
@@ -68,13 +69,15 @@ const NotificationButton: React.FC = () => {
   };
 
   return (
-    <></>
-    // <button
-    //   onClick={handleEnableNotifications}
-    //   className="bg-pink-600 text-white px-4 py-2 rounded-lg hover:bg-pink-700 transition-colors font-semibold shadow-sm"
-    // >
-    //   تفعيل الإشعارات
-    // </button>
+    <button
+      onClick={handleEnableNotifications}
+      className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all font-medium shadow-md hover:shadow-lg transform hover:scale-105"
+      title="تفعيل الإشعارات"
+    >
+      <Bell size={18} className="sm:hidden" />
+      <Bell size={20} className="hidden sm:block" />
+      <span className="hidden sm:inline">تفعيل الإشعارات</span>
+    </button>
   );
 };
 
