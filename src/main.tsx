@@ -3,6 +3,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { Analytics } from '@vercel/analytics/react';
 import App from './App';
 import './index.css'; // Assuming you have a main css file
 
@@ -18,6 +19,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     {/* This Provider loads the Google script once for your whole app */}
     <GoogleOAuthProvider clientId={googleClientId}>
       <App />
+      {/* Vercel Analytics - Tracks page views automatically */}
+      <Analytics />
     </GoogleOAuthProvider>
   </React.StrictMode>
 );
