@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Check, 
-  Ship, 
-  Package, 
-  Eye, 
-  Search, 
-  Filter, 
-  AlertCircle, 
-  Trash2, 
-  User, 
+import {
+  Check,
+  Ship,
+  Package,
+  Eye,
+  Search,
+  Filter,
+  AlertCircle,
+  Trash2,
+  User,
   Phone,
   MapPin,
   ChevronDown,
@@ -51,6 +51,10 @@ interface OrderResponseDto {
   address?: string;
   governorate?: string;
   items: OrderItemResponseDto[];
+  // Cost Breakdown
+  productsSubtotal: number;
+  discountAmount: number | null;
+  shippingFee: number;
 }
 
 interface PaginatedOrdersResponse {
@@ -169,7 +173,7 @@ const OrdersManagement: React.FC = () => {
       }
 
       const data: PaginatedOrdersResponse = JSON.parse(responseText);
-      
+
       const mappedOrders = data.items.map(order => ({
         ...order,
         status: mapStatus(order.status),
@@ -221,7 +225,7 @@ const OrdersManagement: React.FC = () => {
         status: mapStatus(orderDetails.status),
         paymentMethod: mapPaymentMethod(orderDetails.paymentMethod),
       };
-      
+
       setSelectedOrder(mappedOrderDetails);
       setShowOrderDetails(true);
     } catch (err) {
@@ -265,7 +269,7 @@ const OrdersManagement: React.FC = () => {
         status: mapStatus(order.status),
         paymentMethod: mapPaymentMethod(order.paymentMethod),
       }));
-      
+
       setCustomerOrders(mappedOrders);
       setShowCustomerOrders(true);
     } catch (err) {
@@ -949,6 +953,34 @@ const OrdersManagement: React.FC = () => {
                     </div>
                   )}
 
+                  {/* Cost Breakdown in Expanded View */}
+                  <div className="bg-purple-50 p-3 rounded-lg border border-purple-100 mt-3">
+                    <h4 className="text-sm font-bold text-purple-900 mb-2 flex items-center gap-1">
+                      <DollarSign className="h-4 w-4" />
+                      تفاصيل التكلفة
+                    </h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">المنتجات:</span>
+                        <span className="font-bold">{order.productsSubtotal?.toFixed(2) ?? "0.00"} جنيه</span>
+                      </div>
+                      {order.discountAmount != null && order.discountAmount > 0 && (
+                        <div className="flex justify-between text-green-700">
+                          <span>الخصم:</span>
+                          <span className="font-bold">- {order.discountAmount.toFixed(2)} جنيه</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">الشحن ({order.governorate}):</span>
+                        <span className="font-bold">{order.shippingFee?.toFixed(2) ?? "0.00"} جنيه</span>
+                      </div>
+                      <div className="border-t border-purple-200 pt-2 mt-2 flex justify-between font-bold">
+                        <span className="text-purple-900">الإجمالي:</span>
+                        <span className="text-purple-900">{order.total.toFixed(2)} جنيه</span>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Action Buttons */}
                   <div className="flex flex-wrap gap-2 mt-4 border-t border-purple-100 pt-3">
                     <button
@@ -967,7 +999,7 @@ const OrdersManagement: React.FC = () => {
                         </>
                       )}
                     </button>
-                    
+
                     <button
                       onClick={() => getOrderDetails(order.id)}
                       className="flex items-center text-xs text-purple-600 bg-purple-50 px-3 py-2 rounded-lg hover:bg-purple-100 font-semibold"
@@ -1175,6 +1207,42 @@ const OrdersManagement: React.FC = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* Cost Breakdown */}
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border-2 border-purple-100">
+                <h4 className="text-lg font-bold text-purple-900 mb-4 flex items-center gap-2">
+                  <DollarSign className="h-5 w-5" />
+                  تفاصيل التكلفة
+                </h4>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center bg-white p-3 rounded-lg">
+                    <span className="text-gray-600">إجمالي المنتجات:</span>
+                    <span className="font-bold text-gray-900">{selectedOrder.productsSubtotal?.toFixed(2) ?? "0.00"} جنيه</span>
+                  </div>
+                  {selectedOrder.discountAmount != null && selectedOrder.discountAmount > 0 && (
+                    <div className="flex justify-between items-center bg-green-50 p-3 rounded-lg border border-green-200">
+                      <span className="text-green-700 flex items-center gap-2">
+                        <Tag className="h-4 w-4" />
+                        الخصم:
+                      </span>
+                      <span className="font-bold text-green-700">- {selectedOrder.discountAmount.toFixed(2)} جنيه</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center bg-white p-3 rounded-lg">
+                    <span className="text-gray-600 flex items-center gap-2">
+                      <Ship className="h-4 w-4" />
+                      رسوم الشحن ({selectedOrder.governorate}):
+                    </span>
+                    <span className="font-bold text-gray-900">{selectedOrder.shippingFee?.toFixed(2) ?? "0.00"} جنيه</span>
+                  </div>
+                  <div className="border-t-2 border-purple-300 pt-3 mt-2">
+                    <div className="flex justify-between items-center bg-gradient-to-r from-purple-500 to-pink-500 text-white p-4 rounded-lg shadow-md">
+                      <span className="text-lg font-bold">الإجمالي النهائي:</span>
+                      <span className="text-2xl font-bold">{selectedOrder.total.toFixed(2)} جنيه</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
