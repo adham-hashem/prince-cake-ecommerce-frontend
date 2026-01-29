@@ -16,6 +16,9 @@ import { Unsubscribe } from 'firebase/messaging';
 import OpenInBrowserModal from './components/OpenInBrowserModal';
 import { isFacebookOrInstagramInAppBrowser } from './utils/inAppBrowser';
 
+// ✅ PWA Install Prompt
+import InstallPrompt from './components/InstallPrompt';
+
 // Public Pages
 import HomePage from './pages/HomePage';
 import ProductPage from './pages/ProductPage';
@@ -90,6 +93,9 @@ function AppContent() {
         open={showOpenInBrowser}
         onClose={() => setShowOpenInBrowser(false)}
       />
+
+      {/* ✅ PWA Install Prompt */}
+      <InstallPrompt />
 
       <div className="min-h-screen bg-gray-50 flex flex-col" dir="rtl">
         {/* Header */}

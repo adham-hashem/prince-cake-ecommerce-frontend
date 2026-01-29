@@ -1,0 +1,38 @@
+{
+    "name": "Prince Cake - برنس كيك",
+    "short_name": "Prince Cake",
+    "description": "أشهى التورتات والحلويات الفاخرة في مصر - برنس الكيك",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f5f3ff",
+    "theme_color": "#7c3aed",
+    "orientation": "portrait",
+    "dir": "rtl",
+    "lang": "ar",
+    "scope": "/",
+    "icons": [
+        {
+            "src": "/favicon/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/favicon/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/logoooo.jpeg",
+            "sizes": "512x512",
+            "type": "image/jpeg",
+            "purpose": "any"
+        }
+    ],
+    "categories": [
+        "food",
+        "shopping"
+    ],
+    "screenshots": []
+}
