@@ -15,6 +15,7 @@ import {
   Star,
 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
+import { getImageUrl } from '../utils/imageUtils';
 
 interface Product {
   id: string;
@@ -352,11 +353,10 @@ const ProductPage: React.FC = () => {
 
           <button
             onClick={handleShare}
-            className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl transition-all font-medium shadow-md text-sm sm:text-base ${
-              copied
+            className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl transition-all font-medium shadow-md text-sm sm:text-base ${copied
                 ? 'bg-green-500 text-white shadow-green-300'
                 : 'bg-white text-gray-700 border-2 border-purple-200 hover:border-purple-400 hover:text-purple-600 hover:shadow-lg'
-            }`}
+              }`}
           >
             {copied ? (
               <>
@@ -397,7 +397,7 @@ const ProductPage: React.FC = () => {
                 onTouchEnd={handleTouchEnd}
               >
                 <img
-                  src={`${apiUrl}${product.images[currentImageIndex]?.imagePath}`}
+                  src={getImageUrl(product.images[currentImageIndex]?.imagePath, apiUrl)}
                   alt={product.name}
                   className="w-full h-full object-contain select-none"
                 />
@@ -409,7 +409,7 @@ const ProductPage: React.FC = () => {
                     {Math.round(
                       ((product.originalPrice - product.price) /
                         product.originalPrice) *
-                        100
+                      100
                     )}
                     %
                   </div>
@@ -449,11 +449,10 @@ const ProductPage: React.FC = () => {
                       <button
                         key={i}
                         onClick={() => setCurrentImageIndex(i)}
-                        className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all ${
-                          currentImageIndex === i
+                        className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all ${currentImageIndex === i
                             ? 'bg-purple-600 scale-125'
                             : 'bg-gray-300 hover:bg-purple-400'
-                        }`}
+                          }`}
                       />
                     ))}
                   </div>
@@ -468,14 +467,13 @@ const ProductPage: React.FC = () => {
                       <button
                         key={i}
                         onClick={() => setCurrentImageIndex(i)}
-                        className={`h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 flex-shrink-0 rounded-lg sm:rounded-xl overflow-hidden border-3 transition-all shadow-md hover:shadow-xl ${
-                          currentImageIndex === i
+                        className={`h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 flex-shrink-0 rounded-lg sm:rounded-xl overflow-hidden border-3 transition-all shadow-md hover:shadow-xl ${currentImageIndex === i
                             ? 'border-purple-500 shadow-purple-300 scale-105'
                             : 'border-white hover:border-purple-300'
-                        }`}
+                          }`}
                       >
                         <img
-                          src={`${apiUrl}${image.imagePath}`}
+                          src={getImageUrl(image.imagePath, apiUrl)}
                           alt={`thumbnail ${i}`}
                           className="w-full h-full object-cover"
                         />
@@ -554,11 +552,10 @@ const ProductPage: React.FC = () => {
               <button
                 onClick={handleAddToCart}
                 disabled={isPurchaseDisabled}
-                className={`w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg shadow-xl transition-all flex items-center justify-center gap-2 sm:gap-3 ${
-                  addedToCart
+                className={`w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg shadow-xl transition-all flex items-center justify-center gap-2 sm:gap-3 ${addedToCart
                     ? 'bg-green-500 text-white hover:bg-green-600'
                     : 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-2xl hover:scale-[1.02]'
-                } disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
+                  } disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
               >
                 {addingToCart ? (
                   <>
@@ -583,11 +580,10 @@ const ProductPage: React.FC = () => {
 
               {/* Status */}
               <div
-                className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl font-medium flex items-center gap-2 sm:gap-3 text-sm sm:text-base ${
-                  isPurchaseDisabled
+                className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl font-medium flex items-center gap-2 sm:gap-3 text-sm sm:text-base ${isPurchaseDisabled
                     ? 'bg-red-50 border-2 border-red-200 text-red-700'
                     : 'bg-green-50 border-2 border-green-200 text-green-700'
-                }`}
+                  }`}
               >
                 {isPurchaseDisabled ? (
                   <>
