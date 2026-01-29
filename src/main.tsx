@@ -4,6 +4,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import App from './App';
 import './index.css'; // Assuming you have a main css file
 
@@ -21,6 +22,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <App />
       {/* Vercel Analytics - Tracks page views automatically */}
       <Analytics />
+      {/* Vercel Speed Insights - Tracks performance metrics */}
+      <SpeedInsights />
     </GoogleOAuthProvider>
   </React.StrictMode>
 );
