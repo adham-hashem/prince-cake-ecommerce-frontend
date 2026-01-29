@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getImageUrl } from '../utils/imageUtils';
 import {
   Cake,
   Calendar,
@@ -322,7 +323,7 @@ export default function MyCustomOrders() {
                     {order.designImagePath && (
                       <div className="mb-4">
                         <img
-                          src={`${apiUrl}/${order.designImagePath}`}
+                          src={getImageUrl(order.designImagePath, apiUrl)}
                           alt="Design"
                           className="w-32 h-32 object-cover rounded-xl border-2 border-purple-200"
                         />
@@ -386,11 +387,10 @@ export default function MyCustomOrders() {
                 <button
                   key={page}
                   onClick={() => setPageNumber(page)}
-                  className={`w-10 h-10 rounded-lg font-bold transition-all ${
-                    pageNumber === page
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg'
-                      : 'bg-white text-gray-700 hover:bg-purple-50'
-                  }`}
+                  className={`w-10 h-10 rounded-lg font-bold transition-all ${pageNumber === page
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg'
+                    : 'bg-white text-gray-700 hover:bg-purple-50'
+                    }`}
                 >
                   {page}
                 </button>
@@ -482,7 +482,7 @@ export default function MyCustomOrders() {
                   <div>
                     <p className="text-sm text-gray-500 mb-2">التصميم المطلوب</p>
                     <img
-                      src={`${apiUrl}${selectedOrder.designImagePath}`}
+                      src={getImageUrl(selectedOrder.designImagePath, apiUrl)}
                       alt="Design"
                       className="w-full max-w-md rounded-xl border-2 border-purple-200"
                     />

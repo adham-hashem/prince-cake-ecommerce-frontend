@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getImageUrl } from '../../utils/imageUtils';
 import {
   Eye,
   Edit,
@@ -98,7 +99,7 @@ const CustomOrdersManagement: React.FC = () => {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -150,7 +151,7 @@ const CustomOrdersManagement: React.FC = () => {
 
     try {
       let url = `${apiUrl}/api/CustomOrders?pageNumber=${currentPage}&pageSize=${pageSize}`;
-      
+
       if (statusFilter !== '') {
         url += `&status=${statusFilter}`;
       }
@@ -611,11 +612,10 @@ const CustomOrdersManagement: React.FC = () => {
                       key={pageNum}
                       onClick={() => handlePageChange(pageNum)}
                       disabled={isLoading}
-                      className={`px-3 py-2 rounded-lg sm:rounded-xl text-sm font-semibold ${
-                        currentPage === pageNum
-                          ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
-                          : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-                      } disabled:opacity-50`}
+                      className={`px-3 py-2 rounded-lg sm:rounded-xl text-sm font-semibold ${currentPage === pageNum
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
+                        : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                        } disabled:opacity-50`}
                     >
                       {pageNum}
                     </button>
@@ -722,7 +722,7 @@ const CustomOrdersManagement: React.FC = () => {
                 <div>
                   <p className="text-xs sm:text-sm text-gray-600 mb-2">صورة التصميم</p>
                   <img
-                    src={`${apiUrl}${selectedOrder.designImageUrl}`}
+                    src={getImageUrl(selectedOrder.designImageUrl, apiUrl)}
                     alt="Design"
                     className="w-full max-w-md rounded-xl border-2 border-purple-200"
                   />

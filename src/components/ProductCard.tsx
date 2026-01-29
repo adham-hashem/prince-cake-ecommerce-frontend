@@ -1,5 +1,6 @@
 import React from 'react';
 import { ShoppingCart, Eye, Cake, Heart, Sparkles, Star } from 'lucide-react';
+import { getImageUrl } from '../utils/imageUtils';
 
 type Product = {
   id: string;
@@ -77,8 +78,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const discountPercentage =
     product.originalPrice && product.price < product.originalPrice
       ? Math.round(
-          ((product.originalPrice - product.price) / product.originalPrice) * 100
-        )
+        ((product.originalPrice - product.price) / product.originalPrice) * 100
+      )
       : 0;
 
   return (
@@ -89,7 +90,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       {/* Image Section */}
       <div className="relative overflow-hidden bg-purple-50">
         <img
-          src={`${apiUrl}${product.images[0]?.imagePath || ''}`}
+          src={getImageUrl(product.images[0]?.imagePath, apiUrl)}
           alt={product.name}
           onError={(e) => {
             const target = e.target as HTMLImageElement;
@@ -139,7 +140,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             <Eye size={18} />
             <span>عرض التفاصيل</span>
           </button>
-{/* 
+          {/* 
           <button
             data-action="add-to-cart"
             onClick={(e) => {

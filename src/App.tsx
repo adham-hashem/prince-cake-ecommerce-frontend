@@ -36,6 +36,7 @@ import CustomersManagement from './pages/admin/CustomersManagement';
 import DiscountCodesManagement from './pages/admin/DiscountCodesManagement';
 import ShippingManagement from './pages/admin/ShippingManagement';
 import OrderNotifications from './pages/admin/OrderNotifications';
+import CustomOrderNotifications from './pages/admin/CustomOrderNotifications';
 import CompleteProfile from './pages/CompleteProfile';
 import ProfilePage from './pages/ProfilePage';
 import CustomOrders from './pages/CustomOrders';
@@ -184,6 +185,7 @@ function AppContent() {
             >
               <Route index element={<Navigate to="orders" replace />} />
               <Route path="notifications" element={<OrderNotifications />} />
+              <Route path="custom-notifications" element={<CustomOrderNotifications />} />
               <Route path="products" element={<ProductsManagement />} />
               <Route path="orders" element={<OrdersManagement />} />
               <Route path="customers" element={<CustomersManagement />} />

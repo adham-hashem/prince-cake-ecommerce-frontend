@@ -673,12 +673,12 @@ const ProductsManagement: React.FC = () => {
                             <Plus size={20} />
                             <span>إضافة منتج</span>
                           </button>
-                          <button
+                          {/* <button
                             onClick={handleLogout}
                             className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors flex items-center"
                           >
                             تسجيل خروج
-                          </button>
+                          </button> */}
                         </div>
                       </div>
 
@@ -693,12 +693,12 @@ const ProductsManagement: React.FC = () => {
                             <Plus size={20} />
                             <span>إضافة منتج</span>
                           </button>
-                          <button
+                          {/* <button
                             onClick={handleLogout}
                             className="bg-gray-200 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-300 transition-colors"
                           >
                             خروج
-                          </button>
+                          </button> */}
                         </div>
                       </div>
 

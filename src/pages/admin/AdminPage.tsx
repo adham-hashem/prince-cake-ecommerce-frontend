@@ -28,7 +28,8 @@ const AdminPage: React.FC = () => {
     { to: '/admin/shipping', icon: Truck, label: 'رسوم الشحن' },
     { to: '/admin/custom-orders-management', icon: Truck, label: 'طلبات مخصصة' },
     { to: '/admin/cake-configuration', icon: Truck, label: 'تكوين الكعكة' },
-    { to: '/admin/notifications', icon: Bell, label: 'إشعارات الطلبات' }
+    { to: '/admin/notifications', icon: Bell, label: 'إشعارات الطلبات' },
+    { to: '/admin/custom-notifications', icon: Bell, label: 'إشعارات الطلبات الخاصة' }
   ];
 
   return (
@@ -40,10 +41,10 @@ const AdminPage: React.FC = () => {
             {/* Logo and Title */}
             <div className="flex items-center space-x-reverse space-x-2 sm:space-x-4">
               <div className="relative">
-                <img 
-                  src="/logo_with_slogan.jpg" 
-                  alt="Prince Cake" 
-                  className="h-10 w-10 sm:h-14 sm:w-14 rounded-full object-cover border-2 border-purple-200 shadow-md" 
+                <img
+                  src="/logo_with_slogan.jpg"
+                  alt="Prince Cake"
+                  className="h-10 w-10 sm:h-14 sm:w-14 rounded-full object-cover border-2 border-purple-200 shadow-md"
                 />
                 <Sparkles className="absolute -top-1 -right-1 h-4 w-4 text-amber-500" />
               </div>
@@ -98,10 +99,9 @@ const AdminPage: React.FC = () => {
                   to={item.to}
                   onClick={closeMobileMenu}
                   className={({ isActive }) =>
-                    `flex items-center space-x-reverse space-x-3 px-4 py-3 rounded-xl transition-all ${
-                      isActive 
-                        ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md' 
-                        : 'text-gray-700 hover:bg-purple-50'
+                    `flex items-center space-x-reverse space-x-3 px-4 py-3 rounded-xl transition-all ${isActive
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md'
+                      : 'text-gray-700 hover:bg-purple-50'
                     }`
                   }
                 >
@@ -151,10 +151,9 @@ const AdminPage: React.FC = () => {
                     key={item.to}
                     to={item.to}
                     className={({ isActive }) =>
-                      `w-full flex items-center space-x-reverse space-x-3 px-4 py-3 rounded-xl transition-all font-medium ${
-                        isActive 
-                          ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg transform scale-105' 
-                          : 'text-gray-700 hover:bg-purple-50 hover:text-purple-700'
+                      `w-full flex items-center space-x-reverse space-x-3 px-4 py-3 rounded-xl transition-all font-medium ${isActive
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg transform scale-105'
+                        : 'text-gray-700 hover:bg-purple-50 hover:text-purple-700'
                       }`
                     }
                   >
