@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ===================================
+   MOBILE VIEWPORT FIX
+   Prevents horizontal scrolling on mobile devices,
+   especially after OAuth login
+   =================================== */
+
+/* Prevent horizontal scroll on mobile */
+html,
+body {
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
+}
+
+/* Ensure all children respect viewport bounds */
+* {
+  max-width: 100%;
+}
+
+/* Fix for RTL layout on mobile - smooth scrolling for iOS Safari */
+body {
+  -webkit-overflow-scrolling: touch;
+}
