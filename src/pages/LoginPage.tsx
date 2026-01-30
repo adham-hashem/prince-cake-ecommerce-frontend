@@ -213,47 +213,6 @@ const LoginPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* OPTIONAL: Email/password form (if you want it visible) */}
-                <form onSubmit={handleEmailLogin} className="space-y-3">
-                  <div>
-                    <input
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="البريد الإلكتروني"
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:ring-2 focus:ring-purple-200"
-                    />
-                    {fieldErrors.email && (
-                      <p className="text-xs text-red-500 mt-1">{fieldErrors.email}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <input
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="كلمة المرور"
-                      type="password"
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 outline-none focus:ring-2 focus:ring-purple-200"
-                    />
-                    {fieldErrors.password && (
-                      <p className="text-xs text-red-500 mt-1">{fieldErrors.password}</p>
-                    )}
-                  </div>
-
-                  {error && (
-                    <div className="w-full p-3 bg-red-50 border border-red-200 rounded-2xl text-center">
-                      <p className="text-red-600 text-sm font-medium">⚠️ {error}</p>
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl py-3 font-bold hover:from-purple-700 hover:to-pink-600 transition-colors"
-                  >
-                    تسجيل الدخول
-                  </button>
-                </form>
-
                 {/* Terms */}
                 <div className="text-center text-gray-400 text-xs">
                   <p>
