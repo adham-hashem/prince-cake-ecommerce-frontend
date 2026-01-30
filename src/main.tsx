@@ -8,6 +8,7 @@ import { SpeedInsights } from '@vercel/speed-insights/react';
 import App from './App';
 import './index.css'; // Assuming you have a main css file
 
+
 // Make sure your .env file is configured correctly
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
