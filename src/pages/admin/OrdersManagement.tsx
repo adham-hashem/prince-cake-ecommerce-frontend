@@ -841,6 +841,54 @@ const OrdersManagement: React.FC = () => {
                                     ))}
                                   </div>
                                 </div>
+
+                                {/* Cost Breakdown */}
+                                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border-2 border-purple-200">
+                                  <h4 className="text-sm font-bold text-purple-900 mb-3 flex items-center gap-2">
+                                    <DollarSign className="h-4 w-4" />
+                                    تفاصيل التكلفة
+                                  </h4>
+                                  <div className="space-y-2">
+                                    {/* Products Subtotal */}
+                                    <div className="flex justify-between items-center py-2 border-b border-purple-200">
+                                      <span className="text-sm text-gray-600">المجموع الفرعي للمنتجات</span>
+                                      <span className="text-sm font-bold text-purple-900">
+                                        {order.productsSubtotal.toFixed(2)} جنيه
+                                      </span>
+                                    </div>
+
+                                    {/* Discount Amount */}
+                                    {order.discountAmount !== null && order.discountAmount > 0 && (
+                                      <div className="flex justify-between items-center py-2 border-b border-purple-200 bg-green-50 px-3 rounded-lg -mx-1">
+                                        <span className="text-sm font-medium text-green-700">
+                                          الخصم {order.discountCodeUsed && `(${order.discountCodeUsed})`}
+                                        </span>
+                                        <span className="text-sm font-bold text-green-700">
+                                          -{order.discountAmount.toFixed(2)} جنيه
+                                        </span>
+                                      </div>
+                                    )}
+
+                                    {/* Shipping Fee */}
+                                    <div className="flex justify-between items-center py-2 border-b border-purple-200">
+                                      <span className="text-sm text-gray-600 flex items-center gap-1">
+                                        <Truck className="h-3 w-3" />
+                                        رسوم التوصيل {order.governorate && `(${order.governorate})`}
+                                      </span>
+                                      <span className="text-sm font-bold text-purple-900">
+                                        {order.shippingFee.toFixed(2)} جنيه
+                                      </span>
+                                    </div>
+
+                                    {/* Total */}
+                                    <div className="flex justify-between items-center pt-3 border-t-2 border-purple-300">
+                                      <span className="text-base font-bold text-purple-900">الإجمالي النهائي</span>
+                                      <span className="text-lg font-black text-purple-700">
+                                        {order.total.toFixed(2)} جنيه
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
                             </td>
                           </tr>
