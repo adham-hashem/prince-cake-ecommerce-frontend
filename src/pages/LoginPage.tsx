@@ -97,6 +97,7 @@ const LoginPage: React.FC = () => {
     setError('فشل تسجيل الدخول باستخدام جوجل. يرجى المحاولة مرة أخرى.');
   };
 
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-amber-50 flex items-center justify-center p-4 relative overflow-hidden">
       {/* ✅ Modal for FB/IG in-app browser */}
