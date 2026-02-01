@@ -931,7 +931,7 @@ const CheckoutPage: React.FC = () => {
               </div>
 
               {/* Notes */}
-              <div>
+              {/* <div>
                 <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
                   ملاحظات إضافية
                 </label>
@@ -943,7 +943,7 @@ const CheckoutPage: React.FC = () => {
                   placeholder="مثال: كتابة على التورتة، تغليف مميز..."
                   disabled={isSubmitting}
                 />
-              </div>
+              </div> */}
 
               {/* Payment Method */}
               <div>
