@@ -139,7 +139,7 @@ const CheckoutPage: React.FC = () => {
                 ...img,
                 imagePath:
                   img.imagePath.startsWith('/Uploads') ||
-                  img.imagePath.startsWith('/images')
+                    img.imagePath.startsWith('/images')
                     ? `${apiUrl}${img.imagePath}`
                     : img.imagePath,
               })) || [],
@@ -255,9 +255,25 @@ const CheckoutPage: React.FC = () => {
           throw new Error(`فشل في التحقق من كود الخصم: ${response.status}`);
         }
         const data: DiscountCode = await response.json();
+
+        // Check if the discount code is active
         if (!data.isActive) {
           throw new Error('الكود غير صالح أو منتهي الصلاحية');
         }
+
+        // Check if the discount code has expired or is not yet valid
+        const currentDate = new Date();
+        const startDate = new Date(data.startDate);
+        const endDate = new Date(data.endDate);
+
+        if (currentDate < startDate) {
+          throw new Error('الكود غير صالح بعد');
+        }
+
+        if (currentDate > endDate) {
+          throw new Error('الكود منتهي الصلاحية');
+        }
+
         const subtotalCalc = state.cart.reduce(
           (total, item) => total + item.product.price * item.quantity,
           0
@@ -464,7 +480,7 @@ const CheckoutPage: React.FC = () => {
           discountAmount: Number(discountAmount.toFixed(2)),
           paymentMethod: mapPaymentMethod(
             orderResult.paymentMethod ||
-              (formData.paymentMethod === 'cash' ? 0 : 1)
+            (formData.paymentMethod === 'cash' ? 0 : 1)
           ),
           status: mapStatus(orderResult.status || 0),
           createdAt: orderResult.date || new Date().toISOString(),
@@ -671,7 +687,7 @@ const CheckoutPage: React.FC = () => {
                 <Sparkles className="h-5 w-5 text-amber-500" />
                 <span>ملخص الطلب</span>
               </h2>
-              
+
               <div className="space-y-2 sm:space-y-3 mb-4">
                 {state.cart.map((item) => (
                   <div
@@ -765,11 +781,10 @@ const CheckoutPage: React.FC = () => {
                   type="text"
                   value={formData.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
-                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${
-                    errors.fullName
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errors.fullName
                       ? 'border-red-500 focus:border-red-600'
                       : 'border-purple-200 focus:border-purple-500'
-                  }`}
+                    }`}
                   disabled={isSubmitting}
                 />
                 {errors.fullName && (
@@ -789,11 +804,10 @@ const CheckoutPage: React.FC = () => {
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   placeholder="01xxxxxxxxx"
-                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${
-                    errors.phone
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errors.phone
                       ? 'border-red-500 focus:border-red-600'
                       : 'border-purple-200 focus:border-purple-500'
-                  }`}
+                    }`}
                   disabled={isSubmitting}
                 />
                 {errors.phone && (
@@ -812,11 +826,10 @@ const CheckoutPage: React.FC = () => {
                   value={formData.address}
                   onChange={(e) => handleInputChange('address', e.target.value)}
                   rows={3}
-                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none resize-none transition-colors text-sm sm:text-base ${
-                    errors.address
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none resize-none transition-colors text-sm sm:text-base ${errors.address
                       ? 'border-red-500 focus:border-red-600'
                       : 'border-purple-200 focus:border-purple-500'
-                  }`}
+                    }`}
                   disabled={isSubmitting}
                 />
                 {errors.address && (
@@ -847,11 +860,10 @@ const CheckoutPage: React.FC = () => {
                     onChange={(e) =>
                       handleInputChange('governorate', e.target.value)
                     }
-                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${
-                      errors.governorate
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errors.governorate
                         ? 'border-red-500 focus:border-red-600'
                         : 'border-purple-200 focus:border-purple-500'
-                    }`}
+                      }`}
                     dir="rtl"
                     disabled={isSubmitting}
                   >
@@ -883,22 +895,20 @@ const CheckoutPage: React.FC = () => {
                       handleInputChange('discountCode', e.target.value)
                     }
                     placeholder="أدخل الكود"
-                    className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${
-                      errorDiscount
+                    className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errorDiscount
                         ? 'border-red-500 focus:border-red-600'
                         : 'border-purple-200 focus:border-purple-500'
-                    }`}
+                      }`}
                     disabled={loadingDiscount || isSubmitting}
                   />
                   <button
                     type="button"
                     onClick={handleApplyDiscount}
                     disabled={loadingDiscount || isSubmitting}
-                    className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium transition-all text-sm sm:text-base ${
-                      loadingDiscount || isSubmitting
+                    className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium transition-all text-sm sm:text-base ${loadingDiscount || isSubmitting
                         ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : 'bg-amber-500 text-white hover:bg-amber-600'
-                    }`}
+                      }`}
                   >
                     {loadingDiscount ? (
                       <Loader2 className="animate-spin" size={18} />
@@ -969,14 +979,13 @@ const CheckoutPage: React.FC = () => {
                   state.cart.length === 0 ||
                   !selectedGovernorate
                 }
-                className={`w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl text-base sm:text-lg font-bold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 ${
-                  isSubmitting ||
-                  loadingShippingFees ||
-                  state.cart.length === 0 ||
-                  !selectedGovernorate
+                className={`w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl text-base sm:text-lg font-bold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 ${isSubmitting ||
+                    loadingShippingFees ||
+                    state.cart.length === 0 ||
+                    !selectedGovernorate
                     ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                     : 'bg-purple-600 text-white hover:bg-purple-700'
-                }`}
+                  }`}
               >
                 {isSubmitting ? (
                   <>
