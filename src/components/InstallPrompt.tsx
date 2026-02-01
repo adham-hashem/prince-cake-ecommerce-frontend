@@ -25,8 +25,18 @@ const InstallPrompt: React.FC = () => {
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             if (!isMobile) return false;
 
-            // Check if already installed
+            // Check if already installed (Android/Chrome)
             if (window.matchMedia('(display-mode: standalone)').matches) {
+                return false;
+            }
+
+            // Check if already installed (iOS Safari)
+            if ((window.navigator as any).standalone === true) {
+                return false;
+            }
+
+            // Check if previously installed (from localStorage)
+            if (localStorage.getItem('pwa-installed') === 'true') {
                 return false;
             }
 
