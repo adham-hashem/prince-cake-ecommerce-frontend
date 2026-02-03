@@ -97,7 +97,7 @@ function AppContent() {
       {/* ✅ PWA Install Prompt */}
       <InstallPrompt />
 
-      <div className="min-h-screen bg-gray-50 flex flex-col" dir="rtl">
+      <div className="min-h-screen bg-gray-50 flex flex-col w-full overflow-x-hidden" dir="rtl">
         {/* Header */}
         <Routes>
           <Route path="/admin/*" element={null} />

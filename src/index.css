@@ -12,13 +12,33 @@
 html,
 body {
   overflow-x: hidden;
-  width: 100%;
+  width: 100vw;
+  /* Enforce viewport width */
+  max-width: 100vw;
   position: relative;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-text-size-adjust: 100%;
 }
 
 /* Ensure all children respect viewport bounds */
-* {
-  max-width: 100%;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  max-width: 100vw;
+  /* Hard constraint */
+}
+
+#root {
+  overflow-x: hidden;
+  /* Extra safety for the extensive root */
+  width: 100%;
+  max-width: 100vw;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* Fix for RTL layout on mobile - smooth scrolling for iOS Safari */
