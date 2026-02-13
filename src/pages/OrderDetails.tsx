@@ -12,6 +12,7 @@ interface OrderItem {
   priceAtPurchase: number;
   size: string;
   color: string;
+
 }
 
 interface Order {
