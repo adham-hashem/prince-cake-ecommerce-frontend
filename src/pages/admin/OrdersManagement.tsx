@@ -20,7 +20,8 @@ import {
   ShoppingCart,
   Calendar,
   DollarSign,
-  Tag
+  Tag,
+  Truck
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -39,7 +40,7 @@ interface OrderItemResponseDto {
 interface OrderResponseDto {
   id: string;
   orderNumber: string;
-  customerId: string;
+  customerId: string | null;
   total: number;
   paymentMethod: 'Cash' | 'Card' | 'OnlinePayment';
   status: 'UnderReview' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled';
@@ -483,7 +484,7 @@ const OrdersManagement: React.FC = () => {
   const filteredOrders = orders.filter(order => {
     const matchesSearch = searchTerm === '' ||
       order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customerId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (order.customerId && order.customerId.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (order.fullName && order.fullName.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesStatus = statusFilter === 'all' ||
@@ -665,12 +666,16 @@ const OrdersManagement: React.FC = () => {
                             </div>
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap text-sm">
-                            <button
-                              onClick={() => getCustomerOrders(order.customerId)}
-                              className="text-purple-600 hover:text-pink-600 underline font-medium"
-                            >
-                              {order.customerId.substring(0, 8)}...
-                            </button>
+                            {order.customerId ? (
+                              <button
+                                onClick={() => getCustomerOrders(order.customerId!)}
+                                className="text-purple-600 hover:text-pink-600 underline font-medium"
+                              >
+                                {order.customerId.substring(0, 8)}...
+                              </button>
+                            ) : (
+                              <span className="text-gray-500 font-medium">زائر</span>
+                            )}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-1">
@@ -926,12 +931,16 @@ const OrdersManagement: React.FC = () => {
                   <div className="space-y-2 mb-4 border-t border-purple-100 pt-3">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-500">العميل:</span>
-                      <button
-                        onClick={() => getCustomerOrders(order.customerId)}
-                        className="text-sm text-purple-600 hover:text-pink-600 underline font-medium"
-                      >
-                        {order.customerId.substring(0, 8)}...
-                      </button>
+                      {order.customerId ? (
+                        <button
+                          onClick={() => getCustomerOrders(order.customerId!)}
+                          className="text-sm text-purple-600 hover:text-pink-600 underline font-medium"
+                        >
+                          {order.customerId.substring(0, 8)}...
+                        </button>
+                      ) : (
+                        <span className="text-sm text-gray-500 font-medium">زائر</span>
+                      )}
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-500">المبلغ:</span>
