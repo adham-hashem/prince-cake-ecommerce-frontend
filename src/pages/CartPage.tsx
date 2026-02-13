@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getImageUrl } from '../utils/imageUtils';
 import { ArrowRight, Trash2, Plus, Minus, Loader2, ShoppingCart, Sparkles } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { CartItem } from '../types';
@@ -413,7 +414,8 @@ const CartPage: React.FC = () => {
 
             <div className="space-y-3 sm:space-y-4">
               {cartItems.map((item) => {
-                const mainImage = item.images?.find(img => img.isMain) || item.images?.[0];
+                const itemImages = item.images || (item.product as any).images || [];
+                const mainImage = itemImages.find((img: any) => img.isMain) || itemImages[0];
                 return (
                   <div
                     key={item.id}
@@ -422,9 +424,7 @@ const CartPage: React.FC = () => {
                     <img
                       src={
                         mainImage
-                          ? (mainImage.imagePath.startsWith('http')
-                            ? mainImage.imagePath
-                            : `${apiUrl}${mainImage.imagePath.startsWith('/') ? '' : '/'}${mainImage.imagePath}`)
+                          ? getImageUrl(mainImage.imagePath, apiUrl)
                           : 'https://placehold.co/600x400/f5f3ff/7c3aed?text=🎂+Prince+Cake'
                       }
                       alt={item.product.name}
