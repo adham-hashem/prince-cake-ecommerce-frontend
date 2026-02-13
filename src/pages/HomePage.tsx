@@ -201,6 +201,11 @@ const HomePage: React.FC = () => {
                 </div>
               </div>
 
+              {/* Ramadan Countdown Badge */}
+              <div className="flex justify-center -mt-4 mb-2 relative z-10">
+                <RamadanCountdown />
+              </div>
+
               {/* Title Section */}
               <div className="space-y-4 pt-4">
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white drop-shadow-lg" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
@@ -274,8 +279,7 @@ const HomePage: React.FC = () => {
         {/* Products Section */}
         <div className="bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-            {/* Ramadan Countdown */}
-            <RamadanCountdown />
+
 
             {loading && products.length === 0 ? (
               <div className="text-center py-20">
