@@ -30,7 +30,7 @@ interface ApiCartResponse {
 // -------------------------
 
 const CartPage: React.FC = () => {
-  const { dispatch } = useApp();
+  const { state, dispatch } = useApp();
   const navigate = useNavigate();
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -54,7 +54,8 @@ const CartPage: React.FC = () => {
   // Fetch cart data
   const fetchCart = useCallback(async () => {
     if (!token) {
-      // Guest user: Cart is managed by AppContext/localStorage, no API call needed
+      // Guest user: Cart is managed by AppContext/localStorage
+      setCartItems(state.cart);
       setLoading(false);
       return;
     }
@@ -70,7 +71,13 @@ const CartPage: React.FC = () => {
 
       if (!response.ok) {
         if (response.status === 401) {
-          throw new Error('جلسة منتهية، يرجى تسجيل الدخول مرة أخرى');
+          // Token expired or invalid - fallback to guest mode
+          localStorage.removeItem('accessToken');
+          setToken(null);
+          setCartItems(state.cart);
+          setLoading(false);
+          return;
+          // throw new Error('جلسة منتهية، يرجى تسجيل الدخول مرة أخرى');
         }
         throw new Error('فشل في جلب بيانات السلة');
       }
@@ -102,21 +109,22 @@ const CartPage: React.FC = () => {
       setCartItems(normalizedItems || []);
       dispatch({ type: 'SET_CART', payload: normalizedItems || [] });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'حدث خطأ غير معروف');
+      console.error('Cart fetch error:', err);
+      // Fallback to local state on error
+      setCartItems(state.cart);
+      setError(null); // Clear error to allow viewing local cart
     } finally {
       setLoading(false);
     }
-  }, [dispatch, token, apiUrl]);
+  }, [dispatch, token, apiUrl, state.cart]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {
-    if (token) {
-      fetchCart();
-    }
-  }, [fetchCart, token]);
+    fetchCart();
+  }, [fetchCart]);
 
   const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) {
