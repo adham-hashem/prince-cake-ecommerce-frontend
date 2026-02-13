@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { CartItem } from '../types';
- 
+
 // Interfaces (Unchanged)
 interface ShippingFee {
   id: string;
@@ -102,9 +102,8 @@ const CheckoutPage: React.FC = () => {
   const fetchCart = useCallback(async (retryCount = 3, retryDelay = 1000) => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
-      setCartError('يرجى تسجيل الدخول لعرض السلة');
+      // Guest user: Use context cart, no API call
       setLoadingCart(false);
-      navigate('/login');
       return;
     }
     setLoadingCart(true);
@@ -336,7 +335,8 @@ const CheckoutPage: React.FC = () => {
     async (orderId: string, total: number, retryCount = 3, retryDelay = 1000) => {
       const token = localStorage.getItem('accessToken');
       if (!token) {
-        throw new Error('authentication_required');
+        // Guest user: Skip manual admin notification (backend handles it or requires auth)
+        return;
       }
       for (let attempt = 1; attempt <= retryCount; attempt++) {
         try {
@@ -384,8 +384,12 @@ const CheckoutPage: React.FC = () => {
       setNotificationError(null);
       try {
         const token = localStorage.getItem('accessToken');
-        if (!token) {
-          throw new Error('authentication_required');
+
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
         }
 
         const requestBody = {
@@ -407,10 +411,7 @@ const CheckoutPage: React.FC = () => {
 
         const response = await fetch(`${apiUrl}/api/orders`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
+          headers,
           body: JSON.stringify(requestBody),
         });
 
@@ -782,8 +783,8 @@ const CheckoutPage: React.FC = () => {
                   value={formData.fullName}
                   onChange={(e) => handleInputChange('fullName', e.target.value)}
                   className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errors.fullName
-                      ? 'border-red-500 focus:border-red-600'
-                      : 'border-purple-200 focus:border-purple-500'
+                    ? 'border-red-500 focus:border-red-600'
+                    : 'border-purple-200 focus:border-purple-500'
                     }`}
                   disabled={isSubmitting}
                 />
@@ -805,8 +806,8 @@ const CheckoutPage: React.FC = () => {
                   onChange={(e) => handleInputChange('phone', e.target.value)}
                   placeholder="01xxxxxxxxx"
                   className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errors.phone
-                      ? 'border-red-500 focus:border-red-600'
-                      : 'border-purple-200 focus:border-purple-500'
+                    ? 'border-red-500 focus:border-red-600'
+                    : 'border-purple-200 focus:border-purple-500'
                     }`}
                   disabled={isSubmitting}
                 />
@@ -827,8 +828,8 @@ const CheckoutPage: React.FC = () => {
                   onChange={(e) => handleInputChange('address', e.target.value)}
                   rows={3}
                   className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none resize-none transition-colors text-sm sm:text-base ${errors.address
-                      ? 'border-red-500 focus:border-red-600'
-                      : 'border-purple-200 focus:border-purple-500'
+                    ? 'border-red-500 focus:border-red-600'
+                    : 'border-purple-200 focus:border-purple-500'
                     }`}
                   disabled={isSubmitting}
                 />
@@ -861,8 +862,8 @@ const CheckoutPage: React.FC = () => {
                       handleInputChange('governorate', e.target.value)
                     }
                     className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errors.governorate
-                        ? 'border-red-500 focus:border-red-600'
-                        : 'border-purple-200 focus:border-purple-500'
+                      ? 'border-red-500 focus:border-red-600'
+                      : 'border-purple-200 focus:border-purple-500'
                       }`}
                     dir="rtl"
                     disabled={isSubmitting}
@@ -896,8 +897,8 @@ const CheckoutPage: React.FC = () => {
                     }
                     placeholder="أدخل الكود"
                     className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errorDiscount
-                        ? 'border-red-500 focus:border-red-600'
-                        : 'border-purple-200 focus:border-purple-500'
+                      ? 'border-red-500 focus:border-red-600'
+                      : 'border-purple-200 focus:border-purple-500'
                       }`}
                     disabled={loadingDiscount || isSubmitting}
                   />
@@ -906,8 +907,8 @@ const CheckoutPage: React.FC = () => {
                     onClick={handleApplyDiscount}
                     disabled={loadingDiscount || isSubmitting}
                     className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium transition-all text-sm sm:text-base ${loadingDiscount || isSubmitting
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-amber-500 text-white hover:bg-amber-600'
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-amber-500 text-white hover:bg-amber-600'
                       }`}
                   >
                     {loadingDiscount ? (
@@ -980,11 +981,11 @@ const CheckoutPage: React.FC = () => {
                   !selectedGovernorate
                 }
                 className={`w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl text-base sm:text-lg font-bold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 ${isSubmitting ||
-                    loadingShippingFees ||
-                    state.cart.length === 0 ||
-                    !selectedGovernorate
-                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                    : 'bg-purple-600 text-white hover:bg-purple-700'
+                  loadingShippingFees ||
+                  state.cart.length === 0 ||
+                  !selectedGovernorate
+                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                  : 'bg-purple-600 text-white hover:bg-purple-700'
                   }`}
               >
                 {isSubmitting ? (

@@ -44,10 +44,36 @@ export interface Customer {
   // ... other customer properties
 }
 
+export interface OrderItem {
+  id: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  priceAtPurchase: number;
+  size: string;
+  color: string;
+}
+
+export type OrderStatus = 'Pending' | 'Confirmed' | 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
+
 export interface Order {
   id: string;
-  status: 'confirmed' | 'shipped' | 'delivered';
-  // ... other order properties
+  customerId: string;
+  items: OrderItem[];
+  total: number;
+  shippingFee: number;
+  discountCode?: string | null;
+  discountAmount?: number;
+  paymentMethod: 'Cash' | 'Card' | 'OnlinePayment';
+  status: OrderStatus;
+  createdAt: string;
+  customerInfo: {
+    id: string;
+    fullName: string;
+    phone: string;
+    address: string;
+    governorate: string;
+  };
 }
 
 export interface Admin {
