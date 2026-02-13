@@ -4,7 +4,7 @@ import {
   ArrowRight,
   CheckCircle,
   Calendar,
-  Clock,
+
   CreditCard,
   Truck,
   Loader2,
@@ -82,6 +82,7 @@ const CheckoutPage: React.FC = () => {
     cardName: '',
     discountCode: '',
     notes: '',
+    deliveryDate: '',
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -326,6 +327,17 @@ const CheckoutPage: React.FC = () => {
       if (!formData.cardName.trim())
         newErrors.cardName = 'اسم حامل البطاقة مطلوب';
     }
+
+    if (!formData.deliveryDate) {
+      newErrors.deliveryDate = 'يرجى تحديد تاريخ الاستلام';
+    } else {
+      const selectedDate = new Date(formData.deliveryDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (selectedDate <= today) {
+        newErrors.deliveryDate = 'تاريخ الاستلام يجب أن يكون في المستقبل';
+      }
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [formData]);
@@ -400,6 +412,7 @@ const CheckoutPage: React.FC = () => {
           discountCode: discount?.code || null,
           paymentMethod: formData.paymentMethod === 'cash' ? 0 : 1,
           notes: formData.notes.trim() || null,
+          deliveryDate: formData.deliveryDate,
           items: state.cart.map((item) => ({
             productId: item.product.id,
             quantity: item.quantity,
@@ -881,6 +894,35 @@ const CheckoutPage: React.FC = () => {
                     {errors.governorate}
                   </p>
                 )}
+              </div>
+
+              {/* Delivery Date */}
+              <div>
+                <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
+                  تاريخ الاستلام *
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 h-5 w-5" />
+                  <input
+                    type="date"
+                    value={formData.deliveryDate}
+                    min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
+                    onChange={(e) => handleInputChange('deliveryDate', e.target.value)}
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errors.deliveryDate
+                      ? 'border-red-500 focus:border-red-600'
+                      : 'border-purple-200 focus:border-purple-500'
+                      }`}
+                    disabled={isSubmitting}
+                  />
+                </div>
+                {errors.deliveryDate && (
+                  <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
+                    {errors.deliveryDate}
+                  </p>
+                )}
+                <p className="text-gray-500 text-xs mt-1 text-right">
+                  يرجى اختيار يوم في المستقبل (غير اليوم الحالي)
+                </p>
               </div>
 
               {/* Discount Code */}

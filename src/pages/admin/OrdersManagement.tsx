@@ -45,6 +45,7 @@ interface OrderResponseDto {
   paymentMethod: 'Cash' | 'Card' | 'OnlinePayment';
   status: 'UnderReview' | 'Confirmed' | 'Shipped' | 'Delivered' | 'Cancelled';
   date: string;
+  deliveryDate: string;
   discountCodeUsed: string | null;
   paymentTransactionId: string | null;
   fullName?: string;
@@ -799,6 +800,12 @@ const OrdersManagement: React.FC = () => {
                                           <span className="text-gray-600">{order.address}, {order.governorate}</span>
                                         </div>
                                       )}
+                                      {order.deliveryDate && (
+                                        <div className="flex items-center gap-2 md:col-span-2">
+                                          <Calendar className="h-4 w-4 text-purple-500" />
+                                          <span className="text-gray-600 font-medium">تاريخ التوصيل: {new Date(order.deliveryDate).toLocaleDateString('ar-EG')}</span>
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
                                 )}
@@ -974,6 +981,12 @@ const OrdersManagement: React.FC = () => {
                         <div className="flex items-center gap-2 text-sm">
                           <MapPin className="h-4 w-4 text-gray-400" />
                           <span className="text-gray-600">{order.address}, {order.governorate}</span>
+                        </div>
+                      )}
+                      {order.deliveryDate && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Calendar className="h-4 w-4 text-purple-500" />
+                          <span className="text-gray-600 font-medium">تاريخ التوصيل: {new Date(order.deliveryDate).toLocaleDateString('ar-EG')}</span>
                         </div>
                       )}
                       {order.discountCodeUsed && (
