@@ -420,7 +420,13 @@ const CartPage: React.FC = () => {
                     className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 border-2 border-purple-100 rounded-xl sm:rounded-2xl hover:shadow-md transition-all bg-purple-50/30"
                   >
                     <img
-                      src={mainImage?.imagePath || 'https://via.placeholder.com/150'}
+                      src={
+                        mainImage
+                          ? (mainImage.imagePath.startsWith('http')
+                            ? mainImage.imagePath
+                            : `${apiUrl}${mainImage.imagePath.startsWith('/') ? '' : '/'}${mainImage.imagePath}`)
+                          : 'https://placehold.co/600x400/f5f3ff/7c3aed?text=🎂+Prince+Cake'
+                      }
                       alt={item.product.name}
                       loading="lazy"
                       className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain rounded-lg sm:rounded-xl bg-white border-2 border-purple-200"
