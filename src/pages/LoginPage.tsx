@@ -10,7 +10,7 @@ const LoginPage: React.FC = () => {
   const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
- 
+
   // Form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -97,7 +97,7 @@ const LoginPage: React.FC = () => {
     setError('فشل تسجيل الدخول باستخدام جوجل. يرجى المحاولة مرة أخرى.');
   };
 
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-amber-50 flex items-center justify-center p-4 relative overflow-hidden">
       {/* ✅ Modal for FB/IG in-app browser */}
@@ -172,6 +172,18 @@ const LoginPage: React.FC = () => {
                 <Sparkles className="h-5 w-5 text-amber-500" />
               </div>
               <p className="text-gray-600">سجل دخولك واستمتع بأشهى الحلويات والتورتات</p>
+            </div>
+
+            {/* Guest Checkout Option */}
+            <div className="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 rounded-xl p-4 text-center">
+              <p className="text-sm text-purple-900 font-semibold mb-2">مستعجل؟ مش لازم تسجل دخول!</p>
+              <button
+                onClick={() => navigate('/menu')}
+                className="w-full bg-white text-purple-600 border border-purple-200 hover:bg-purple-50 py-2 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2"
+              >
+                <span>⚡</span>
+                <span>اطلب أوردر كزائر الآن</span>
+              </button>
             </div>
 
             {isLoggingIn ? (

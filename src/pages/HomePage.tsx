@@ -4,6 +4,7 @@ import { useApp } from '../contexts/AppContext';
 import ProductCard from '../components/ProductCard';
 import { Product } from '../types';
 import { ShoppingCart, ChevronDown } from 'lucide-react';
+import RamadanCountdown from '../components/RamadanCountdown';
 
 interface ApiResponse {
   items: Product[];
@@ -218,6 +219,13 @@ const HomePage: React.FC = () => {
                 <p className="text-sm sm:text-base text-white drop-shadow-md">
                   حلويات فاخرة بجودة عالية وأسعار مناسبة
                 </p>
+
+                {/* Guest Checkout Message */}
+                <div className="pt-2 animate-pulse">
+                  <span className="inline-block bg-white/20 backdrop-blur-md border border-white/50 rounded-full px-4 py-1 text-sm sm:text-base font-bold text-white shadow-lg">
+                    ✨ يمكنك طلب الأوردر الآن بدون تسجيل دخول! ✨
+                  </span>
+                </div>
               </div>
 
               {/* Navigation Buttons */}
@@ -266,6 +274,9 @@ const HomePage: React.FC = () => {
         {/* Products Section */}
         <div className="bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+            {/* Ramadan Countdown */}
+            <RamadanCountdown />
+
             {loading && products.length === 0 ? (
               <div className="text-center py-20">
                 <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-purple-600 mb-4"></div>
