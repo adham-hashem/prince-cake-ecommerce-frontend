@@ -14,7 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
+ 
 interface OccasionSizeOption {
   id: string;
   sizeId?: string | null;

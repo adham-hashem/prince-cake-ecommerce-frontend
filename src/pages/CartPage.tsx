@@ -10,7 +10,7 @@ interface CartItemImage {
   imagePath: string;
   isMain: boolean;
 }
-
+ 
 interface ApiCartResponse {
   id: string;
   userId: string;

@@ -10,7 +10,7 @@ const LoginPage: React.FC = () => {
   const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-
+ 
   // Form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
