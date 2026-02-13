@@ -219,8 +219,19 @@ const ProductPage: React.FC = () => {
       const token = localStorage.getItem('accessToken');
 
       if (!token) {
-        alert('يرجى تسجيل الدخول أولاً لإضافة المنتج للسلة');
-        navigate('/login');
+        // Guest user: Add to local state (AppContext) only
+        dispatch({
+          type: 'ADD_TO_CART',
+          payload: {
+            id: `temp-${Date.now()}`,
+            product,
+            quantity,
+            size: selectedSize,
+            color: selectedColor
+          },
+        });
+        setAddedToCart(true);
+        setAddingToCart(false);
         return;
       }
 
@@ -244,7 +255,13 @@ const ProductPage: React.FC = () => {
 
       dispatch({
         type: 'ADD_TO_CART',
-        payload: { product, quantity, selectedSize, selectedColor },
+        payload: {
+          id: `temp-${Date.now()}`,
+          product,
+          quantity,
+          size: selectedSize,
+          color: selectedColor
+        },
       });
 
       setAddedToCart(true);
@@ -354,8 +371,8 @@ const ProductPage: React.FC = () => {
           <button
             onClick={handleShare}
             className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl transition-all font-medium shadow-md text-sm sm:text-base ${copied
-                ? 'bg-green-500 text-white shadow-green-300'
-                : 'bg-white text-gray-700 border-2 border-purple-200 hover:border-purple-400 hover:text-purple-600 hover:shadow-lg'
+              ? 'bg-green-500 text-white shadow-green-300'
+              : 'bg-white text-gray-700 border-2 border-purple-200 hover:border-purple-400 hover:text-purple-600 hover:shadow-lg'
               }`}
           >
             {copied ? (
@@ -450,8 +467,8 @@ const ProductPage: React.FC = () => {
                         key={i}
                         onClick={() => setCurrentImageIndex(i)}
                         className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all ${currentImageIndex === i
-                            ? 'bg-purple-600 scale-125'
-                            : 'bg-gray-300 hover:bg-purple-400'
+                          ? 'bg-purple-600 scale-125'
+                          : 'bg-gray-300 hover:bg-purple-400'
                           }`}
                       />
                     ))}
@@ -468,8 +485,8 @@ const ProductPage: React.FC = () => {
                         key={i}
                         onClick={() => setCurrentImageIndex(i)}
                         className={`h-16 w-16 sm:h-20 sm:w-20 lg:h-24 lg:w-24 flex-shrink-0 rounded-lg sm:rounded-xl overflow-hidden border-3 transition-all shadow-md hover:shadow-xl ${currentImageIndex === i
-                            ? 'border-purple-500 shadow-purple-300 scale-105'
-                            : 'border-white hover:border-purple-300'
+                          ? 'border-purple-500 shadow-purple-300 scale-105'
+                          : 'border-white hover:border-purple-300'
                           }`}
                       >
                         <img
@@ -553,8 +570,8 @@ const ProductPage: React.FC = () => {
                 onClick={handleAddToCart}
                 disabled={isPurchaseDisabled}
                 className={`w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg shadow-xl transition-all flex items-center justify-center gap-2 sm:gap-3 ${addedToCart
-                    ? 'bg-green-500 text-white hover:bg-green-600'
-                    : 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-2xl hover:scale-[1.02]'
+                  ? 'bg-green-500 text-white hover:bg-green-600'
+                  : 'bg-purple-600 text-white hover:bg-purple-700 hover:shadow-2xl hover:scale-[1.02]'
                   } disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100`}
               >
                 {addingToCart ? (
@@ -581,8 +598,8 @@ const ProductPage: React.FC = () => {
               {/* Status */}
               <div
                 className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl font-medium flex items-center gap-2 sm:gap-3 text-sm sm:text-base ${isPurchaseDisabled
-                    ? 'bg-red-50 border-2 border-red-200 text-red-700'
-                    : 'bg-green-50 border-2 border-green-200 text-green-700'
+                  ? 'bg-red-50 border-2 border-red-200 text-red-700'
+                  : 'bg-green-50 border-2 border-green-200 text-green-700'
                   }`}
               >
                 {isPurchaseDisabled ? (

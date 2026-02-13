@@ -26,7 +26,7 @@ type AppAction =
   | { type: 'UPDATE_PRODUCT'; payload: Product }
   | { type: 'DELETE_PRODUCT'; payload: string }
   | { type: 'ADD_ORDER'; payload: Order }
-  | { type: 'UPDATE_ORDER_STATUS'; payload: { orderId: string; status: 'confirmed' | 'shipped' | 'delivered' } };
+  | { type: 'UPDATE_ORDER_STATUS'; payload: { orderId: string; status: import('../types').OrderStatus } };
 
 const initializeState = (): AppState => {
   const savedCart = localStorage.getItem('cart');
@@ -47,8 +47,8 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
       const existingItem = state.cart.find(
         item =>
           item.product.id === action.payload.product.id &&
-          item.selectedSize === action.payload.selectedSize &&
-          item.selectedColor === action.payload.selectedColor
+          item.size === action.payload.size &&
+          item.color === action.payload.color
       );
 
       if (existingItem) {
@@ -56,8 +56,8 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
           ...state,
           cart: state.cart.map(item =>
             item.product.id === action.payload.product.id &&
-            item.selectedSize === action.payload.selectedSize &&
-            item.selectedColor === action.payload.selectedColor
+              item.size === action.payload.size &&
+              item.color === action.payload.color
               ? { ...item, quantity: item.quantity + action.payload.quantity }
               : item
           ),

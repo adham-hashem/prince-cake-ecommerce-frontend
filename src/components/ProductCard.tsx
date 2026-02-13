@@ -2,19 +2,7 @@ import React from 'react';
 import { ShoppingCart, Eye, Cake, Heart, Sparkles, Star } from 'lucide-react';
 import { getImageUrl } from '../utils/imageUtils';
 
-type Product = {
-  id: string;
-  name: string;
-  code: string;
-  description: string;
-  price: number;
-  originalPrice?: number;
-  inStock: boolean;
-  isOffer: boolean;
-  images: { imagePath: string }[];
-  colors: string[]; // For cakes: النكهات
-  sizes: string[]; // For cakes: الأحجام
-};
+import { Product } from '../types';
 
 const apiUrl = import.meta.env.VITE_API_BASE_URL;
 

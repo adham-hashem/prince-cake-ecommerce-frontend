@@ -17,8 +17,17 @@ export interface Product {
   colors: string[];
   images: ProductImage[]; // Updated to match API response
   inStock: boolean; // Required by ProductCard and AppContext
+  isAvailable?: boolean;
+  isHidden?: boolean;
+  isInstant?: boolean;
+  isBreakfast?: boolean;
+  isFeatured?: boolean;
   isOffer?: boolean; // Optional, used by ProductCard
   originalPrice?: number; // Optional, used by ProductCard
+  rating?: number;
+  salesCount?: number;
+  type?: any;
+  season?: any;
 }
 
 export interface CartItem {

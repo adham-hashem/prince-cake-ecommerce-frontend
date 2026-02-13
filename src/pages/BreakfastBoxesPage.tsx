@@ -84,30 +84,30 @@ const BreakfastBoxesPage: React.FC = () => {
         originalPrice: item.originalPrice || undefined,
         description: item.description || '',
         createdAt: item.createdAt || new Date().toISOString(),
-        
+
         // Safe array handling - ensure they're always arrays
         images: Array.isArray(item.images) ? item.images : [],
         sizes: Array.isArray(item.sizes) ? item.sizes : [],
         colors: Array.isArray(item.colors) ? item.colors : [],
-        
+
         // Boolean fields with safe defaults
         isHidden: item.isHidden !== undefined ? item.isHidden : false,
         isAvailable: item.isAvailable !== undefined ? item.isAvailable : true,
         isInstant: item.isInstant !== undefined ? item.isInstant : false,
         isBreakfast: item.isBreakfast !== undefined ? item.isBreakfast : false,
         isFeatured: item.isFeatured !== undefined ? item.isFeatured : false,
-        
+
         // Computed fields
         inStock: item.isAvailable !== undefined ? item.isAvailable : true,
-        isOffer: (item.originalPrice !== undefined && 
-                  item.originalPrice > item.price) ? true : false,
-        
+        isOffer: (item.originalPrice !== undefined &&
+          item.originalPrice > item.price) ? true : false,
+
         // Additional fields
         rating: item.rating !== undefined ? item.rating : 0,
         salesCount: item.salesCount !== undefined ? item.salesCount : 0,
-        
+
         // Optional enum fields
-        category: item.category || undefined,
+        category: item.category ?? 0,
         type: item.type || undefined,
         season: item.season || undefined,
       }));
@@ -203,10 +203,11 @@ const BreakfastBoxesPage: React.FC = () => {
       dispatch({
         type: 'ADD_TO_CART',
         payload: {
+          id: `quick-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           product,
           quantity: 1,
-          selectedSize: hasSizes ? product.sizes[0] : '',
-          selectedColor: hasColors ? product.colors[0] : '',
+          size: hasSizes ? product.sizes[0] : '',
+          color: hasColors ? product.colors[0] : '',
         },
       });
     }
@@ -269,11 +270,10 @@ const BreakfastBoxesPage: React.FC = () => {
                 <button
                   onClick={() => handlePageChange(page as number)}
                   disabled={loading}
-                  className={`px-3 py-2 rounded-lg transition-colors ${
-                    pageNumber === page
-                      ? 'bg-rose-600 text-white'
-                      : 'bg-white border border-gray-300 hover:bg-gray-50 text-gray-700'
-                  } ${loading ? 'cursor-not-allowed opacity-50' : ''}`}
+                  className={`px-3 py-2 rounded-lg transition-colors ${pageNumber === page
+                    ? 'bg-rose-600 text-white'
+                    : 'bg-white border border-gray-300 hover:bg-gray-50 text-gray-700'
+                    } ${loading ? 'cursor-not-allowed opacity-50' : ''}`}
                 >
                   {page}
                 </button>

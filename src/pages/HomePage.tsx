@@ -12,7 +12,7 @@ interface ApiResponse {
   pageSize: number;
   totalPages: number;
 }
- 
+
 interface HomeRestoreState {
   scrollY: number;
 }
@@ -96,8 +96,8 @@ const HomePage: React.FC = () => {
         isFeatured: item.isFeatured !== undefined ? item.isFeatured : false,
 
         inStock: item.isAvailable !== undefined ? item.isAvailable : true,
-        isOffer: (item.originalPrice !== undefined && 
-                  item.originalPrice > item.price) ? true : false,
+        isOffer: (item.originalPrice !== undefined &&
+          item.originalPrice > item.price) ? true : false,
 
         rating: item.rating !== undefined ? item.rating : 0,
         salesCount: item.salesCount !== undefined ? item.salesCount : 0,
@@ -160,10 +160,11 @@ const HomePage: React.FC = () => {
       dispatch({
         type: 'ADD_TO_CART',
         payload: {
+          id: `quick-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           product,
           quantity: 1,
-          selectedSize: hasSizes ? product.sizes[0] : '',
-          selectedColor: hasColors ? product.colors[0] : '',
+          size: hasSizes ? product.sizes[0] : '',
+          color: hasColors ? product.colors[0] : '',
         },
       });
     }
