@@ -282,7 +282,7 @@ export default function CustomOrders() {
   const calculatePrice = async () => {
     try {
       const flavorParams = formData.flavorIds.map(id => `flavorIds=${id}`).join('&');
-      
+
       const response = await fetch(
         `${apiUrl}/api/CakeConfiguration/price?occasionId=${formData.occasionId}&sizeId=${formData.sizeId}&${flavorParams}`
       );
@@ -294,12 +294,12 @@ export default function CustomOrders() {
 
       const data = await response.json();
       let calculatedPrice = data.price || 0;
-      
+
       // Add image upload cost if image is present
       if (formData.designImage) {
         calculatedPrice += IMAGE_UPLOAD_COST;
       }
-      
+
       setEstimatedPrice(calculatedPrice);
     } catch (error) {
       console.error('Error calculating price:', error);
@@ -338,7 +338,7 @@ export default function CustomOrders() {
   const toggleFlavorSelection = (flavorId: string) => {
     setFormData(prev => {
       const isSelected = prev.flavorIds.includes(flavorId);
-      
+
       if (isSelected) {
         return {
           ...prev,
@@ -381,8 +381,8 @@ export default function CustomOrders() {
 
     try {
       const normalizedPhone = normalizePhone(formData.customerPhone);
-      const normalizedAdditionalPhone = formData.additionalPhone 
-        ? normalizePhone(formData.additionalPhone) 
+      const normalizedAdditionalPhone = formData.additionalPhone
+        ? normalizePhone(formData.additionalPhone)
         : '';
 
       if (!isValidEgyptPhone(normalizedPhone)) {
@@ -406,18 +406,18 @@ export default function CustomOrders() {
       const formDataToSend = new FormData();
       formDataToSend.append('CustomerName', formData.customerName);
       formDataToSend.append('CustomerPhone', normalizedPhone);
-      
+
       if (normalizedAdditionalPhone) {
         formDataToSend.append('AdditionalPhone', normalizedAdditionalPhone);
       }
-      
+
       if (formData.address.trim()) {
         formDataToSend.append('Address', formData.address.trim());
       }
 
       formDataToSend.append('OccasionId', formData.occasionId);
       formDataToSend.append('SizeId', formData.sizeId);
-      
+
       formData.flavorIds.forEach(flavorId => {
         formDataToSend.append('FlavorIds', flavorId);
       });
@@ -436,17 +436,16 @@ export default function CustomOrders() {
 
       const token = getAuthToken();
 
-      if (!token) {
-        alert('يجب تسجيل الدخول أولاً');
-        setLoading(false);
-        return;
+      // Guest users can submit custom orders without authentication
+
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
       }
 
       const response = await fetch(`${apiUrl}/api/CustomOrders`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
         body: formDataToSend,
       });
 
@@ -496,7 +495,7 @@ export default function CustomOrders() {
 
   if (orderComplete) {
     const selectedFlavors = getSelectedFlavors();
-    
+
     return (
       <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-amber-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
@@ -592,11 +591,10 @@ export default function CustomOrders() {
                       setFormData({ ...formData, occasionId: occasion.id, sizeId: '', flavorIds: [] });
                       setStep(2);
                     }}
-                    className={`p-4 border-2 rounded-2xl font-medium transition-all hover:scale-105 ${
-                      formData.occasionId === occasion.id
+                    className={`p-4 border-2 rounded-2xl font-medium transition-all hover:scale-105 ${formData.occasionId === occasion.id
                         ? 'border-purple-500 bg-purple-50 text-purple-900 shadow-lg'
                         : 'border-purple-200 hover:border-purple-400 text-gray-700 hover:bg-purple-50'
-                    }`}
+                      }`}
                   >
                     <span className="text-2xl block mb-1">{occasion.icon}</span>
                     <span>{occasion.nameAr}</span>
@@ -613,23 +611,23 @@ export default function CustomOrders() {
         const availableSizes =
           selectedOccasion?.sizes?.length && selectedOccasion.sizes.length > 0
             ? selectedOccasion.sizes.map((rel) => {
-                const realId = getOccasionSizeRealId(rel);
-                const master = cakeOptions.sizes.find((m) => m.id === realId);
-                return {
-                  realId,
-                  nameAr: rel.nameAr ?? master?.nameAr ?? '',
-                  personsCountAr: rel.personsCountAr ?? master?.personsCountAr ?? '',
-                  price: rel.price ?? master?.defaultPrice ?? 0,
-                  displayOrder: rel.displayOrder ?? master?.displayOrder ?? 0,
-                };
-              })
+              const realId = getOccasionSizeRealId(rel);
+              const master = cakeOptions.sizes.find((m) => m.id === realId);
+              return {
+                realId,
+                nameAr: rel.nameAr ?? master?.nameAr ?? '',
+                personsCountAr: rel.personsCountAr ?? master?.personsCountAr ?? '',
+                price: rel.price ?? master?.defaultPrice ?? 0,
+                displayOrder: rel.displayOrder ?? master?.displayOrder ?? 0,
+              };
+            })
             : cakeOptions.sizes.map((m) => ({
-                realId: m.id,
-                nameAr: m.nameAr,
-                personsCountAr: m.personsCountAr,
-                price: m.defaultPrice ?? 0,
-                displayOrder: m.displayOrder ?? 0,
-              }));
+              realId: m.id,
+              nameAr: m.nameAr,
+              personsCountAr: m.personsCountAr,
+              price: m.defaultPrice ?? 0,
+              displayOrder: m.displayOrder ?? 0,
+            }));
 
         availableSizes.sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
 
@@ -654,11 +652,10 @@ export default function CustomOrders() {
                       setFormData({ ...formData, sizeId: size.realId });
                       setStep(3);
                     }}
-                    className={`w-full p-4 border-2 rounded-2xl transition-all hover:scale-[1.02] ${
-                      formData.sizeId === size.realId
+                    className={`w-full p-4 border-2 rounded-2xl transition-all hover:scale-[1.02] ${formData.sizeId === size.realId
                         ? 'border-purple-500 bg-purple-50 shadow-lg'
                         : 'border-purple-200 hover:border-purple-400 hover:bg-purple-50'
-                    }`}
+                      }`}
                   >
                     <div className="flex justify-between items-center">
                       <div className="bg-amber-100 px-3 py-1 rounded-full">
@@ -700,24 +697,23 @@ export default function CustomOrders() {
               <div className="grid grid-cols-2 gap-3">
                 {cakeOptions.flavors.map((flavor) => {
                   const isSelected = formData.flavorIds.includes(flavor.id);
-                  
+
                   return (
                     <button
                       key={flavor.id}
                       type="button"
                       onClick={() => toggleFlavorSelection(flavor.id)}
-                      className={`relative p-4 border-2 rounded-2xl font-medium transition-all hover:scale-105 ${
-                        isSelected
+                      className={`relative p-4 border-2 rounded-2xl font-medium transition-all hover:scale-105 ${isSelected
                           ? 'border-purple-500 bg-purple-50 text-purple-900 shadow-lg'
                           : 'border-purple-200 hover:border-purple-400 text-gray-700 hover:bg-purple-50'
-                      }`}
+                        }`}
                     >
                       {isSelected && (
                         <div className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full p-1">
                           <CheckCircle className="h-4 w-4" />
                         </div>
                       )}
-                      
+
                       <div className="w-8 h-8 rounded-full mx-auto mb-2" style={{ backgroundColor: flavor.color }} />
                       <div>
                         <span className="block">{flavor.nameAr}</span>
@@ -795,20 +791,19 @@ export default function CustomOrders() {
                 <Upload className="inline h-5 w-5 ml-2" />
                 صورة التصميم المطلوب (اختياري)
               </label>
-              
+
               {/* Image upload cost notice */}
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-2 text-right">
                 <p className="text-sm text-amber-800">
                   💡 <span className="font-medium">ملحوظة:</span> رفع صورة التصميم يضيف {IMAGE_UPLOAD_COST} جنيه للسعر التقديري
                 </p>
               </div>
-              
+
               <div
-                className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${
-                  formData.imagePreview
+                className={`relative border-2 border-dashed rounded-2xl p-6 text-center transition-all cursor-pointer ${formData.imagePreview
                     ? 'border-green-400 bg-green-50'
                     : 'border-purple-300 hover:border-purple-500 hover:bg-purple-50'
-                }`}
+                  }`}
               >
                 <input
                   type="file"
@@ -857,7 +852,7 @@ export default function CustomOrders() {
 
       case 5:
         const selectedFlavors = getSelectedFlavors();
-        
+
         return (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="text-center mb-6">
@@ -986,11 +981,10 @@ export default function CustomOrders() {
                 {cakeOptions.paymentMethods.map((method, index) => (
                   <label
                     key={method.value}
-                    className={`flex items-center justify-end gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                      formData.paymentMethod === index
+                    className={`flex items-center justify-end gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${formData.paymentMethod === index
                         ? 'border-purple-500 bg-purple-50'
                         : 'border-purple-200 hover:border-purple-400 hover:bg-purple-50'
-                    }`}
+                      }`}
                   >
                     <span className="text-gray-700 font-medium flex items-center gap-2">
                       <span>{method.icon}</span>
@@ -1119,21 +1113,19 @@ export default function CustomOrders() {
             {[1, 2, 3, 4, 5].map((s) => (
               <div key={s} className="flex items-center">
                 <div
-                  className={`h-10 w-10 rounded-full flex items-center justify-center font-bold transition-all ${
-                    s < step
+                  className={`h-10 w-10 rounded-full flex items-center justify-center font-bold transition-all ${s < step
                       ? 'bg-green-500 text-white'
                       : s === step
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg scale-110'
-                      : 'bg-purple-200 text-purple-400'
-                  }`}
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg scale-110'
+                        : 'bg-purple-200 text-purple-400'
+                    }`}
                 >
                   {s < step ? '✓' : s}
                 </div>
                 {s < 5 && (
                   <div
-                    className={`w-8 h-1 rounded-full mx-1 transition-colors ${
-                      s < step ? 'bg-green-500' : 'bg-purple-200'
-                    }`}
+                    className={`w-8 h-1 rounded-full mx-1 transition-colors ${s < step ? 'bg-green-500' : 'bg-purple-200'
+                      }`}
                   />
                 )}
               </div>

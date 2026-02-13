@@ -171,6 +171,13 @@ const LoginPage: React.FC = () => {
                 <Sparkles className="h-5 w-5 text-amber-500" />
               </div>
               <p className="text-gray-600">سجل دخولك واستمتع بأشهى الحلويات والتورتات</p>
+
+              {/* Guest Notice */}
+              <div className="mt-4 text-center">
+                <p className="text-xs text-gray-500 bg-gray-50 py-2 px-3 rounded-lg inline-block border border-gray-100">
+                  👋 لا تريد التسجيل الآن؟ <Link to="/" className="text-purple-600 hover:underline font-bold">يمكنك التسوق كزائر</Link>
+                </p>
+              </div>
             </div>
 
             {isLoggingIn ? (

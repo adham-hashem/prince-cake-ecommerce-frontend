@@ -96,8 +96,8 @@ const HomePage: React.FC = () => {
         isFeatured: item.isFeatured !== undefined ? item.isFeatured : false,
 
         inStock: item.isAvailable !== undefined ? item.isAvailable : true,
-        isOffer: (item.originalPrice !== undefined && 
-                  item.originalPrice > item.price) ? true : false,
+        isOffer: (item.originalPrice !== undefined &&
+          item.originalPrice > item.price) ? true : false,
 
         rating: item.rating !== undefined ? item.rating : 0,
         salesCount: item.salesCount !== undefined ? item.salesCount : 0,
@@ -259,6 +259,16 @@ const HomePage: React.FC = () => {
                 <ChevronDown className="w-8 h-8 text-white mx-auto drop-shadow-md" />
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Guest Shopping Notice */}
+        <div className="flex flex-col items-center justify-center mb-8 w-full">
+          <div className="bg-purple-100/80 border border-purple-200 rounded-xl px-4 py-2 flex items-center gap-2 animate-pulse">
+            <span className="text-xl">💡</span>
+            <p className="text-purple-900 font-medium text-sm sm:text-base">
+              معلومة: يمكنك التسوق وإتمام الطلب كزائر دون الحاجة لتسجيل الدخول!
+            </p>
           </div>
         </div>
 
