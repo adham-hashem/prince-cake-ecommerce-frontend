@@ -38,8 +38,10 @@ const RamadanCountdown: React.FC = () => {
     };
 
     useEffect(() => {
-        // Ramadan Start Date: Feb 28, 2026 (Approximate)
-        const ramadanStartDate = new Date('2026-02-28T00:00:00').getTime();
+        // Ramadan Start Date: Feb 19, 2026 at 00:00:00 Egypt time (UTC+2)
+        // Create date in local time (Egypt timezone)
+        const ramadanStart = new Date(2026, 1, 19, 0, 0, 0); // Month is 0-indexed, so 1 = February
+        const ramadanStartDate = ramadanStart.getTime();
         // Ramadan lasts 29 or 30 days, using 30 for this example
         const ramadanEndDate = ramadanStartDate + (30 * 24 * 60 * 60 * 1000);
 
@@ -58,8 +60,18 @@ const RamadanCountdown: React.FC = () => {
                 setIsRamadan(false);
                 const distance = ramadanStartDate - now;
 
+                // Calculate days remaining more accurately
+                const nowDate = new Date(now);
+                const ramadanDate = new Date(ramadanStartDate);
+
+                // Set both to midnight to calculate full days
+                nowDate.setHours(0, 0, 0, 0);
+                ramadanDate.setHours(0, 0, 0, 0);
+
+                const daysRemaining = Math.ceil((ramadanDate.getTime() - nowDate.getTime()) / (1000 * 60 * 60 * 24));
+
                 setTimeLeft({
-                    days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+                    days: daysRemaining,
                     hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
                     minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
                     seconds: Math.floor((distance % (1000 * 60)) / 1000),
