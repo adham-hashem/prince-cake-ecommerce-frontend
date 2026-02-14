@@ -169,10 +169,14 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
   }
 };
 
-const AppContext = createContext<{
+interface AppContextType {
   state: AppState;
   dispatch: React.Dispatch<AppAction>;
-} | null>(null);
+  // Cart helper method
+  getItemCount: () => number;
+}
+
+const AppContext = createContext<AppContextType | null>(null);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initializeState());
@@ -188,8 +192,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // console.log('AppContext state:', state);
   }, [state]);
 
+  // Cart helper method
+  const getItemCount = () => {
+    return state.cart.reduce((count, item) => count + item.quantity, 0);
+  };
+
+  const contextValue: AppContextType = {
+    state,
+    dispatch,
+    getItemCount,
+  };
+
   return (
-    <AppContext.Provider value={{ state, dispatch }}>
+    <AppContext.Provider value={contextValue}>
       {children}
     </AppContext.Provider>
   );

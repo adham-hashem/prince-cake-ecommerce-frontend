@@ -1,12 +1,13 @@
 // src/App.tsx
 
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { AppProvider } from './contexts/AppContext';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import { BottomNav } from './components/BottomNav';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { onForegroundMessage } from './services/firebase';
@@ -47,6 +48,72 @@ import CakeConfigurationManagement from './pages/admin/CakeConfigurationManageme
 import CustomOrdersManagement from './pages/admin/CustomOrdersManagement';
 import MyCustomOrders from './pages/MyCustomOrders';
 import BreakfastBoxesPage from './pages/BreakfastBoxesPage';
+
+// ===== Bottom Nav Helper =====
+function useNavPageId() {
+  const { pathname } = useLocation();
+
+  return useMemo(() => {
+    if (pathname === '/' || pathname.startsWith('/product')) return 'home';
+    if (pathname.startsWith('/menu')) return 'menu';
+    if (pathname.startsWith('/instant')) return 'instant';
+    if (pathname.startsWith('/breakfast')) return 'breakfast';
+    if (pathname.startsWith('/custom')) return 'custom';
+    if (pathname.startsWith('/cart') || pathname.startsWith('/checkout')) return 'cart';
+    return 'home';
+  }, [pathname]);
+}
+
+// ===== Public Layout =====
+function PublicLayout() {
+  const navigate = useNavigate();
+  const currentPage = useNavPageId();
+
+  const handleNavigate = (page: string) => {
+    switch (page) {
+      case 'home':
+        navigate('/');
+        break;
+      case 'menu':
+        navigate('/menu');
+        break;
+      case 'instant':
+        navigate('/instant');
+        break;
+      case 'breakfast':
+        navigate('/breakfast');
+        break;
+      case 'custom':
+        navigate('/custom');
+        break;
+      case 'cart':
+        navigate('/cart');
+        break;
+      default:
+        navigate('/');
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col w-full overflow-x-hidden" dir="rtl">
+      <Header />
+      <main className="flex-grow pb-24">
+        <Outlet />
+      </main>
+      <Footer />
+      <BottomNav currentPage={currentPage} onNavigate={handleNavigate} />
+    </div>
+  );
+}
+
+// ===== Admin Layout =====
+function AdminLayout() {
+  return (
+    <div className="min-h-screen bg-gray-50" dir="rtl">
+      <Outlet />
+    </div>
+  );
+}
 
 function AppContent() {
   // ✅ NEW: Show the "Open in Browser" modal globally
@@ -98,98 +165,18 @@ function AppContent() {
       <InstallPrompt />
 
       <div className="min-h-screen bg-gray-50 flex flex-col w-full overflow-x-hidden" dir="rtl">
-        {/* Header */}
         <Routes>
-          <Route path="/admin/*" element={null} />
-          <Route path="*" element={<Header />} />
-        </Routes>
-
-        <main className="flex-grow">
-          <Routes>
-            {/* Public */}
-            <Route path="/" element={<HomePage />} />
-            <Route path="/menu" element={<MenuPage />} />
-            <Route path="/instant" element={<InstantPage />} />
-            <Route path="/breakfast" element={<BreakfastBoxesPage />} />
-            <Route path="/product/:id" element={<ProductPage />} />
-            <Route path="/login" element={<LoginPage />} />
-
-            {/* Protected Routes - Require Authentication */}
+          {/* ===== Admin Routes (Protected) ===== */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Navigate to="orders" replace />} />
             <Route
-              path="/custom"
-              element={
-                <ProtectedRoute>
-                  <CustomOrders />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/complete-profile"
-              element={
-                <ProtectedRoute>
-                  <CompleteProfile />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/cart"
-              element={
-                <ProtectedRoute>
-                  <CartPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/checkout"
-              element={
-                <ProtectedRoute>
-                  <CheckoutPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/my-orders"
-              element={
-                <ProtectedRoute>
-                  <MyOrders />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/my-custom-orders"
-              element={
-                <ProtectedRoute>
-                  <MyCustomOrders />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/order/:id"
-              element={
-                <ProtectedRoute>
-                  <OrderDetails />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Admin Routes */}
-            <Route
-              path="/admin"
+              path="*"
               element={
                 <ProtectedRoute requireAdmin>
                   <AdminPage />
                 </ProtectedRoute>
               }
             >
-              <Route index element={<Navigate to="orders" replace />} />
               <Route path="notifications" element={<OrderNotifications />} />
               <Route path="custom-notifications" element={<CustomOrderNotifications />} />
               <Route path="products" element={<ProductsManagement />} />
@@ -206,16 +193,86 @@ function AppContent() {
                 element={<CakeConfigurationManagement />}
               />
             </Route>
+          </Route>
+
+          {/* ===== Public Routes ===== */}
+          <Route path="/" element={<PublicLayout />}>
+            <Route index element={<HomePage />} />
+            <Route path="menu" element={<MenuPage />} />
+            <Route path="instant" element={<InstantPage />} />
+            <Route path="breakfast" element={<BreakfastBoxesPage />} />
+            <Route path="product/:id" element={<ProductPage />} />
+            <Route path="login" element={<LoginPage />} />
+
+            {/* Protected Routes - Require Authentication */}
+            <Route
+              path="custom"
+              element={
+                <ProtectedRoute>
+                  <CustomOrders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="complete-profile"
+              element={
+                <ProtectedRoute>
+                  <CompleteProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="cart"
+              element={
+                <ProtectedRoute>
+                  <CartPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="checkout"
+              element={
+                <ProtectedRoute>
+                  <CheckoutPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="my-orders"
+              element={
+                <ProtectedRoute>
+                  <MyOrders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="my-custom-orders"
+              element={
+                <ProtectedRoute>
+                  <MyCustomOrders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="order/:id"
+              element={
+                <ProtectedRoute>
+                  <OrderDetails />
+                </ProtectedRoute>
+              }
+            />
 
             {/* Fallback */}
             <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </main>
-
-        {/* Footer */}
-        <Routes>
-          <Route path="/admin/*" element={null} />
-          <Route path="*" element={<Footer />} />
+          </Route>
         </Routes>
 
         <ToastContainer />
