@@ -460,6 +460,13 @@ const OrdersManagement: React.FC = () => {
     }
   };
 
+  const isValidDeliveryDate = (dateString: string) => {
+    if (!dateString) return false;
+    const date = new Date(dateString);
+    // Check if the date is not the default DateTime minimum value (0001-01-01)
+    return date.getFullYear() > 1;
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ar-EG', {
       year: 'numeric',
@@ -650,7 +657,8 @@ const OrdersManagement: React.FC = () => {
                     <th className="px-4 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">الإجمالي</th>
                     <th className="px-4 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">الحالة</th>
                     <th className="px-4 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">الدفع</th>
-                    <th className="px-4 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">التاريخ</th>
+                    <th className="px-4 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">تاريخ الطلب</th>
+                    <th className="px-4 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">تاريخ التوصيل</th>
                     <th className="px-4 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">الإجراءات</th>
                   </tr>
                 </thead>
@@ -697,6 +705,16 @@ const OrdersManagement: React.FC = () => {
                               <Calendar className="h-4 w-4 text-gray-400" />
                               {formatDate(order.date)}
                             </div>
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            {isValidDeliveryDate(order.deliveryDate) ? (
+                              <div className="flex items-center gap-1 text-sm text-purple-700 font-medium">
+                                <Calendar className="h-4 w-4 text-purple-500" />
+                                {new Date(order.deliveryDate).toLocaleDateString('ar-EG')}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-400 italic">غير محدد</span>
+                            )}
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-2">
@@ -800,7 +818,7 @@ const OrdersManagement: React.FC = () => {
                                           <span className="text-gray-600">{order.address}, {order.governorate}</span>
                                         </div>
                                       )}
-                                      {order.deliveryDate && (
+                                      {isValidDeliveryDate(order.deliveryDate) && (
                                         <div className="flex items-center gap-2 md:col-span-2">
                                           <Calendar className="h-4 w-4 text-purple-500" />
                                           <span className="text-gray-600 font-medium">تاريخ التوصيل: {new Date(order.deliveryDate).toLocaleDateString('ar-EG')}</span>
@@ -960,6 +978,15 @@ const OrdersManagement: React.FC = () => {
                       <span className="text-sm text-gray-500">طريقة الدفع:</span>
                       <span className="text-sm text-gray-900 font-medium">{getPaymentMethodText(order.paymentMethod)}</span>
                     </div>
+                    {isValidDeliveryDate(order.deliveryDate) && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-500">تاريخ التوصيل:</span>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3 text-purple-500" />
+                          <span className="text-sm text-purple-700 font-semibold">{new Date(order.deliveryDate).toLocaleDateString('ar-EG')}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {expandedRows.has(order.id) && (
@@ -983,7 +1010,7 @@ const OrdersManagement: React.FC = () => {
                           <span className="text-gray-600">{order.address}, {order.governorate}</span>
                         </div>
                       )}
-                      {order.deliveryDate && (
+                      {isValidDeliveryDate(order.deliveryDate) && (
                         <div className="flex items-center gap-2 text-sm">
                           <Calendar className="h-4 w-4 text-purple-500" />
                           <span className="text-gray-600 font-medium">تاريخ التوصيل: {new Date(order.deliveryDate).toLocaleDateString('ar-EG')}</span>
@@ -1205,6 +1232,15 @@ const OrdersManagement: React.FC = () => {
                   </p>
                   <p className="font-bold text-gray-900">{formatDate(selectedOrder.date)}</p>
                 </div>
+                {isValidDeliveryDate(selectedOrder.deliveryDate) && (
+                  <div className="bg-purple-50 rounded-xl p-4 border-2 border-purple-100">
+                    <p className="text-sm text-gray-600 mb-1 flex items-center gap-1">
+                      <Calendar className="h-4 w-4 text-purple-500" />
+                      تاريخ التوصيل
+                    </p>
+                    <p className="font-bold text-purple-700">{new Date(selectedOrder.deliveryDate).toLocaleDateString('ar-EG')}</p>
+                  </div>
+                )}
               </div>
 
               {/* Customer Info */}
