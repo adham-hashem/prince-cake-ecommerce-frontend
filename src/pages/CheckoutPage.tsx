@@ -520,12 +520,22 @@ const CheckoutPage: React.FC = () => {
           );
         }
 
+        console.log('🎉 Order created successfully!');
+        console.log('Order result:', orderResult);
+        console.log('Order Number:', orderResult.orderNumber || localOrder.id);
+
         dispatch({ type: 'CLEAR_CART' });
-        setSuccessOrderNumber(orderResult.orderNumber || localOrder.id);
+
+        const orderNum = orderResult.orderNumber || localOrder.id;
+        console.log('Setting order number to:', orderNum);
+        setSuccessOrderNumber(orderNum);
+
+        console.log('Setting showSuccessModal to true');
         setShowSuccessModal(true);
 
         // Navigate to home after modal closes (5 seconds + small delay)
         setTimeout(() => {
+          console.log('Navigating away after timeout');
           navigate('/', { replace: true });
         }, 5500);
       } catch (error) {
