@@ -190,8 +190,9 @@ const HomePage: React.FC = () => {
           <div className="absolute inset-0 bg-black/30"></div>
           <div className="relative min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-12 sm:py-20">
             <div className="text-center space-y-8 sm:space-y-12 max-w-2xl mx-auto">
-              {/* Logo Circle */}
-              <div className="flex justify-center -mb-2 sm:-mb-4">
+              {/* Logo and Ramadan Countdown - Side by Side */}
+              <div className="flex items-center justify-center gap-3 sm:gap-4 -mb-2 sm:-mb-4">
+                {/* Logo Circle */}
                 <div className="relative w-32 sm:w-40 h-32 sm:h-40 rounded-full overflow-hidden shadow-2xl ring-6 ring-white bg-white flex items-center justify-center">
                   <img
                     src="/لجو_برنس_الكيك_.jpeg"
@@ -199,11 +200,11 @@ const HomePage: React.FC = () => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-              </div>
 
-              {/* Ramadan Countdown Badge */}
-              <div className="flex justify-center -mt-4 mb-2 relative z-10">
-                <RamadanCountdown />
+                {/* Ramadan Countdown Badge - Smaller */}
+                <div className="transform scale-75 sm:scale-90">
+                  <RamadanCountdown />
+                </div>
               </div>
 
               {/* Title Section */}
