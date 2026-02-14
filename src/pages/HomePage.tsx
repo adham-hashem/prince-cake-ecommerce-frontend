@@ -202,8 +202,8 @@ const HomePage: React.FC = () => {
                   />
                 </div>
 
-                {/* Ramadan Countdown Badge - Smaller */}
-                <div className="transform scale-75 sm:scale-90">
+                {/* Ramadan Countdown Badge - Slightly bigger */}
+                <div className="transform scale-90 sm:scale-100">
                   <RamadanCountdown />
                 </div>
               </div>

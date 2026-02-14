@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { useApp } from '../contexts/AppContext';
 import { CartItem } from '../types';
-import OrderSuccessModal from '../components/OrderSuccessModal';
 
 // Interfaces (Unchanged)
 interface ShippingFee {
@@ -97,8 +96,7 @@ const CheckoutPage: React.FC = () => {
   const [cartError, setCartError] = useState<string | null>(null);
   const [loadingCart, setLoadingCart] = useState(true);
   const [notificationError, setNotificationError] = useState<string | null>(null);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successOrderNumber, setSuccessOrderNumber] = useState<string>('');
+
 
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -520,24 +518,9 @@ const CheckoutPage: React.FC = () => {
           );
         }
 
-        console.log('🎉 Order created successfully!');
-        console.log('Order result:', orderResult);
-        console.log('Order Number:', orderResult.orderNumber || localOrder.id);
-
         dispatch({ type: 'CLEAR_CART' });
-
-        const orderNum = orderResult.orderNumber || localOrder.id;
-        console.log('Setting order number to:', orderNum);
-        setSuccessOrderNumber(orderNum);
-
-        console.log('Setting showSuccessModal to true');
-        setShowSuccessModal(true);
-
-        // Navigate to home after modal closes (5 seconds + small delay)
-        setTimeout(() => {
-          console.log('Navigating away after timeout');
-          navigate('/', { replace: true });
-        }, 5500);
+        alert('تم تأكيد طلبك بنجاح! سيتم التواصل معك قريباً.');
+        navigate('/', { replace: true });
       } catch (error) {
         let errorMessage =
           'حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.';
@@ -690,318 +673,309 @@ const CheckoutPage: React.FC = () => {
 
   // --- Main Checkout Form ---
   return (
-    <>
-      <OrderSuccessModal
-        isOpen={showSuccessModal}
-        onClose={() => {
-          setShowSuccessModal(false);
-          navigate('/', { replace: true });
-        }}
-        orderNumber={successOrderNumber}
-      />
-      <div className="min-h-screen bg-purple-50" dir="rtl">
-        <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 md:py-8 max-w-6xl">
-          <Link
-            to="/cart"
-            className="flex items-center gap-2 text-purple-700 hover:text-purple-900 mb-4 sm:mb-6 transition-colors font-medium text-sm sm:text-base"
-          >
-            <ArrowRight size={20} />
-            <span>العودة للسلة</span>
-          </Link>
+    <div className="min-h-screen bg-purple-50" dir="rtl">
+      <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 md:py-8 max-w-6xl">
+        <Link
+          to="/cart"
+          className="flex items-center gap-2 text-purple-700 hover:text-purple-900 mb-4 sm:mb-6 transition-colors font-medium text-sm sm:text-base"
+        >
+          <ArrowRight size={20} />
+          <span>العودة للسلة</span>
+        </Link>
 
-          <h1 className="text-2xl sm:text-3xl font-bold text-purple-900 mb-4 sm:mb-6 flex items-center gap-2">
-            <Package className="h-6 w-6 sm:h-7 sm:w-7 text-purple-600" />
-            <span>إتمام الطلب</span>
-          </h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-purple-900 mb-4 sm:mb-6 flex items-center gap-2">
+          <Package className="h-6 w-6 sm:h-7 sm:w-7 text-purple-600" />
+          <span>إتمام الطلب</span>
+        </h1>
 
-          {notificationError && (
-            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-yellow-50 border-2 border-yellow-300 rounded-xl sm:rounded-2xl text-center">
-              <p className="text-yellow-700 text-xs sm:text-sm font-medium">{notificationError}</p>
-            </div>
-          )}
+        {notificationError && (
+          <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-yellow-50 border-2 border-yellow-300 rounded-xl sm:rounded-2xl text-center">
+            <p className="text-yellow-700 text-xs sm:text-sm font-medium">{notificationError}</p>
+          </div>
+        )}
 
-          <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 sm:gap-6">
-            {/* Order Summary */}
-            <div className="lg:col-span-1 lg:order-2">
-              <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border-2 border-purple-100 sticky top-4">
-                <h2 className="text-lg sm:text-xl font-bold text-purple-900 mb-4 flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-amber-500" />
-                  <span>ملخص الطلب</span>
-                </h2>
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Order Summary */}
+          <div className="lg:col-span-1 lg:order-2">
+            <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border-2 border-purple-100 sticky top-4">
+              <h2 className="text-lg sm:text-xl font-bold text-purple-900 mb-4 flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-500" />
+                <span>ملخص الطلب</span>
+              </h2>
 
-                <div className="space-y-2 sm:space-y-3 mb-4">
-                  {state.cart.map((item) => (
-                    <div
-                      key={`${item.product.id}-${item.size}-${item.color}`}
-                      className="flex justify-between items-start gap-2 pb-2 border-b border-purple-100"
-                    >
-                      <span className="text-purple-700 font-bold text-sm sm:text-base">
-                        {(item.product.price * item.quantity).toFixed(2)} ج
+              <div className="space-y-2 sm:space-y-3 mb-4">
+                {state.cart.map((item) => (
+                  <div
+                    key={`${item.product.id}-${item.size}-${item.color}`}
+                    className="flex justify-between items-start gap-2 pb-2 border-b border-purple-100"
+                  >
+                    <span className="text-purple-700 font-bold text-sm sm:text-base">
+                      {(item.product.price * item.quantity).toFixed(2)} ج
+                    </span>
+                    <div className="text-right flex-1">
+                      <span className="text-gray-800 font-medium text-xs sm:text-sm block">
+                        {item.product.name} × {item.quantity}
                       </span>
-                      <div className="text-right flex-1">
-                        <span className="text-gray-800 font-medium text-xs sm:text-sm block">
-                          {item.product.name} × {item.quantity}
-                        </span>
-                        {(item.size || item.color) && (
-                          <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
-                            {item.size && `${item.size}`}
-                            {item.size && item.color && ' • '}
-                            {item.color && `${item.color}`}
-                          </p>
-                        )}
-                      </div>
+                      {(item.size || item.color) && (
+                        <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
+                          {item.size && `${item.size}`}
+                          {item.size && item.color && ' • '}
+                          {item.color && `${item.color}`}
+                        </p>
+                      )}
                     </div>
-                  ))}
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-2 sm:space-y-2.5 border-t-2 border-purple-200 pt-3 sm:pt-4">
+                <div className="flex justify-between text-xs sm:text-sm">
+                  <span className="text-gray-600">المجموع الفرعي</span>
+                  <span className="font-semibold text-purple-900">{subtotal.toFixed(2)} جنيه</span>
                 </div>
-
-                <div className="space-y-2 sm:space-y-2.5 border-t-2 border-purple-200 pt-3 sm:pt-4">
-                  <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="text-gray-600">المجموع الفرعي</span>
-                    <span className="font-semibold text-purple-900">{subtotal.toFixed(2)} جنيه</span>
-                  </div>
-                  {discount && (
-                    <div className="flex justify-between text-xs sm:text-sm bg-green-50 p-2 rounded-lg">
-                      <span className="text-green-700 font-medium">الخصم ({discount.code})</span>
-                      <span className="font-bold text-green-700">
-                        -{discountAmount.toFixed(2)} جنيه
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-xs sm:text-sm">
-                    <span className="text-gray-600">رسوم التوصيل</span>
-                    {loadingShippingFees ? (
-                      <Loader2 className="animate-spin text-purple-400" size={16} />
-                    ) : (
-                      <span className="font-semibold text-purple-900">
-                        {shippingFee.toFixed(2)} جنيه
-                      </span>
-                    )}
-                  </div>
-                  {selectedGovernorate && (
-                    <p className="text-[10px] sm:text-xs text-gray-500">
-                      🚚 التوصيل خلال: {selectedGovernorate.deliveryTime}
-                    </p>
-                  )}
-                  <div className="flex justify-between items-center pt-2 sm:pt-3 border-t-2 border-purple-200">
-                    <span className="text-xl sm:text-2xl font-black text-purple-700">
-                      {total.toFixed(2)} جنيه
-                    </span>
-                    <span className="text-base sm:text-lg font-bold text-purple-900">
-                      الإجمالي
+                {discount && (
+                  <div className="flex justify-between text-xs sm:text-sm bg-green-50 p-2 rounded-lg">
+                    <span className="text-green-700 font-medium">الخصم ({discount.code})</span>
+                    <span className="font-bold text-green-700">
+                      -{discountAmount.toFixed(2)} جنيه
                     </span>
                   </div>
+                )}
+                <div className="flex justify-between text-xs sm:text-sm">
+                  <span className="text-gray-600">رسوم التوصيل</span>
+                  {loadingShippingFees ? (
+                    <Loader2 className="animate-spin text-purple-400" size={16} />
+                  ) : (
+                    <span className="font-semibold text-purple-900">
+                      {shippingFee.toFixed(2)} جنيه
+                    </span>
+                  )}
+                </div>
+                {selectedGovernorate && (
+                  <p className="text-[10px] sm:text-xs text-gray-500">
+                    🚚 التوصيل خلال: {selectedGovernorate.deliveryTime}
+                  </p>
+                )}
+                <div className="flex justify-between items-center pt-2 sm:pt-3 border-t-2 border-purple-200">
+                  <span className="text-xl sm:text-2xl font-black text-purple-700">
+                    {total.toFixed(2)} جنيه
+                  </span>
+                  <span className="text-base sm:text-lg font-bold text-purple-900">
+                    الإجمالي
+                  </span>
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Checkout Form */}
-            <form
-              onSubmit={handleSubmit}
-              className="lg:col-span-2 lg:order-1 bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border-2 border-purple-100"
-            >
-              {errorShippingFees && (
-                <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border-2 border-red-200 rounded-xl sm:rounded-2xl text-center">
-                  <p className="text-red-600 text-xs sm:text-sm mb-2 sm:mb-3">{errorShippingFees}</p>
-                  <button
-                    type="button"
-                    onClick={fetchShippingFees}
-                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-xs sm:text-sm font-medium"
+          {/* Checkout Form */}
+          <form
+            onSubmit={handleSubmit}
+            className="lg:col-span-2 lg:order-1 bg-white rounded-2xl sm:rounded-3xl shadow-xl p-4 sm:p-6 border-2 border-purple-100"
+          >
+            {errorShippingFees && (
+              <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border-2 border-red-200 rounded-xl sm:rounded-2xl text-center">
+                <p className="text-red-600 text-xs sm:text-sm mb-2 sm:mb-3">{errorShippingFees}</p>
+                <button
+                  type="button"
+                  onClick={fetchShippingFees}
+                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-xs sm:text-sm font-medium"
+                >
+                  إعادة المحاولة
+                </button>
+              </div>
+            )}
+
+            <div className="space-y-3 sm:space-y-4">
+              {/* Full Name */}
+              <div>
+                <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
+                  الاسم بالكامل *
+                </label>
+                <input
+                  type="text"
+                  value={formData.fullName}
+                  onChange={(e) => handleInputChange('fullName', e.target.value)}
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errors.fullName
+                    ? 'border-red-500 focus:border-red-600'
+                    : 'border-purple-200 focus:border-purple-500'
+                    }`}
+                  disabled={isSubmitting}
+                />
+                {errors.fullName && (
+                  <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
+                    {errors.fullName}
+                  </p>
+                )}
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
+                  رقم الهاتف *
+                </label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
+                  placeholder="01xxxxxxxxx"
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errors.phone
+                    ? 'border-red-500 focus:border-red-600'
+                    : 'border-purple-200 focus:border-purple-500'
+                    }`}
+                  disabled={isSubmitting}
+                />
+                {errors.phone && (
+                  <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
+                    {errors.phone}
+                  </p>
+                )}
+              </div>
+
+              {/* Address */}
+              <div>
+                <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
+                  العنوان التفصيلي *
+                </label>
+                <textarea
+                  value={formData.address}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  rows={3}
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none resize-none transition-colors text-sm sm:text-base ${errors.address
+                    ? 'border-red-500 focus:border-red-600'
+                    : 'border-purple-200 focus:border-purple-500'
+                    }`}
+                  disabled={isSubmitting}
+                />
+                {errors.address && (
+                  <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
+                    {errors.address}
+                  </p>
+                )}
+              </div>
+
+              {/* Governorate */}
+              <div>
+                <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
+                  المحافظة *
+                </label>
+                {loadingShippingFees ? (
+                  <div className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl bg-gray-50 flex items-center justify-end">
+                    <span className="text-xs sm:text-sm text-gray-500 ml-2">
+                      جاري جلب المحافظات...
+                    </span>
+                    <Loader2
+                      className="animate-spin text-purple-500"
+                      size={16}
+                    />
+                  </div>
+                ) : (
+                  <select
+                    value={formData.governorate}
+                    onChange={(e) =>
+                      handleInputChange('governorate', e.target.value)
+                    }
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errors.governorate
+                      ? 'border-red-500 focus:border-red-600'
+                      : 'border-purple-200 focus:border-purple-500'
+                      }`}
+                    dir="rtl"
+                    disabled={isSubmitting}
                   >
-                    إعادة المحاولة
-                  </button>
-                </div>
-              )}
+                    <option value="">اختر المحافظة...</option>
+                    {shippingFees.map((gov) => (
+                      <option key={gov.id} value={gov.governorate}>
+                        {gov.governorate} - {gov.fee} جنيه
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {errors.governorate && (
+                  <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
+                    {errors.governorate}
+                  </p>
+                )}
+              </div>
 
-              <div className="space-y-3 sm:space-y-4">
-                {/* Full Name */}
-                <div>
-                  <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
-                    الاسم بالكامل *
-                  </label>
+              {/* Delivery Date */}
+              <div>
+                <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
+                  تاريخ الاستلام *
+                </label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 h-5 w-5" />
+                  <input
+                    type="date"
+                    value={formData.deliveryDate}
+                    min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
+                    onChange={(e) => handleInputChange('deliveryDate', e.target.value)}
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errors.deliveryDate
+                      ? 'border-red-500 focus:border-red-600'
+                      : 'border-purple-200 focus:border-purple-500'
+                      }`}
+                    disabled={isSubmitting}
+                  />
+                </div>
+                {errors.deliveryDate && (
+                  <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
+                    {errors.deliveryDate}
+                  </p>
+                )}
+                <p className="text-gray-500 text-xs mt-1 text-right">
+                  يرجى اختيار يوم في المستقبل (غير اليوم الحالي)
+                </p>
+              </div>
+
+              {/* Discount Code */}
+              <div>
+                <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
+                  كود الخصم
+                </label>
+                <div className="flex gap-2">
                   <input
                     type="text"
-                    value={formData.fullName}
-                    onChange={(e) => handleInputChange('fullName', e.target.value)}
-                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errors.fullName
+                    value={formData.discountCode}
+                    onChange={(e) =>
+                      handleInputChange('discountCode', e.target.value)
+                    }
+                    placeholder="أدخل الكود"
+                    className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errorDiscount
                       ? 'border-red-500 focus:border-red-600'
                       : 'border-purple-200 focus:border-purple-500'
                       }`}
-                    disabled={isSubmitting}
+                    disabled={loadingDiscount || isSubmitting}
                   />
-                  {errors.fullName && (
-                    <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
-                      {errors.fullName}
-                    </p>
-                  )}
-                </div>
-
-                {/* Phone */}
-                <div>
-                  <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
-                    رقم الهاتف *
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    placeholder="01xxxxxxxxx"
-                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errors.phone
-                      ? 'border-red-500 focus:border-red-600'
-                      : 'border-purple-200 focus:border-purple-500'
+                  <button
+                    type="button"
+                    onClick={handleApplyDiscount}
+                    disabled={loadingDiscount || isSubmitting}
+                    className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium transition-all text-sm sm:text-base ${loadingDiscount || isSubmitting
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-amber-500 text-white hover:bg-amber-600'
                       }`}
-                    disabled={isSubmitting}
-                  />
-                  {errors.phone && (
-                    <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
-                      {errors.phone}
-                    </p>
-                  )}
+                  >
+                    {loadingDiscount ? (
+                      <Loader2 className="animate-spin" size={18} />
+                    ) : (
+                      'تطبيق'
+                    )}
+                  </button>
                 </div>
-
-                {/* Address */}
-                <div>
-                  <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
-                    العنوان التفصيلي *
-                  </label>
-                  <textarea
-                    value={formData.address}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                    rows={3}
-                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none resize-none transition-colors text-sm sm:text-base ${errors.address
-                      ? 'border-red-500 focus:border-red-600'
-                      : 'border-purple-200 focus:border-purple-500'
-                      }`}
-                    disabled={isSubmitting}
-                  />
-                  {errors.address && (
-                    <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
-                      {errors.address}
-                    </p>
-                  )}
-                </div>
-
-                {/* Governorate */}
-                <div>
-                  <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
-                    المحافظة *
-                  </label>
-                  {loadingShippingFees ? (
-                    <div className="w-full px-3 sm:px-4 py-2 sm:py-3 border-2 border-purple-200 rounded-lg sm:rounded-xl bg-gray-50 flex items-center justify-end">
-                      <span className="text-xs sm:text-sm text-gray-500 ml-2">
-                        جاري جلب المحافظات...
-                      </span>
-                      <Loader2
-                        className="animate-spin text-purple-500"
-                        size={16}
-                      />
-                    </div>
-                  ) : (
-                    <select
-                      value={formData.governorate}
-                      onChange={(e) =>
-                        handleInputChange('governorate', e.target.value)
-                      }
-                      className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errors.governorate
-                        ? 'border-red-500 focus:border-red-600'
-                        : 'border-purple-200 focus:border-purple-500'
-                        }`}
-                      dir="rtl"
-                      disabled={isSubmitting}
-                    >
-                      <option value="">اختر المحافظة...</option>
-                      {shippingFees.map((gov) => (
-                        <option key={gov.id} value={gov.governorate}>
-                          {gov.governorate} - {gov.fee} جنيه
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                  {errors.governorate && (
-                    <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
-                      {errors.governorate}
-                    </p>
-                  )}
-                </div>
-
-                {/* Delivery Date */}
-                <div>
-                  <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
-                    تاريخ الاستلام *
-                  </label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400 h-5 w-5" />
-                    <input
-                      type="date"
-                      value={formData.deliveryDate}
-                      min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
-                      onChange={(e) => handleInputChange('deliveryDate', e.target.value)}
-                      className={`w-full px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errors.deliveryDate
-                        ? 'border-red-500 focus:border-red-600'
-                        : 'border-purple-200 focus:border-purple-500'
-                        }`}
-                      disabled={isSubmitting}
-                    />
-                  </div>
-                  {errors.deliveryDate && (
-                    <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
-                      {errors.deliveryDate}
-                    </p>
-                  )}
-                  <p className="text-gray-500 text-xs mt-1 text-right">
-                    يرجى اختيار يوم في المستقبل (غير اليوم الحالي)
+                {errorDiscount && (
+                  <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
+                    {errorDiscount}
                   </p>
-                </div>
+                )}
+                {discount && (
+                  <p className="text-green-600 text-xs sm:text-sm mt-1 text-right font-medium">
+                    ✓ تم تطبيق كود {discount.code}: خصم{' '}
+                    {discount.amount.toFixed(2)} جنيه
+                  </p>
+                )}
+              </div>
 
-                {/* Discount Code */}
-                <div>
-                  <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
-                    كود الخصم
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={formData.discountCode}
-                      onChange={(e) =>
-                        handleInputChange('discountCode', e.target.value)
-                      }
-                      placeholder="أدخل الكود"
-                      className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 border-2 rounded-lg sm:rounded-xl text-right focus:outline-none transition-colors text-sm sm:text-base ${errorDiscount
-                        ? 'border-red-500 focus:border-red-600'
-                        : 'border-purple-200 focus:border-purple-500'
-                        }`}
-                      disabled={loadingDiscount || isSubmitting}
-                    />
-                    <button
-                      type="button"
-                      onClick={handleApplyDiscount}
-                      disabled={loadingDiscount || isSubmitting}
-                      className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium transition-all text-sm sm:text-base ${loadingDiscount || isSubmitting
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-amber-500 text-white hover:bg-amber-600'
-                        }`}
-                    >
-                      {loadingDiscount ? (
-                        <Loader2 className="animate-spin" size={18} />
-                      ) : (
-                        'تطبيق'
-                      )}
-                    </button>
-                  </div>
-                  {errorDiscount && (
-                    <p className="text-red-600 text-xs sm:text-sm mt-1 text-right font-medium">
-                      {errorDiscount}
-                    </p>
-                  )}
-                  {discount && (
-                    <p className="text-green-600 text-xs sm:text-sm mt-1 text-right font-medium">
-                      ✓ تم تطبيق كود {discount.code}: خصم{' '}
-                      {discount.amount.toFixed(2)} جنيه
-                    </p>
-                  )}
-                </div>
-
-                {/* Notes */}
-                {/* <div>
+              {/* Notes */}
+              {/* <div>
                 <label className="block text-right text-purple-900 font-bold mb-2 text-sm sm:text-base">
                   ملاحظات إضافية
                 </label>
@@ -1015,72 +989,71 @@ const CheckoutPage: React.FC = () => {
                 />
               </div> */}
 
-                {/* Payment Method */}
-                <div>
-                  <label className="block text-right text-purple-900 font-bold mb-3 text-sm sm:text-base flex items-center justify-end gap-2">
-                    <span>طريقة الدفع *</span>
-                    <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
-                  </label>
-                  <label className="flex items-center justify-end gap-3 p-3 sm:p-4 border-2 border-purple-200 rounded-lg sm:rounded-xl cursor-pointer hover:bg-purple-50 transition-colors">
-                    <span className="text-gray-700 font-medium text-sm sm:text-base flex items-center gap-2">
-                      <span>الدفع عند الاستلام</span>
-                      <Truck className="h-4 w-4 sm:h-5 sm:w-5" />
-                    </span>
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="cash"
-                      checked={formData.paymentMethod === 'cash'}
-                      onChange={(e) =>
-                        handleInputChange('paymentMethod', e.target.value)
-                      }
-                      className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600"
-                      disabled={isSubmitting}
-                    />
-                  </label>
-                </div>
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={
-                    isSubmitting ||
-                    loadingShippingFees ||
-                    state.cart.length === 0 ||
-                    !selectedGovernorate
-                  }
-                  className={`w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl text-base sm:text-lg font-bold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 ${isSubmitting ||
-                    loadingShippingFees ||
-                    state.cart.length === 0 ||
-                    !selectedGovernorate
-                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                    : 'bg-purple-600 text-white hover:bg-purple-700'
-                    }`}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="animate-spin" size={20} />
-                      <span>جاري تأكيد الطلب...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6" />
-                      <span>تأكيد الطلب</span>
-                    </>
-                  )}
-                </button>
-
-                {!selectedGovernorate && formData.governorate && (
-                  <p className="text-red-600 text-xs sm:text-sm mt-2 text-center font-medium">
-                    يرجى اختيار محافظة متوفرة لتحديد رسوم التوصيل.
-                  </p>
-                )}
+              {/* Payment Method */}
+              <div>
+                <label className="block text-right text-purple-900 font-bold mb-3 text-sm sm:text-base flex items-center justify-end gap-2">
+                  <span>طريقة الدفع *</span>
+                  <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
+                </label>
+                <label className="flex items-center justify-end gap-3 p-3 sm:p-4 border-2 border-purple-200 rounded-lg sm:rounded-xl cursor-pointer hover:bg-purple-50 transition-colors">
+                  <span className="text-gray-700 font-medium text-sm sm:text-base flex items-center gap-2">
+                    <span>الدفع عند الاستلام</span>
+                    <Truck className="h-4 w-4 sm:h-5 sm:w-5" />
+                  </span>
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="cash"
+                    checked={formData.paymentMethod === 'cash'}
+                    onChange={(e) =>
+                      handleInputChange('paymentMethod', e.target.value)
+                    }
+                    className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600"
+                    disabled={isSubmitting}
+                  />
+                </label>
               </div>
-            </form>
-          </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={
+                  isSubmitting ||
+                  loadingShippingFees ||
+                  state.cart.length === 0 ||
+                  !selectedGovernorate
+                }
+                className={`w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl text-base sm:text-lg font-bold transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 ${isSubmitting ||
+                  loadingShippingFees ||
+                  state.cart.length === 0 ||
+                  !selectedGovernorate
+                  ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                  : 'bg-purple-600 text-white hover:bg-purple-700'
+                  }`}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    <span>جاري تأكيد الطلب...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6" />
+                    <span>تأكيد الطلب</span>
+                  </>
+                )}
+              </button>
+
+              {!selectedGovernorate && formData.governorate && (
+                <p className="text-red-600 text-xs sm:text-sm mt-2 text-center font-medium">
+                  يرجى اختيار محافظة متوفرة لتحديد رسوم التوصيل.
+                </p>
+              )}
+            </div>
+          </form>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
