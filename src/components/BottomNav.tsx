@@ -13,7 +13,7 @@ export function BottomNav({ currentPage, onNavigate }: BottomNavProps) {
     const navItems = [
         { id: 'home', label: 'الرئيسية', icon: Home },
         { id: 'menu', label: 'منيو', icon: Menu },
-        { id: 'instant', label: 'اكسبريس', icon: Zap },
+        { id: 'instant', label: 'فورية', icon: Zap },
         { id: 'breakfast', label: 'فطور', icon: Coffee },
         { id: 'custom', label: 'مخصص', icon: Palette },
         { id: 'cart', label: 'السلة', icon: ShoppingCart },
