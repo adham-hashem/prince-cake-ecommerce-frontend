@@ -32,14 +32,14 @@ export function BottomNav({ currentPage, onNavigate }: BottomNavProps) {
                                 key={item.id}
                                 onClick={() => onNavigate(item.id)}
                                 className={`flex flex-col items-center justify-center min-w-0 p-1 md:px-3 md:py-2 rounded-xl transition-all duration-300 relative ${isActive
-                                    ? 'text-green-600 font-bold transform scale-105 md:scale-110'
-                                    : 'text-gray-700 hover:text-green-600 hover:bg-green-50'
+                                    ? 'text-purple-700 font-bold transform scale-105 md:scale-110'
+                                    : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50'
                                     }`}
                             >
                                 <div className="relative mb-1">
                                     <Icon className={`w-5 h-5 md:w-6 md:h-6 ${isActive ? 'animate-pulse' : ''}`} strokeWidth={isActive ? 2.5 : 2} />
                                     {item.id === 'cart' && itemCount > 0 && (
-                                        <span className="absolute -top-2 -right-2 bg-green-600 text-white text-[10px] font-bold rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center">
+                                        <span className="absolute -top-2 -right-2 bg-purple-600 text-white text-[10px] font-bold rounded-full w-4 h-4 md:w-5 md:h-5 flex items-center justify-center">
                                             {itemCount}
                                         </span>
                                     )}
@@ -51,10 +51,10 @@ export function BottomNav({ currentPage, onNavigate }: BottomNavProps) {
                                     {item.label}
                                 </span>
                                 {isActive && (
-                                    <div className="absolute top-0 right-0 w-full h-full bg-green-600/5 rounded-xl -z-10" />
+                                    <div className="absolute top-0 right-0 w-full h-full bg-purple-600/5 rounded-xl -z-10" />
                                 )}
                                 {isActive && (
-                                    <div className="absolute -bottom-1 md:-bottom-2 w-1 h-1 bg-green-600 rounded-full" />
+                                    <div className="absolute -bottom-1 md:-bottom-2 w-1 h-1 bg-purple-600 rounded-full" />
                                 )}
                             </button>
                         );
