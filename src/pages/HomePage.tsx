@@ -14,6 +14,7 @@ interface ApiResponse {
   totalPages: number;
 }
 
+
 interface HomeRestoreState {
   scrollY: number;
 }
