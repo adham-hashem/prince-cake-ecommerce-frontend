@@ -658,7 +658,7 @@ const OrdersManagement: React.FC = () => {
                     <th className="px-4 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">الحالة</th>
                     <th className="px-4 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">الدفع</th>
                     <th className="px-4 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">تاريخ الطلب</th>
-                    <th className="px-4 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">تاريخ التوصيل</th>
+                    {/* <th className="px-4 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">تاريخ التوصيل</th> */}
                     <th className="px-4 py-4 text-right text-xs font-bold text-purple-900 uppercase tracking-wider">الإجراءات</th>
                   </tr>
                 </thead>
@@ -706,7 +706,7 @@ const OrdersManagement: React.FC = () => {
                               {formatDate(order.date)}
                             </div>
                           </td>
-                          <td className="px-4 py-4 whitespace-nowrap">
+                          {/* <td className="px-4 py-4 whitespace-nowrap">
                             {isValidDeliveryDate(order.deliveryDate) ? (
                               <div className="flex items-center gap-1 text-sm text-purple-700 font-medium">
                                 <Calendar className="h-4 w-4 text-purple-500" />
@@ -715,7 +715,7 @@ const OrdersManagement: React.FC = () => {
                             ) : (
                               <span className="text-xs text-gray-400 italic">غير محدد</span>
                             )}
-                          </td>
+                          </td> */}
                           <td className="px-4 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-2">
                               <button
