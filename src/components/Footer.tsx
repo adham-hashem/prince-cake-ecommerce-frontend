@@ -13,7 +13,7 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-gradient-to-b from-purple-50 to-white mt-16 py-12">
+    <footer className="bg-gradient-to-b from-purple-50 to-white mt-16 py-12 pb-28">
       <div className="container mx-auto px-4">
         {/* Logo and Brand */}
         <div className="flex flex-col items-center gap-6 mb-10">
