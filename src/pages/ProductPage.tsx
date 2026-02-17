@@ -117,9 +117,10 @@ const ProductPage: React.FC = () => {
           if (data.isHidden) {
             setProductRestricted('هذا المنتج غير متاح للعرض حالياً.');
           }
-          if (!data.isAvailable) {
-            setProductRestricted('المنتج غير متاح حالياً.');
+          if (data.isHidden) {
+            setProductRestricted('هذا المنتج غير متاح للعرض حالياً.');
           }
+          // REMOVED: !data.isAvailable check so the page renders with disabled buttons instead of blocking access
 
           setProduct(data);
         } catch (err) {

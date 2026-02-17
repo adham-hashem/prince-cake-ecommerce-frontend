@@ -74,6 +74,7 @@ const ProductsManagement: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
+  const [deletedImageIds, setDeletedImageIds] = useState<string[]>([]);
 
   const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -203,7 +204,7 @@ const ProductsManagement: React.FC = () => {
 
       // Send empty string if category is empty
       formData.append('category', newProduct.category || '');
-      
+
       // Send empty string if season is empty
       formData.append('season', newProduct.season || '');
 
@@ -305,7 +306,7 @@ const ProductsManagement: React.FC = () => {
 
       // Send empty string if category is empty
       formData.append('category', newProduct.category || '');
-      
+
       // Send empty string if season is empty
       formData.append('season', newProduct.season || '');
 
@@ -356,6 +357,13 @@ const ProductsManagement: React.FC = () => {
         });
       }
 
+      // Add deleted image IDs
+      if (deletedImageIds.length > 0) {
+        deletedImageIds.forEach((id, index) => {
+          formData.append(`imageIdsToDelete[${index}]`, id);
+        });
+      }
+
       const response = await fetch(`${apiUrl}/api/products/${editingProduct.id}`, {
         method: 'PUT',
         headers: {
@@ -397,6 +405,7 @@ const ProductsManagement: React.FC = () => {
 
   // Updated resetProductForm with isBreakfast
   const resetProductForm = () => {
+    setDeletedImageIds([]);
     setNewProduct({
       code: '',
       name: '',
@@ -438,6 +447,7 @@ const ProductsManagement: React.FC = () => {
       isBreakfast: product.isBreakfast || false,
       isFeatured: product.isFeatured || false,
     });
+    setDeletedImageIds([]);
     setShowEditProduct(true);
     setShowSidebar(false);
   };
@@ -502,6 +512,29 @@ const ProductsManagement: React.FC = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const removeImageField = (index: number) => {
+    setNewProduct(prev => {
+      const imageToRemove = prev.images[index];
+
+      // If it's an existing image (not a data URL), track its ID for deletion
+      if (imageToRemove && !imageToRemove.startsWith('data:image') && editingProduct) {
+        // FIXED: Find image ID by matching the URL, not the index (indices shift after deletes)
+        const originalImage = editingProduct.images?.find(img => img.imagePath === imageToRemove);
+        if (originalImage?.id) {
+          setDeletedImageIds(prevIds => {
+            if (!prevIds.includes(originalImage.id)) {
+              return [...prevIds, originalImage.id];
+            }
+            return prevIds;
+          });
+        }
+      }
+
+      const next = prev.images.filter((_, i) => i !== index);
+      return { ...prev, images: next.length ? next : [''] };
+    });
   };
 
   const addImageField = () => {
@@ -731,10 +764,9 @@ const ProductsManagement: React.FC = () => {
                                   type="text"
                                   value={newProduct.code}
                                   onChange={(e) => setNewProduct(prev => ({ ...prev, code: e.target.value }))}
-                                  className={`w-full px-3 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right ${
-                                    newProduct.code && checkProductCodeExists(newProduct.code, editingProduct?.id)
-                                      ? 'border-red-500 bg-red-50'
-                                      : 'border-gray-300'
+                                  className={`w-full px-3 py-3 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-right ${newProduct.code && checkProductCodeExists(newProduct.code, editingProduct?.id)
+                                    ? 'border-red-500 bg-red-50'
+                                    : 'border-gray-300'
                                     }`}
                                   dir="rtl"
                                 />
@@ -864,6 +896,14 @@ const ProductsManagement: React.FC = () => {
                                         <span className="text-sm text-green-600">تم الرفع</span>
                                       </div>
                                     )}
+                                    <button
+                                      type="button"
+                                      onClick={() => removeImageField(index)}
+                                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                      title="حذف الصورة"
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
                                   </div>
                                 ))}
                                 <button
@@ -1041,11 +1081,10 @@ const ProductsManagement: React.FC = () => {
                                       key={index}
                                       onClick={() => handlePageChange(page as number)}
                                       disabled={isLoading}
-                                      className={`px-3 py-2 rounded-lg transition-colors ${
-                                        currentPage === page
-                                          ? 'bg-pink-600 text-white'
-                                          : 'bg-white border border-gray-300 hover:bg-gray-50 text-gray-700'
-                                      } ${isLoading ? 'cursor-not-allowed opacity-50' : ''}`}
+                                      className={`px-3 py-2 rounded-lg transition-colors ${currentPage === page
+                                        ? 'bg-pink-600 text-white'
+                                        : 'bg-white border border-gray-300 hover:bg-gray-50 text-gray-700'
+                                        } ${isLoading ? 'cursor-not-allowed opacity-50' : ''}`}
                                     >
                                       {page}
                                     </button>
