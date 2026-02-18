@@ -12,29 +12,45 @@ const RamadanCountdown: React.FC = () => {
     const [isRamadan, setIsRamadan] = useState<boolean>(false);
     const [prayerTimes, setPrayerTimes] = useState<{ fajr: string; maghrib: string }>({ fajr: '', maghrib: '' });
 
-    // Approximate prayer times for Alexandria during Ramadan 2026
-    // These times change slightly each day, this is a static approximation
+    // Accurate prayer times for Alexandria during Ramadan 2026 (Feb 19 - Mar 19)
+    // Day-by-day lookup table from Aladhan API (Egyptian General Authority of Survey method)
+    // Coordinates: 31.2001°N, 29.9187°E (Alexandria, Egypt)
+    const ramadanPrayerTimes: { fajr: string; maghrib: string }[] = [
+        { fajr: '5:10 ص', maghrib: '5:51 م' },  // Day 1  - Feb 19
+        { fajr: '5:09 ص', maghrib: '5:52 م' },  // Day 2  - Feb 20
+        { fajr: '5:08 ص', maghrib: '5:52 م' },  // Day 3  - Feb 21
+        { fajr: '5:07 ص', maghrib: '5:53 م' },  // Day 4  - Feb 22
+        { fajr: '5:06 ص', maghrib: '5:54 م' },  // Day 5  - Feb 23
+        { fajr: '5:05 ص', maghrib: '5:55 م' },  // Day 6  - Feb 24
+        { fajr: '5:04 ص', maghrib: '5:55 م' },  // Day 7  - Feb 25
+        { fajr: '5:03 ص', maghrib: '5:56 م' },  // Day 8  - Feb 26
+        { fajr: '5:02 ص', maghrib: '5:57 م' },  // Day 9  - Feb 27
+        { fajr: '5:01 ص', maghrib: '5:58 م' },  // Day 10 - Feb 28
+        { fajr: '5:00 ص', maghrib: '5:58 م' },  // Day 11 - Mar 1
+        { fajr: '4:59 ص', maghrib: '5:59 م' },  // Day 12 - Mar 2
+        { fajr: '4:58 ص', maghrib: '6:00 م' },  // Day 13 - Mar 3
+        { fajr: '4:56 ص', maghrib: '6:01 م' },  // Day 14 - Mar 4
+        { fajr: '4:55 ص', maghrib: '6:01 م' },  // Day 15 - Mar 5
+        { fajr: '4:54 ص', maghrib: '6:02 م' },  // Day 16 - Mar 6
+        { fajr: '4:53 ص', maghrib: '6:03 م' },  // Day 17 - Mar 7
+        { fajr: '4:52 ص', maghrib: '6:04 م' },  // Day 18 - Mar 8
+        { fajr: '4:51 ص', maghrib: '6:04 م' },  // Day 19 - Mar 9
+        { fajr: '4:49 ص', maghrib: '6:05 م' },  // Day 20 - Mar 10
+        { fajr: '4:48 ص', maghrib: '6:06 م' },  // Day 21 - Mar 11
+        { fajr: '4:47 ص', maghrib: '6:06 م' },  // Day 22 - Mar 12
+        { fajr: '4:46 ص', maghrib: '6:07 م' },  // Day 23 - Mar 13
+        { fajr: '4:44 ص', maghrib: '6:08 م' },  // Day 24 - Mar 14
+        { fajr: '4:43 ص', maghrib: '6:08 م' },  // Day 25 - Mar 15
+        { fajr: '4:42 ص', maghrib: '6:09 م' },  // Day 26 - Mar 16
+        { fajr: '4:40 ص', maghrib: '6:10 م' },  // Day 27 - Mar 17
+        { fajr: '4:39 ص', maghrib: '6:10 م' },  // Day 28 - Mar 18
+        { fajr: '4:38 ص', maghrib: '6:11 م' },  // Day 29 - Mar 19
+        { fajr: '4:38 ص', maghrib: '6:11 م' },  // Day 30 - Mar 20 (if applicable)
+    ];
+
     const getPrayerTimes = (day: number): { fajr: string; maghrib: string } => {
-        // Base times for start of Ramadan (adjusting by ~1 minute per day for Fajr, Maghrib gets later)
-        const baseFajr = 4 * 60 + 50; // 4:50 AM in minutes
-        const baseMaghrib = 17 * 60 + 45; // 5:45 PM in minutes
-
-        // Adjust times based on day (Fajr gets earlier, Maghrib gets later as month progresses)
-        const fajrMinutes = baseFajr - Math.floor(day / 2); // Gets ~30 minutes earlier over the month
-        const maghribMinutes = baseMaghrib + Math.floor(day / 2); // Gets ~30 minutes later
-
-        const formatTime = (totalMinutes: number): string => {
-            const hours = Math.floor(totalMinutes / 60);
-            const mins = totalMinutes % 60;
-            const period = hours >= 12 ? 'م' : 'ص';
-            const displayHours = hours > 12 ? hours - 12 : hours;
-            return `${displayHours}:${mins.toString().padStart(2, '0')} ${period}`;
-        };
-
-        return {
-            fajr: formatTime(fajrMinutes),
-            maghrib: formatTime(maghribMinutes),
-        };
+        const index = Math.max(0, Math.min(day - 1, ramadanPrayerTimes.length - 1));
+        return ramadanPrayerTimes[index];
     };
 
     useEffect(() => {
