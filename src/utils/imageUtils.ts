@@ -2,7 +2,7 @@
 
 /**
  * Utility function to get the correct image URL
- * Handles both Cloudinary full URLs and relative paths
+ * Handles both full URLs and relative paths (e.g. uploads/products/image.jpg)
  * @param imagePath - The image path from the API (can be relative or absolute)
  * @param apiUrl - The API base URL
  * @returns The complete image URL
@@ -12,7 +12,7 @@ export const getImageUrl = (imagePath: string | undefined | null, apiUrl: string
     return '';
   }
 
-  // If it's already a full URL (Cloudinary or other CDN), return as-is
+  // If it's already a full URL, return as-is
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
     return imagePath;
   }
