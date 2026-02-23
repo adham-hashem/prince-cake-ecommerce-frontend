@@ -11,6 +11,7 @@ import { useApp } from '../contexts/AppContext';
 import ProductCard from '../components/ProductCard';
 import { Product } from '../types';
 
+
 interface ApiResponse {
   items: Product[];
   totalItems: number;
