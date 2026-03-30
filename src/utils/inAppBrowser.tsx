@@ -4,7 +4,9 @@ export const isIOS = () => /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 export const isFacebookOrInstagramInAppBrowser = () => {
   const ua = navigator.userAgent || '';
-  return /FBAN|FBAV|Instagram/i.test(ua);
+  // FBAN = Facebook App Name, FBAV = Facebook App Version
+  // Instagram, Messenger = Facebook Messenger in-app browser
+  return /FBAN|FBAV|Instagram|Messenger\//i.test(ua);
 };
 
 /**

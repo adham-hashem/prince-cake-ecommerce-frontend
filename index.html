@@ -339,7 +339,40 @@
       </div>
     </div>
     
-    <div id="root"></div>
+    <div id="root">
+      <!-- Fallback content for in-app browsers (Facebook Messenger, etc.) -->
+      <!-- React will replace this when it mounts -->
+      <div id="fallback-content" style="text-align: center; padding: 40px 20px; font-family: 'Segoe UI', Tahoma, sans-serif; direction: rtl;">
+        <img src="/logoooo.jpeg" alt="Prince Cake" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; margin: 0 auto 16px; display: block;" />
+        <h2 style="color: #7c3aed; margin-bottom: 8px;">Prince Cake - برنس كيك</h2>
+        <p style="color: #d97706; margin-bottom: 4px;">برنس الكيك في مصر 👑</p>
+        <p style="color: #666; margin-bottom: 20px;">جاري تحميل الموقع...</p>
+      </div>
+    </div>
+    
+    <!-- Full fallback page for in-app browsers that fail to run React -->
+    <div id="inapp-fallback" style="display:none; direction: rtl; font-family: 'Segoe UI', Tahoma, sans-serif; min-height: 100vh; background: linear-gradient(135deg, #f5f3ff 0%, #fdf2f8 50%, #fffbeb 100%);">
+      <div style="max-width: 480px; margin: 0 auto; padding: 40px 20px; text-align: center;">
+        <img src="/logoooo.jpeg" alt="Prince Cake" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin: 0 auto 16px; display: block; border: 4px solid white; box-shadow: 0 10px 30px rgba(124,58,237,0.2);" />
+        <h1 style="color: #7c3aed; font-size: 28px; margin-bottom: 4px;">Prince Cake</h1>
+        <p style="color: #d97706; font-size: 18px; margin-bottom: 24px;">برنس الكيك في مصر 👑</p>
+        
+        <div style="background: white; border-radius: 16px; padding: 24px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+          <p style="color: #7c3aed; font-weight: bold; font-size: 16px; margin-bottom: 12px;">⚠️ افتح الموقع في المتصفح لتجربة أفضل</p>
+          <a id="open-in-browser-btn" href="#" style="display: inline-block; background: linear-gradient(135deg, #7c3aed, #ec4899); color: white; padding: 12px 32px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 16px; margin-bottom: 8px;">فتح في المتصفح 🌐</a>
+          <p style="color: #999; font-size: 12px; margin-top: 8px;">أو انسخ الرابط وافتحه في Chrome أو Safari</p>
+        </div>
+        
+        <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+          <p style="color: #333; font-weight: bold; margin-bottom: 12px;">📞 للتواصل والطلب مباشرة</p>
+          <a href="tel:+201000070653" style="display: inline-block; background: #22c55e; color: white; padding: 10px 24px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-bottom: 8px;">اتصل بنا 📱</a>
+          <br/>
+          <a href="https://wa.me/201000070653" style="display: inline-block; background: #25d366; color: white; padding: 10px 24px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 8px;">واتساب 💬</a>
+        </div>
+        
+        <p style="color: #999; font-size: 12px;">🎂 أشهى التورتات والحلويات الفاخرة</p>
+      </div>
+    </div>
     
     <script type="module" src="/src/main.tsx"></script>
     
@@ -347,19 +380,67 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script>
     
-    <!-- Hide loader when app is ready -->
+    <!-- Hide loader when app is ready + In-app browser fallback -->
     <script>
-      window.addEventListener('load', function() {
-        setTimeout(function() {
-          const loader = document.getElementById('initial-loader');
-          if (loader) {
-            loader.classList.add('hidden');
-            setTimeout(function() {
-              loader.style.display = 'none';
-            }, 500);
+      (function() {
+        var ua = navigator.userAgent || '';
+        var isInApp = /FBAN|FBAV|Instagram|Messenger/i.test(ua);
+        
+        // Set up external browser link for in-app fallback
+        var openBtn = document.getElementById('open-in-browser-btn');
+        if (openBtn) {
+          var currentUrl = window.location.href;
+          if (/Android/i.test(ua)) {
+            var noProtocol = currentUrl.replace(/^https?:\/\//, '');
+            openBtn.href = 'intent://' + noProtocol + '#Intent;scheme=https;package=com.android.chrome;end';
+          } else {
+            openBtn.href = currentUrl;
+            openBtn.target = '_blank';
+            openBtn.rel = 'noopener noreferrer';
           }
-        }, 1000);
-      });
+        }
+
+        // Hide loader on page load
+        window.addEventListener('load', function() {
+          var delay = isInApp ? 300 : 1000;
+          setTimeout(function() {
+            var loader = document.getElementById('initial-loader');
+            if (loader) {
+              loader.classList.add('hidden');
+              setTimeout(function() {
+                loader.style.display = 'none';
+              }, 500);
+            }
+          }, delay);
+        });
+
+        // Fallback timeout: if React hasn't mounted after 8 seconds in an in-app browser,
+        // show the full fallback page so users aren't stuck on an empty screen
+        if (isInApp) {
+          setTimeout(function() {
+            var root = document.getElementById('root');
+            var fallback = document.getElementById('inapp-fallback');
+            // Check if React has mounted by looking for more than just the fallback content
+            if (root && fallback) {
+              var children = root.children;
+              var hasReactContent = false;
+              for (var i = 0; i < children.length; i++) {
+                if (children[i].id !== 'fallback-content') {
+                  hasReactContent = true;
+                  break;
+                }
+              }
+              if (!hasReactContent) {
+                // React didn't mount — show the in-app fallback page
+                root.style.display = 'none';
+                fallback.style.display = 'block';
+                var loader = document.getElementById('initial-loader');
+                if (loader) loader.style.display = 'none';
+              }
+            }
+          }, 8000);
+        }
+      })();
     </script>
     
     <!-- No JavaScript Fallback -->

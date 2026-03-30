@@ -267,14 +267,7 @@ const Header: React.FC = () => {
                     </div>
                   )}
                 </div>
-              ) : (
-                <Link
-                  to="/login"
-                  className="text-gray-700 hover:text-pink-600 font-medium transition-colors"
-                >
-                  تسجيل دخول
-                </Link>
-              )}
+              ) : null}
             </div>
 
             {/* زر السلة */}
@@ -442,17 +435,7 @@ const Header: React.FC = () => {
                   <span>تسجيل الخروج</span>
                 </button>
               </div>
-            ) : (
-              <div className="border-t pt-4">
-                <Link
-                  to="/login"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="block text-right py-3 px-4 text-gray-700 hover:text-pink-600 font-medium transition-colors rounded-lg hover:bg-gray-50"
-                >
-                  تسجيل دخول
-                </Link>
-              </div>
-            )}
+            ) : null}
           </div>
         )}
       </div>

@@ -41,7 +41,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login');
+      navigate('/');
       return;
     }
 
@@ -82,7 +82,7 @@ const ProfilePage = () => {
       } catch (err) {
         setError(err.message || 'حدث خطأ أثناء جلب بيانات الملف الشخصي. حاول مرة أخرى لاحقاً.');
         if (err.message === 'يرجى تسجيل الدخول أولاً') {
-          navigate('/login');
+          navigate('/');
         }
       } finally {
         setLoading(false);
@@ -148,7 +148,7 @@ const ProfilePage = () => {
     } catch (err) {
       setError(err.message || 'حدث خطأ أثناء تحديث الملف الشخصي. حاول مرة أخرى لاحقاً.');
       if (err.message === 'يرجى تسجيل الدخول أولاً') {
-        navigate('/login');
+        navigate('/');
       }
     } finally {
       setSubmitting(false);

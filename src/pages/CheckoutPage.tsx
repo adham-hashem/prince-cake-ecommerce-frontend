@@ -159,7 +159,7 @@ const CheckoutPage: React.FC = () => {
           setLoadingCart(false);
           if (err instanceof Error && err.message.includes('جلسة منتهية')) {
             localStorage.removeItem('accessToken');
-            navigate('/login');
+            navigate('/');
           }
         } else {
           await new Promise((resolve) => setTimeout(resolve, retryDelay));
@@ -532,7 +532,7 @@ const CheckoutPage: React.FC = () => {
             errorMessage =
               'جلسة تسجيل الدخول منتهية أو غير صالحة. يرجى تسجيل الدخول مرة أخرى.';
             localStorage.removeItem('accessToken');
-            navigate('/login', { replace: true });
+            navigate('/', { replace: true });
           } else if (error.message.includes('400')) {
             errorMessage =
               'بيانات الطلب غير صحيحة. يرجى مراجعة البيانات المدخلة.';

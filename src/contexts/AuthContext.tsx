@@ -98,6 +98,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   useEffect(() => {
     const initializeAuth = async () => {
+      // One-time forced sign-out: clears all existing sessions
+      // Change the version string to force another sign-out wave if needed
+      const SIGNOUT_VERSION = 'v2';
+      if (localStorage.getItem('forceSignOut') !== SIGNOUT_VERSION) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.setItem('forceSignOut', SIGNOUT_VERSION);
+        setLoading(false);
+        return;
+      }
+
       const token = localStorage.getItem('accessToken');
       if (token) {
         try {

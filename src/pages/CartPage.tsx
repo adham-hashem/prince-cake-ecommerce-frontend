@@ -259,7 +259,7 @@ const CartPage: React.FC = () => {
   const handleApplyDiscountCode = async () => {
     if (!token) {
       alert('يرجى تسجيل الدخول لتطبيق كود الخصم');
-      navigate('/login');
+      navigate('/');
       return;
     }
 

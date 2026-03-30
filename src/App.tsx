@@ -13,9 +13,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import { onForegroundMessage } from './services/firebase';
 import { Unsubscribe } from 'firebase/messaging';
 
-// ✅ NEW: Modal to guide FB/IG users to open in real browser
-import OpenInBrowserModal from './components/OpenInBrowserModal';
-import { isFacebookOrInstagramInAppBrowser } from './utils/inAppBrowser';
+// ✅ NEW: Utility for FB/IG in-app browser detection & redirect
+import { isFacebookOrInstagramInAppBrowser, openInExternalBrowser } from './utils/inAppBrowser';
 
 // ✅ PWA Install Prompt
 import InstallPrompt from './components/InstallPrompt';
@@ -116,12 +115,12 @@ function AdminLayout() {
 }
 
 function AppContent() {
-  // ✅ NEW: Show the "Open in Browser" modal globally
-  const [showOpenInBrowser, setShowOpenInBrowser] = useState(false);
+  // ✅ Show a non-blocking banner for FB/IG in-app browser users
+  const [showInAppBanner, setShowInAppBanner] = useState(false);
 
   useEffect(() => {
     if (isFacebookOrInstagramInAppBrowser()) {
-      setShowOpenInBrowser(true);
+      setShowInAppBanner(true);
     }
   }, []);
 
@@ -155,11 +154,30 @@ function AppContent() {
 
   return (
     <Router>
-      {/* ✅ Global modal */}
-      <OpenInBrowserModal
-        open={showOpenInBrowser}
-        onClose={() => setShowOpenInBrowser(false)}
-      />
+      {/* ✅ Non-blocking banner for FB/IG in-app browser */}
+      {showInAppBanner && (
+        <div
+          className="fixed top-0 left-0 right-0 z-[9999] bg-amber-500 text-white text-center text-sm py-2 px-4 flex items-center justify-center gap-2"
+          dir="rtl"
+        >
+          <span>⚠️ للحصول على تجربة أفضل، افتح الموقع في المتصفح</span>
+          <button
+            onClick={() => {
+              openInExternalBrowser();
+            }}
+            className="bg-white text-amber-600 px-3 py-0.5 rounded-full text-xs font-bold hover:bg-amber-50 transition-colors"
+          >
+            فتح
+          </button>
+          <button
+            onClick={() => setShowInAppBanner(false)}
+            className="text-white/80 hover:text-white text-lg leading-none ml-1"
+            aria-label="إغلاق"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {/* ✅ PWA Install Prompt */}
       <InstallPrompt />
@@ -204,71 +222,15 @@ function AppContent() {
             <Route path="product/:id" element={<ProductPage />} />
             <Route path="login" element={<LoginPage />} />
 
-            {/* Protected Routes - Require Authentication */}
-            <Route
-              path="custom"
-              element={
-                <ProtectedRoute>
-                  <CustomOrders />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="complete-profile"
-              element={
-                <ProtectedRoute>
-                  <CompleteProfile />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="profile"
-              element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="cart"
-              element={
-                <ProtectedRoute>
-                  <CartPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="checkout"
-              element={
-                <ProtectedRoute>
-                  <CheckoutPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="my-orders"
-              element={
-                <ProtectedRoute>
-                  <MyOrders />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="my-custom-orders"
-              element={
-                <ProtectedRoute>
-                  <MyCustomOrders />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="order/:id"
-              element={
-                <ProtectedRoute>
-                  <OrderDetails />
-                </ProtectedRoute>
-              }
-            />
+            {/* Customer Routes - No login required (login is hidden from customers) */}
+            <Route path="custom" element={<CustomOrders />} />
+            <Route path="complete-profile" element={<CompleteProfile />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="cart" element={<CartPage />} />
+            <Route path="checkout" element={<CheckoutPage />} />
+            <Route path="my-orders" element={<MyOrders />} />
+            <Route path="my-custom-orders" element={<MyCustomOrders />} />
+            <Route path="order/:id" element={<OrderDetails />} />
 
             {/* Fallback */}
             <Route path="*" element={<NotFoundPage />} />

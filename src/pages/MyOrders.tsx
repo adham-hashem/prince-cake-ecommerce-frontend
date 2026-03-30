@@ -123,7 +123,8 @@ const MyOrders: React.FC = () => {
     if (isAuthenticated) {
       fetchOrders();
     } else {
-      navigate('/login');
+      // Login is hidden from customers - redirect to home
+      navigate('/');
     }
   }, [isAuthenticated, navigate]);
 
