@@ -35,7 +35,7 @@ const OpenInBrowserModal: React.FC<Props> = ({ open, onClose }) => {
 
         {isIOS() && (
           <p className="text-xs text-gray-400 mt-3">
-            على iPhone: لو ما فتحش Safari تلقائيًا، افتح قائمة المشاركة واختر “Open in Safari”.
+            على iPhone: لو ما فتحش Safari تلقائيًا، تم نسخ الرابط — افتح Safari والصقه في شريط العناوين.
           </p>
         )}
       </div>

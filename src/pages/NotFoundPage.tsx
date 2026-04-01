@@ -139,7 +139,7 @@ const NotFoundPage: React.FC = () => {
           {/* Contact WhatsApp */}
           <div className="mt-4 sm:mt-6">
             <a
-              href="https://wa.me/201000070653?text=مرحباً، أحتاج مساعدة"
+              href="https://wa.me/201271285135?text=مرحباً، أحتاج مساعدة"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 font-semibold transition-colors text-sm sm:text-base bg-green-50 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full hover:bg-green-100"

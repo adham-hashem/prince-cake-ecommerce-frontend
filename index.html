@@ -70,7 +70,7 @@
         "https://www.princecake.com/logoooo.jpeg",
         "https://www.princecake.com/images/cakes-gallery.jpg"
       ],
-      "telephone": "+20-100-007-0653",
+      "telephone": "+20-127-128-5135",
       "email": "info@princecake.com",
       "address": {
         "@type": "PostalAddress",
@@ -117,7 +117,7 @@
       ],
       "contactPoint": {
         "@type": "ContactPoint",
-        "telephone": "+20-100-007-0653",
+        "telephone": "+20-127-128-5135",
         "contactType": "customer service",
         "availableLanguage": ["Arabic", "English"],
         "areaServed": "EG"
@@ -213,7 +213,7 @@
         "https://www.facebook.com/princecake",
         "https://www.instagram.com/princecake",
         "https://www.tiktok.com/@princecake",
-        "https://wa.me/201000070653"
+        "https://wa.me/201271285135"
       ]
     }
     </script>
@@ -364,10 +364,8 @@
         </div>
         
         <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-          <p style="color: #333; font-weight: bold; margin-bottom: 12px;">📞 للتواصل والطلب مباشرة</p>
-          <a href="tel:+201000070653" style="display: inline-block; background: #22c55e; color: white; padding: 10px 24px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-bottom: 8px;">اتصل بنا 📱</a>
-          <br/>
-          <a href="https://wa.me/201000070653" style="display: inline-block; background: #25d366; color: white; padding: 10px 24px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 8px;">واتساب 💬</a>
+          <p style="color: #333; font-weight: bold; margin-bottom: 12px;">💬 للتواصل والطلب مباشرة</p>
+          <a href="https://wa.me/201271285135" style="display: inline-block; background: #25d366; color: white; padding: 10px 24px; border-radius: 10px; text-decoration: none; font-weight: bold;">واتساب 💬</a>
         </div>
         
         <p style="color: #999; font-size: 12px;">🎂 أشهى التورتات والحلويات الفاخرة</p>
@@ -393,6 +391,10 @@
           if (/Android/i.test(ua)) {
             var noProtocol = currentUrl.replace(/^https?:\/\//, '');
             openBtn.href = 'intent://' + noProtocol + '#Intent;scheme=https;package=com.android.chrome;end';
+          } else if (/iPhone|iPad|iPod/i.test(ua)) {
+            // Use x-safari-https:// scheme for iOS
+            var safariUrl = currentUrl.replace(/^https:\/\//, 'x-safari-https://').replace(/^http:\/\//, 'x-safari-http://');
+            openBtn.href = safariUrl;
           } else {
             openBtn.href = currentUrl;
             openBtn.target = '_blank';
@@ -451,7 +453,7 @@
           يرجى تفعيل JavaScript في المتصفح لتجربة أفضل.
         </p>
         <p style="color: #666;">
-          للطلب يمكنك التواصل معنا على: 01013141516
+          للطلب يمكنك التواصل معنا على: 01271285135
         </p>
       </div>
     </noscript>
